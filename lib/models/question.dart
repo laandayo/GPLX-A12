@@ -1,28 +1,9 @@
-class Answer {
-  final String content;
-  final bool isCorrect;
-
-  Answer({
-    required this.content,
-    required this.isCorrect,
-  });
-
-  Map<String, dynamic> toJson() => {
-        'content': content,
-        'isCorrect': isCorrect,
-      };
-
-  factory Answer.fromJson(Map<String, dynamic> json) => Answer(
-        content: json['content'] as String,
-        isCorrect: json['isCorrect'] as bool,
-      );
-}
-
 class Question {
   final int id;
-  final int chapter;
+  final String chapter;
   final String content;
-  final List<Answer> answers;
+  final List<String> answers;
+  final int correctAnswer;
   final String explanation;
   final String? image;
   final bool isImportant;
@@ -40,6 +21,7 @@ class Question {
     required this.chapter,
     required this.content,
     required this.answers,
+    required this.correctAnswer,
     required this.explanation,
     this.image,
     this.isImportant = false,
@@ -51,16 +33,9 @@ class Question {
     this.lastAnsweredAt,
   });
 
-  int get correctAnswerIndex {
-    for (int i = 0; i < answers.length; i++) {
-      if (answers[i].isCorrect) return i;
-    }
-    return 0;
-  }
-
   bool get isCorrect {
     if (!isAnswered) return false;
-    return selectedAnswerIndex == correctAnswerIndex;
+    return selectedAnswerIndex == correctAnswer;
   }
 
   QuestionStatus get status {
@@ -73,7 +48,8 @@ class Question {
         'id': id,
         'chapter': chapter,
         'content': content,
-        'answers': answers.map((a) => a.toJson()).toList(),
+        'answers': answers,
+        'correctAnswer': correctAnswer,
         'explanation': explanation,
         'image': image,
         'isImportant': isImportant,
@@ -87,11 +63,10 @@ class Question {
 
   factory Question.fromJson(Map<String, dynamic> json) => Question(
         id: json['id'] as int,
-        chapter: json['chapter'] as int,
+        chapter: json['chapter'] as String,
         content: json['content'] as String,
-        answers: (json['answers'] as List)
-            .map((a) => Answer.fromJson(a as Map<String, dynamic>))
-            .toList(),
+        answers: List<String>.from(json['answers'] as List),
+        correctAnswer: json['correctAnswer'] as int,
         explanation: json['explanation'] as String,
         image: json['image'] as String?,
         isImportant: json['isImportant'] as bool? ?? false,
@@ -103,6 +78,17 @@ class Question {
         lastAnsweredAt: json['lastAnsweredAt'] != null
             ? DateTime.parse(json['lastAnsweredAt'] as String)
             : null,
+      );
+
+  factory Question.fromJsonSimple(Map<String, dynamic> json) => Question(
+        id: json['id'] as int,
+        chapter: json['chapter'] as String,
+        content: json['content'] as String,
+        answers: List<String>.from(json['answers'] as List),
+        correctAnswer: json['correctAnswer'] as int,
+        explanation: json['explanation'] as String,
+        image: json['image'] as String?,
+        isImportant: json['isImportant'] as bool? ?? false,
       );
 }
 

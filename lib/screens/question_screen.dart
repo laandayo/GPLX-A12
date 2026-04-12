@@ -35,8 +35,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
           );
         }
 
+        final isGradeImmediately = questionProvider.scoringMode == ScoringMode.gradeImmediately ||
+            appProvider.gradeImmediately;
+
         return Scaffold(
-          backgroundColor: Colors.grey[50],
+          backgroundColor: Theme.of(context).colorScheme.surface,
           body: Column(
             children: [
               // Top Section - Header with progress
@@ -49,6 +52,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   appProvider,
                   questionProvider,
                   question,
+                  isGradeImmediately,
                 ),
               ),
 
@@ -67,10 +71,12 @@ class _QuestionScreenState extends State<QuestionScreen> {
     QuestionProvider questionProvider,
     Question question,
   ) {
+    final modeLabel = questionProvider.isExamMode ? 'Thi' : 'Ôn tập';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(13),
@@ -91,13 +97,24 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   onPressed: () => Navigator.pop(context),
                 ),
                 Expanded(
-                  child: Text(
-                    'Câu ${questionProvider.currentIndex + 1} / ${questionProvider.totalQuestions}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
+                  child: Column(
+                    children: [
+                      Text(
+                        'Câu ${questionProvider.currentIndex + 1} / ${questionProvider.totalQuestions}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        modeLabel,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 IconButton(
@@ -106,10 +123,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
                         ? Icons.bookmark
                         : Icons.bookmark_border,
                     color: question.isMarked
-                        ? appProvider.primaryColor
-                        : Colors.grey,
+                        ? Colors.orange
+                        : Theme.of(context).colorScheme.onSurface.withAlpha(128),
                   ),
-                  onPressed: questionProvider.toggleMark,
+                  onPressed: () => questionProvider.toggleMark(appProvider.selectedLicense),
                 ),
               ],
             ),
@@ -199,7 +216,12 @@ class _QuestionScreenState extends State<QuestionScreen> {
     AppProvider appProvider,
     QuestionProvider questionProvider,
     Question question,
+    bool isGradeImmediately,
   ) {
+    final shouldShowExplanation = question.isAnswered &&
+        (appProvider.showExplanation) &&
+        (!questionProvider.isExamMode || isGradeImmediately);
+
     return SingleChildScrollView(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
@@ -236,7 +258,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -265,13 +287,21 @@ class _QuestionScreenState extends State<QuestionScreen> {
               questionProvider,
               question,
               index,
+              isGradeImmediately,
             ).animate().fadeIn(delay: (100 * index).ms).slideX();
           }),
 
-          // Explanation (shown after answering)
-          if (question.isAnswered && questionProvider.showExplanation) ...[
+          // Explanation (shown after answering if enabled)
+          if (shouldShowExplanation) ...[
             const SizedBox(height: 20),
             _buildExplanation(context, appProvider, question),
+          ],
+
+          // Submit button for exam mode
+          if (questionProvider.isExamMode &&
+              questionProvider.currentIndex == questionProvider.totalQuestions - 1) ...[
+            const SizedBox(height: 20),
+            _buildSubmitExamButton(context, questionProvider, appProvider),
           ],
         ],
       ),
@@ -284,23 +314,27 @@ class _QuestionScreenState extends State<QuestionScreen> {
     QuestionProvider questionProvider,
     Question question,
     int index,
+    bool isGradeImmediately,
   ) {
     final answer = question.answers[index];
     final isSelected = question.selectedAnswerIndex == index;
-    final isCorrect = answer.isCorrect;
     final hasAnswered = question.isAnswered;
+
+    // Determine if we should show correct/wrong feedback
+    final showFeedback = hasAnswered && isGradeImmediately;
+    final isCorrect = index == question.correctAnswer;
 
     Color? backgroundColor;
     Color? textColor;
-    Color borderColor = Colors.grey[300]!;
+    Color borderColor = Theme.of(context).colorScheme.outline.withAlpha(76);
 
-    if (hasAnswered) {
+    if (showFeedback) {
       if (isCorrect) {
-        backgroundColor = Colors.green[50];
+        backgroundColor = Colors.green.withAlpha(25);
         borderColor = Colors.green;
         textColor = Colors.green[700];
       } else if (isSelected && !isCorrect) {
-        backgroundColor = Colors.red[50];
+        backgroundColor = Colors.red.withAlpha(25);
         borderColor = Colors.red;
         textColor = Colors.red[700];
       }
@@ -312,7 +346,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white,
+        color: backgroundColor ?? Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: borderColor,
@@ -329,7 +363,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: hasAnswered ? null : () => _handleAnswer(questionProvider, question, index),
+          onTap: hasAnswered ? null : () => _handleAnswer(questionProvider, question, index, appProvider),
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -340,7 +374,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: hasAnswered
+                    color: showFeedback
                         ? (isCorrect
                             ? Colors.green
                             : (isSelected ? Colors.red : Colors.grey[200]))
@@ -353,10 +387,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: hasAnswered
-                            ? (isCorrect
-                                ? Colors.white
-                                : (isSelected ? Colors.white : Colors.grey[700]))
+                        color: showFeedback
+                            ? (isCorrect || isSelected ? Colors.white : Colors.grey[700])
                             : appProvider.primaryColor,
                       ),
                     ),
@@ -367,19 +399,19 @@ class _QuestionScreenState extends State<QuestionScreen> {
                 // Answer content
                 Expanded(
                   child: Text(
-                    answer.content,
+                    answer,
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: hasAnswered && (isCorrect || isSelected)
+                      fontWeight: showFeedback && (isCorrect || isSelected)
                           ? FontWeight.bold
                           : FontWeight.normal,
-                      color: textColor ?? Colors.black87,
+                      color: textColor ?? Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),
 
                 // Status icon
-                if (hasAnswered) ...[
+                if (showFeedback) ...[
                   if (isCorrect)
                     const Icon(Icons.check_circle, color: Colors.green)
                   else if (isSelected)
@@ -442,6 +474,29 @@ class _QuestionScreenState extends State<QuestionScreen> {
     ).animate().fadeIn();
   }
 
+  Widget _buildSubmitExamButton(
+    BuildContext context,
+    QuestionProvider questionProvider,
+    AppProvider appProvider,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () => _showSubmitConfirmation(context, questionProvider, appProvider),
+        icon: const Icon(Icons.check_circle),
+        label: const Text('NỘP BÀI'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBottomNavigation(
     BuildContext context,
     AppProvider appProvider,
@@ -450,7 +505,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(13),
@@ -510,23 +565,69 @@ class _QuestionScreenState extends State<QuestionScreen> {
     QuestionProvider questionProvider,
     Question question,
     int answerIndex,
+    AppProvider appProvider,
   ) {
-    questionProvider.selectAnswer(answerIndex);
-    context.read<AppProvider>().incrementQuestionsStudied();
+    questionProvider.selectAnswer(answerIndex, appProvider.selectedLicense);
+    appProvider.incrementQuestionsStudied();
+  }
 
-    // Auto advance if enabled
-    if (questionProvider.autoAdvance && questionProvider.hasNext) {
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (mounted) {
-          questionProvider.nextQuestion();
-          _scrollController.animateTo(
-            0,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-        }
-      });
-    }
+  void _showSubmitConfirmation(
+    BuildContext context,
+    QuestionProvider questionProvider,
+    AppProvider appProvider,
+  ) {
+    final unanswered = questionProvider.currentQuestions
+        .where((q) => !q.isAnswered)
+        .length;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Nộp bài?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Bạn đã trả lời ${questionProvider.answeredCount}/${questionProvider.totalQuestions} câu.'),
+            if (unanswered > 0) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Còn $unanswered câu chưa trả lời!',
+                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tiếp tục làm'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _submitExam(context, questionProvider, appProvider);
+            },
+            child: const Text('Nộp bài'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _submitExam(
+    BuildContext context,
+    QuestionProvider questionProvider,
+    AppProvider appProvider,
+  ) {
+    final result = questionProvider.submitExam(appProvider.selectedLicense);
+
+    // Show results
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _ExamResultDialog(result: result),
+    );
   }
 
   void _showQuestionList(
@@ -601,6 +702,93 @@ class _QuestionScreenState extends State<QuestionScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ExamResultDialog extends StatelessWidget {
+  final ExamResult result;
+
+  const _ExamResultDialog({required this.result});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Row(
+        children: [
+          Icon(
+            result.passed ? Icons.emoji_events : Icons.sentiment_dissatisfied,
+            color: result.passed ? Colors.amber : Colors.red,
+            size: 32,
+          ),
+          const SizedBox(width: 12),
+          Text(result.passed ? 'Chúc mừng!' : 'Chưa đạt'),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '${result.correctAnswers}/${result.totalQuestions}',
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: result.passed ? Colors.green : Colors.red,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            result.passed ? 'Bạn đã vượt qua kỳ thi!' : 'Bạn cần 23/30 câu để đạt',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _statColumn('Đúng', '${result.correctAnswers}', Colors.green),
+              _statColumn('Sai', '${result.wrongAnswers}', Colors.red),
+              _statColumn('Trống', '${result.unansweredQuestions}', Colors.grey),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            Navigator.pop(context); // Go back to exam list
+          },
+          child: const Text('Xem lại'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            context.read<QuestionProvider>().resetCurrentExam();
+            Navigator.pop(context);
+          },
+          child: const Text('Làm lại'),
+        ),
+      ],
+    );
+  }
+
+  Widget _statColumn(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+      ],
     );
   }
 }

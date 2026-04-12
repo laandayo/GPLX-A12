@@ -1,87 +1,78 @@
 import '../models/models.dart';
-import 'sample_data.dart';
+import '../services/question_json_service.dart';
 
 class QuestionRepository {
   static final QuestionRepository _instance = QuestionRepository._internal();
   factory QuestionRepository() => _instance;
   QuestionRepository._internal();
 
-  final Map<LicenseType, List<Question>> _questions = {};
-  final Map<LicenseType, List<Chapter>> _chapters = {};
+  final QuestionJsonService _jsonService = QuestionJsonService();
 
   void initialize() {
-    for (var type in LicenseType.values) {
-      _questions[type] = SampleData.getQuestions(type);
-      _chapters[type] = SampleData.getChapters(type);
-    }
+    // Initialize is async, handled in main.dart
+  }
+
+  Future<void> initializeAsync() async {
+    await _jsonService.initialize();
   }
 
   List<Question> getQuestions(LicenseType type) {
-    return _questions[type] ?? [];
+    return _jsonService.getQuestions(type);
   }
 
   List<Chapter> getChapters(LicenseType type) {
-    return _chapters[type] ?? [];
+    return _jsonService.getChapters(type);
+  }
+
+  List<Exam> getExams(LicenseType type) {
+    return _jsonService.getExams(type);
   }
 
   Question? getQuestionById(LicenseType type, int id) {
-    final questions = _questions[type] ?? [];
-    try {
-      return questions.firstWhere((q) => q.id == id);
-    } catch (e) {
-      return null;
-    }
+    return _jsonService.getQuestionById(type, id);
   }
 
-  List<Question> getQuestionsByChapter(LicenseType type, int chapterId) {
-    final questions = _questions[type] ?? [];
-    final chapter = _chapters[type]?.firstWhere((c) => c.id == chapterId);
-    if (chapter == null) return [];
-    
-    return questions.where((q) => chapter.questionIds.contains(q.id)).toList();
+  Exam? getExamById(LicenseType type, int examId) {
+    return _jsonService.getExamById(type, examId);
+  }
+
+  List<Question> getQuestionsByChapter(LicenseType type, String chapterName) {
+    return _jsonService.getQuestionsByChapter(type, chapterName);
+  }
+
+  List<Question> getQuestionsByIds(LicenseType type, List<int> ids) {
+    return _jsonService.getQuestionsByIds(type, ids);
   }
 
   List<Question> getWrongQuestions(LicenseType type) {
-    final questions = _questions[type] ?? [];
-    return questions.where((q) => q.wrongCount > 0).toList();
+    return _jsonService.getWrongQuestions(type);
   }
 
   List<Question> getMarkedQuestions(LicenseType type) {
-    final questions = _questions[type] ?? [];
-    return questions.where((q) => q.isMarked).toList();
+    return _jsonService.getMarkedQuestions(type);
   }
 
   List<Question> getUnansweredQuestions(LicenseType type) {
-    final questions = _questions[type] ?? [];
-    return questions.where((q) => !q.isAnswered).toList();
+    return _jsonService.getUnansweredQuestions(type);
   }
 
   List<Question> getRandomQuestions(LicenseType type, {int count = 10}) {
-    final questions = List<Question>.from(_questions[type] ?? []);
-    questions.shuffle();
-    return questions.take(count).toList();
+    return _jsonService.getRandomQuestions(type, count: count);
   }
 
   List<Question> getImportantQuestions(LicenseType type) {
-    final questions = _questions[type] ?? [];
-    return questions.where((q) => q.isImportant).toList();
+    return _jsonService.getImportantQuestions(type);
   }
 
   int getTotalQuestions(LicenseType type) {
-    return (_questions[type] ?? []).length;
+    return _jsonService.getTotalQuestions(type);
   }
 
   int getAnsweredCount(LicenseType type) {
-    final questions = _questions[type] ?? [];
-    return questions.where((q) => q.isAnswered).length;
+    return _jsonService.getAnsweredCount(type);
   }
 
   double getAccuracyRate(LicenseType type) {
-    final questions = _questions[type] ?? [];
-    final answered = questions.where((q) => q.isAnswered).toList();
-    if (answered.isEmpty) return 0.0;
-    
-    final correct = answered.where((q) => q.isCorrect).length;
-    return correct / answered.length;
+    return _jsonService.getAccuracyRate(type);
   }
 }

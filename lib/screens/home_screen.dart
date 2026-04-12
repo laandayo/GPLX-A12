@@ -4,9 +4,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/providers.dart';
 import '../models/models.dart';
 import '../widgets/widgets.dart';
+import '../data/data.dart';
 import 'chapter_list_screen.dart';
 import 'question_screen.dart';
 import 'statistics_screen.dart';
+import 'exam_list_screen.dart';
+import 'question_catalog_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer<AppProvider>(
       builder: (context, appProvider, child) {
         return Scaffold(
-          backgroundColor: Colors.grey[50],
+          backgroundColor: Theme.of(context).colorScheme.surface,
           body: _navIndex == 0
               ? _buildHomeContent(context, appProvider)
               : const StatisticsScreen(),
@@ -85,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(13),
@@ -130,9 +134,9 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 'Hôm nay: ${appProvider.questionsStudiedToday} câu',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey,
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
                 ),
               ),
               Text(
@@ -161,10 +165,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer<QuestionProvider>(
       builder: (context, questionProvider, child) {
         final color = appProvider.primaryColor;
-        final totalQuestions = appProvider.selectedLicense == LicenseType.a1
-            ? 450
-            : 400;
-        final answeredCount = questionProvider.answeredCount;
+        final totalQuestions = QuestionRepository().getTotalQuestions(appProvider.selectedLicense);
+        final answeredCount = QuestionRepository().getAnsweredCount(appProvider.selectedLicense);
+        final wrongCount = QuestionRepository().getWrongQuestions(appProvider.selectedLicense).length;
+        final markedCount = QuestionRepository().getMarkedQuestions(appProvider.selectedLicense).length;
+        final unansweredCount = QuestionRepository().getUnansweredQuestions(appProvider.selectedLicense).length;
+        final importantCount = QuestionRepository().getImportantQuestions(appProvider.selectedLicense).length;
 
         return GridView.count(
           shrinkWrap: true,
@@ -177,9 +183,9 @@ class _HomeScreenState extends State<HomeScreen> {
             MenuGridItem(
               icon: '📝',
               title: 'Thi thử',
-              subtitle: '3/10 đề',
+              subtitle: 'Chọn đề thi',
               color: color,
-              onTap: () => _startMockTest(context),
+              onTap: () => _navigateToExamList(context),
             ),
             MenuGridItem(
               icon: '📚',
@@ -191,21 +197,21 @@ class _HomeScreenState extends State<HomeScreen> {
             MenuGridItem(
               icon: '🔖',
               title: 'Đánh dấu',
-              subtitle: '${questionProvider.currentQuestions.where((q) => q.isMarked).length} câu',
+              subtitle: '$markedCount câu',
               color: color,
               onTap: () => _navigateToQuestions(context, StudyMode.marked),
             ),
             MenuGridItem(
               icon: '❌',
               title: 'Sai',
-              subtitle: '${questionProvider.wrongCount} câu',
+              subtitle: '$wrongCount câu',
               color: color,
               onTap: () => _navigateToQuestions(context, StudyMode.wrong),
             ),
             MenuGridItem(
               icon: '⚠️',
               title: 'Quan trọng',
-              subtitle: '',
+              subtitle: '$importantCount câu',
               color: color,
               onTap: () => _navigateToQuestions(context, StudyMode.important),
             ),
@@ -219,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
             MenuGridItem(
               icon: '✅',
               title: 'Chưa trả lời',
-              subtitle: '',
+              subtitle: '$unansweredCount câu',
               color: color,
               onTap: () => _navigateToQuestions(context, StudyMode.unanswered),
             ),
@@ -231,15 +237,29 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () => _retryWrongQuestions(context),
             ),
             MenuGridItem(
-              icon: '⏱️',
-              title: 'Thi thật',
-              subtitle: 'Có giờ',
+              icon: '📖',
+              title: 'Danh sách câu hỏi',
+              subtitle: 'Tra cứu nhanh',
               color: color,
-              onTap: () => _startRealExam(context),
+              onTap: () => _navigateToCatalog(context),
             ),
           ],
         );
       },
+    );
+  }
+
+  void _navigateToExamList(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ExamListScreen()),
+    );
+  }
+
+  void _navigateToCatalog(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const QuestionCatalogScreen()),
     );
   }
 
@@ -256,8 +276,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final appProvider = context.read<AppProvider>();
     final questionProvider = context.read<QuestionProvider>();
 
-    questionProvider.setStudyMode(mode);
-    questionProvider.loadQuestions(appProvider.selectedLicense);
+    questionProvider.loadFilteredQuestions(appProvider.selectedLicense, mode);
+
+    if (questionProvider.currentQuestions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không có câu hỏi nào trong mục này')),
+      );
+      return;
+    }
 
     Navigator.push(
       context,
@@ -265,18 +291,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _startMockTest(BuildContext context) {
-    // TODO: Implement mock test screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Tính năng thi thử đang được phát triển')),
-    );
-  }
-
   void _retryWrongQuestions(BuildContext context) {
     final appProvider = context.read<AppProvider>();
     final questionProvider = context.read<QuestionProvider>();
 
-    questionProvider.retryWrongQuestions(appProvider.selectedLicense);
+    questionProvider.loadFilteredQuestions(
+      appProvider.selectedLicense,
+      StudyMode.wrong,
+    );
 
     if (questionProvider.currentQuestions.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -291,60 +313,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _startRealExam(BuildContext context) {
-    // TODO: Implement real exam mode with timer
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Tính năng thi thật đang được phát triển')),
-    );
-  }
-
   void _showSettings(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => const _SettingsSheet(),
-    );
-  }
-}
-
-class _SettingsSheet extends StatelessWidget {
-  const _SettingsSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Cài đặt',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Consumer<QuestionProvider>(
-            builder: (context, provider, child) {
-              return SwitchListTile(
-                title: const Text('Tự động chuyển câu'),
-                subtitle: const Text('Sau khi trả lời'),
-                value: provider.autoAdvance,
-                onChanged: (_) => provider.toggleAutoAdvance(),
-              );
-            },
-          ),
-          Consumer<QuestionProvider>(
-            builder: (context, provider, child) {
-              return SwitchListTile(
-                title: const Text('Hiện giải thích'),
-                value: provider.showExplanation,
-                onChanged: (_) => provider.toggleShowExplanation(),
-              );
-            },
-          ),
-        ],
-      ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SettingsScreen()),
     );
   }
 }

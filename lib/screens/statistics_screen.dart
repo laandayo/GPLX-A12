@@ -121,20 +121,21 @@ class StatisticsScreen extends StatelessWidget {
     StatisticsProvider statsProvider,
     LicenseType licenseType,
   ) {
-    final chapterProgress = statsProvider.getChapterProgress(licenseType);
     final chapters = QuestionRepository().getChapters(licenseType);
+    final questions = QuestionRepository().getQuestions(licenseType);
 
     return Column(
       children: chapters.map((chapter) {
-        final completed = chapterProgress[chapter.id] ?? 0;
-        final total = chapter.questionIds.length;
+        final chapterQuestions = questions.where((q) => q.chapter == chapter.title).toList();
+        final completed = chapterQuestions.where((q) => q.isAnswered).length;
+        final total = chapterQuestions.length;
         final progress = total > 0 ? completed / total : 0.0;
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -166,7 +167,7 @@ class StatisticsScreen extends StatelessWidget {
                           '$completed/$total câu',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
                           ),
                         ),
                       ],

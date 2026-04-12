@@ -5,7 +5,7 @@ import 'providers/providers.dart';
 import 'data/data.dart';
 import 'screens/screens.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Set preferred orientations
@@ -14,8 +14,8 @@ void main() {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Initialize the question repository
-  QuestionRepository().initialize();
+  // Initialize the question repository (async for JSON loading)
+  await QuestionRepository().initializeAsync();
 
   runApp(const GplxApp());
 }
@@ -28,7 +28,7 @@ class GplxApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => AppProvider(),
+          create: (_) => AppProvider()..initialize(),
         ),
         ChangeNotifierProvider(
           create: (_) => QuestionProvider(),
@@ -42,8 +42,13 @@ class GplxApp extends StatelessWidget {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'GPLX - Ôn thi bằng lái',
-            theme: appProvider.theme,
+            theme: appProvider.lightTheme,
+            darkTheme: appProvider.darkTheme,
+            themeMode: appProvider.flutterThemeMode,
             home: const HomeScreen(),
+            routes: {
+              '/question_screen': (context) => const QuestionScreen(),
+            },
           );
         },
       ),

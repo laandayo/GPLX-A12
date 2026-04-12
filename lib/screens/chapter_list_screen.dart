@@ -21,10 +21,13 @@ class ChapterListScreen extends StatelessWidget {
         final chapters = QuestionRepository().getChapters(appProvider.selectedLicense);
 
         return Scaffold(
-          backgroundColor: Colors.grey[50],
+          backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppBar(
             title: const Text('Chọn chương'),
-            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
           body: Column(
             children: [
@@ -63,7 +66,7 @@ class ChapterListScreen extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -131,11 +134,17 @@ class ChapterListScreen extends StatelessWidget {
     final appProvider = context.read<AppProvider>();
     final questionProvider = context.read<QuestionProvider>();
 
-    questionProvider.setStudyMode(StudyMode.all);
-    questionProvider.loadQuestions(
+    questionProvider.loadQuestionsByChapter(
       appProvider.selectedLicense,
-      chapterId: chapter.id,
+      chapter.title,
     );
+
+    if (questionProvider.currentQuestions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không có câu hỏi trong chương này')),
+      );
+      return;
+    }
 
     Navigator.push(
       context,
@@ -157,10 +166,12 @@ class _ChapterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = context.read<AppProvider>().primaryColor;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -184,7 +195,7 @@ class _ChapterCard extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: Colors.blue[50],
+                    color: color.withAlpha(38),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -213,18 +224,10 @@ class _ChapterCard extends StatelessWidget {
                         chapter.description,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey[600],
+                          color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${chapter.questionIds.length} câu hỏi',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[500],
-                        ),
                       ),
                     ],
                   ),
@@ -234,7 +237,7 @@ class _ChapterCard extends StatelessWidget {
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 18,
-                  color: Colors.grey[400],
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
                 ),
               ],
             ),
@@ -265,10 +268,10 @@ class _StudyModeButton extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: isSelected ? color : Colors.white,
+        color: isSelected ? color : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isSelected ? color : Colors.grey[300]!,
+          color: isSelected ? color : Theme.of(context).colorScheme.outline.withAlpha(76),
           width: 2,
         ),
       ),

@@ -40,14 +40,15 @@ class StatisticsProvider with ChangeNotifier {
     return _repository.getMarkedQuestions(type).length;
   }
 
-  Map<int, int> getChapterProgress(LicenseType type) {
+  Map<String, int> getChapterProgress(LicenseType type) {
     final chapters = _repository.getChapters(type);
-    final progress = <int, int>{};
+    final questions = _repository.getQuestions(type);
+    final progress = <String, int>{};
 
     for (var chapter in chapters) {
-      final questions = _repository.getQuestionsByChapter(type, chapter.id);
-      final answered = questions.where((q) => q.isAnswered).length;
-      progress[chapter.id] = answered;
+      final chapterQuestions = questions.where((q) => q.chapter == chapter.title).toList();
+      final answered = chapterQuestions.where((q) => q.isAnswered).length;
+      progress[chapter.title] = answered;
     }
 
     return progress;

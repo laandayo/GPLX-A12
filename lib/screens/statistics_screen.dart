@@ -11,59 +11,39 @@ class StatisticsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer2<AppProvider, StatisticsProvider>(
       builder: (context, appProvider, statsProvider, child) {
-        final color = appProvider.primaryColor;
-        final licenseType = appProvider.selectedLicense;
-        final accuracy = statsProvider.getOverallAccuracy(licenseType);
-        final answered = statsProvider.getAnsweredCount(licenseType);
-        final total = statsProvider.getTotalQuestions(licenseType);
-        final passProb = statsProvider.getPassProbability(licenseType);
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final type = appProvider.selectedLicense;
+        final primary = AppColors.primary(type, isDark);
+        final text = AppColors.text(type, isDark);
+        final surface = AppColors.surface(type, isDark);
+        final accuracy = statsProvider.getOverallAccuracy(type);
+        final answered = statsProvider.getAnsweredCount(type);
+        final total = statsProvider.getTotalQuestions(type);
+        final passProb = statsProvider.getPassProbability(type);
 
         return Scaffold(
-          backgroundColor: Colors.grey[50],
+          backgroundColor: AppColors.background(type, isDark),
           appBar: AppBar(
             title: const Text('Thống kê'),
-            elevation: 0,
+            leading: IconButton(icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context)),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Overview cards
-                _buildOverviewCards(
-                  context,
-                  color,
-                  accuracy,
-                  answered,
-                  total,
-                  passProb,
-                ),
-
+                _buildOverviewCards(context, primary, text, surface, accuracy, answered, total, passProb),
                 const SizedBox(height: 24),
-
-                // Chapter progress
-                const Text(
-                  'Tiến độ theo chương',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text('Tiến độ theo chương',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: text)),
                 const SizedBox(height: 12),
-                _buildChapterProgress(context, statsProvider, licenseType),
-
+                _buildChapterProgress(context, statsProvider, type, primary, text, surface, isDark),
                 const SizedBox(height: 24),
-
-                // Study heatmap (placeholder)
-                const Text(
-                  'Hoạt động ôn tập (30 ngày)',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text('Hoạt động ôn tập (30 ngày)',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: text)),
                 const SizedBox(height: 12),
-                _buildStudyHeatmap(context, statsProvider),
+                _buildStudyHeatmap(context, statsProvider, surface, isDark),
               ],
             ),
           ),
@@ -72,57 +52,28 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOverviewCards(
-    BuildContext context,
-    Color color,
-    double accuracy,
-    int answered,
-    int total,
-    double passProb,
-  ) {
+  Widget _buildOverviewCards(BuildContext context, Color primary, Color text, Color surface,
+      double accuracy, int answered, int total, double passProb) {
     return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.3,
+      shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 1.3,
       children: [
-        _StatCard(
-          icon: Icons.check_circle,
-          title: 'Chính xác',
-          value: '${(accuracy * 100).toStringAsFixed(1)}%',
-          color: Colors.green,
-        ),
-        _StatCard(
-          icon: Icons.question_answer,
-          title: 'Đã trả lời',
-          value: '$answered/$total',
-          color: color,
-        ),
-        _StatCard(
-          icon: Icons.trending_up,
-          title: 'Tỉ lệ đậu',
-          value: '${(passProb * 100).toStringAsFixed(1)}%',
-          color: Colors.blue,
-        ),
-        _StatCard(
-          icon: Icons.flag,
-          title: 'Câu còn lại',
-          value: '${total - answered}',
-          color: Colors.orange,
-        ),
+        _StatCard(icon: Icons.check_circle, title: 'Chính xác',
+          value: '${(accuracy * 100).toStringAsFixed(1)}%', color: AppColors.correctColor(Theme.of(context).brightness == Brightness.dark)),
+        _StatCard(icon: Icons.question_answer, title: 'Đã trả lời',
+          value: '$answered/$total', color: primary),
+        _StatCard(icon: Icons.trending_up, title: 'Tỉ lệ đậu',
+          value: '${(passProb * 100).toStringAsFixed(1)}%', color: const Color(0xFF42A5F5)),
+        _StatCard(icon: Icons.flag, title: 'Câu còn lại',
+          value: '${total - answered}', color: const Color(0xFFFFA000)),
       ],
     );
   }
 
-  Widget _buildChapterProgress(
-    BuildContext context,
-    StatisticsProvider statsProvider,
-    LicenseType licenseType,
-  ) {
-    final chapters = QuestionRepository().getChapters(licenseType);
-    final questions = QuestionRepository().getQuestions(licenseType);
+  Widget _buildChapterProgress(BuildContext context, StatisticsProvider statsProvider,
+      LicenseType type, Color primary, Color text, Color surface, bool isDark) {
+    final chapters = QuestionRepository().getChapters(type);
+    final questions = QuestionRepository().getQuestions(type);
 
     return Column(
       children: chapters.map((chapter) {
@@ -135,15 +86,8 @@ class StatisticsScreen extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(13),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            color: surface, borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05), blurRadius: 4, offset: const Offset(0, 2))],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,40 +97,22 @@ class StatisticsScreen extends StatelessWidget {
                   Text(chapter.icon ?? '📖', style: const TextStyle(fontSize: 24)),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          chapter.title,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '$completed/$total câu',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
-                          ),
-                        ),
+                        Text(chapter.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                        Text('$completed/$total câu',
+                          style: TextStyle(fontSize: 12, color: text.withValues(alpha: 0.7))),
                       ],
                     ),
                   ),
-                  Text(
-                    '${(progress * 100).toStringAsFixed(0)}%',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text('${(progress * 100).toStringAsFixed(0)}%',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(height: 8),
               LinearProgressIndicator(
-                value: progress,
-                minHeight: 6,
-                backgroundColor: Colors.grey[200],
+                value: progress, minHeight: 6,
+                backgroundColor: AppColors.dividerColor(isDark),
               ),
             ],
           ),
@@ -195,55 +121,29 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStudyHeatmap(
-    BuildContext context,
-    StatisticsProvider statsProvider,
-  ) {
+  Widget _buildStudyHeatmap(BuildContext context, StatisticsProvider statsProvider,
+      Color surface, bool isDark) {
     final heatmap = statsProvider.getStudyHeatmap();
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(13),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: surface, borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child: Wrap(
-        spacing: 4,
-        runSpacing: 4,
+        spacing: 4, runSpacing: 4,
         children: heatmap.map((value) {
           Color color;
           switch (value) {
-            case 0:
-              color = Colors.grey[200]!;
-              break;
-            case 1:
-              color = Colors.green[100]!;
-              break;
-            case 2:
-              color = Colors.green[300]!;
-              break;
-            case 3:
-              color = Colors.green[500]!;
-              break;
-            default:
-              color = Colors.green[700]!;
+            case 0: color = AppColors.dividerColor(isDark); break;
+            case 1: color = isDark ? const Color(0xFF1B5E20) : const Color(0xFFC8E6C9); break;
+            case 2: color = isDark ? const Color(0xFF2E7D32) : const Color(0xFF81C784); break;
+            case 3: color = isDark ? const Color(0xFF388E3C) : const Color(0xFF4CAF50); break;
+            default: color = isDark ? const Color(0xFF43A047) : const Color(0xFF2E7D32);
           }
-
           return Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(4),
-            ),
-          );
+            width: 20, height: 20,
+            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)));
         }).toList(),
       ),
     );
@@ -256,51 +156,27 @@ class _StatCard extends StatelessWidget {
   final String value;
   final Color color;
 
-  const _StatCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-    required this.color,
-  });
+  const _StatCard({required this.icon, required this.title, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final text = AppColors.text(context.read<AppProvider>().selectedLicense, isDark);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(13),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Icon(icon, color: color, size: 28),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Column(crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
+              Text(title, style: TextStyle(fontSize: 12, color: text.withValues(alpha: 0.7))),
+              Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
             ],
           ),
         ],

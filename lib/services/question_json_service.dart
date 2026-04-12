@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/models.dart';
 import 'question_state_persistence.dart';
@@ -23,6 +24,13 @@ class QuestionJsonService {
     }
 
     _initialized = true;
+    if (kDebugMode) {
+      for (var type in LicenseType.values) {
+        debugPrint(
+            '[QuestionJsonService] ${type.name}: ${_questions[type]?.length ?? 0} questions, '
+            '${_chapters[type]?.length ?? 0} chapters, ${_exams[type]?.length ?? 0} exams');
+      }
+    }
   }
 
   Future<void> _loadDataForType(LicenseType type) async {
@@ -31,6 +39,9 @@ class QuestionJsonService {
         : 'assets/questions/questions_a2.json';
 
     try {
+      if (kDebugMode) {
+        debugPrint('[QuestionJsonService] Loading $fileName...');
+      }
       final jsonString = await rootBundle.loadString(fileName);
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
 
@@ -40,11 +51,19 @@ class QuestionJsonService {
           .map((c) => Chapter.fromJson(c as Map<String, dynamic>))
           .toList();
 
+      if (kDebugMode) {
+        debugPrint('[QuestionJsonService] Loaded ${_chapters[type]!.length} chapters');
+      }
+
       // Load questions
       final questionsJson = data['questions'] as List;
       _questions[type] = questionsJson
           .map((q) => Question.fromJsonSimple(q as Map<String, dynamic>))
           .toList();
+
+      if (kDebugMode) {
+        debugPrint('[QuestionJsonService] Loaded ${_questions[type]!.length} questions');
+      }
 
       // Load persisted question states
       await QuestionStatePersistence().loadAllQuestionStates(type, _questions[type]!);
@@ -55,15 +74,21 @@ class QuestionJsonService {
       _exams[type] = examsJson
           .map((e) => Exam.fromJson(e as Map<String, dynamic>, licenseStr))
           .toList();
-    } catch (e) {
-      // If JSON loading fails, fall back to sample data
+
+      if (kDebugMode) {
+        debugPrint('[QuestionJsonService] Loaded ${_exams[type]!.length} exams');
+      }
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('[QuestionJsonService] ERROR loading $fileName: $e');
+        debugPrint('[QuestionJsonService] Stack: $stackTrace');
+      }
       _questions[type] = [];
       _chapters[type] = [];
       _exams[type] = [];
     }
   }
 
-  // Questions
   List<Question> getQuestions(LicenseType type) {
     return _questions[type] ?? [];
   }
@@ -148,10 +173,13 @@ class QuestionJsonService {
     return correct / answered.length;
   }
 
-  List<String> getChapterNames(LicenseType type) {
+  /// Search questions by text content (not ID).
+  List<Question> searchQuestions(LicenseType type, String query) {
+    if (query.trim().isEmpty) return [];
+    final lowerQuery = query.toLowerCase().trim();
     final questions = _questions[type] ?? [];
-    final chapters = questions.map((q) => q.chapter).toSet().toList();
-    chapters.sort();
-    return chapters;
+    return questions
+        .where((q) => q.content.toLowerCase().contains(lowerQuery))
+        .toList();
   }
 }

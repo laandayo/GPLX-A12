@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import '../utils/app_colors.dart';
 
 class LicenseTypeToggle extends StatelessWidget {
   final LicenseType selectedType;
@@ -13,14 +14,16 @@ class LicenseTypeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       height: 56,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface(selectedType, isDark),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(25),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -59,19 +62,17 @@ class _LicenseButton extends StatelessWidget {
     required this.onTap,
   });
 
-  Color get _activeColor {
-    return type == LicenseType.a1
-        ? const Color(0xFF2196F3)
-        : const Color(0xFF4CAF50);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = AppColors.primary(type, isDark);
+    final text = AppColors.text(type, isDark);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: isSelected ? _activeColor : Colors.transparent,
+        color: isSelected ? primary : Colors.transparent,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Material(
@@ -90,9 +91,9 @@ class _LicenseButton extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  type.name,
+                  type.displayName,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.grey[700],
+                    color: isSelected ? Colors.white : text.withValues(alpha: 0.7),
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),

@@ -10,9 +10,13 @@ class SettingsScreen extends StatelessWidget {
     return Consumer<AppProvider>(
       builder: (context, appProvider, child) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
+        final type = appProvider.selectedLicense;
+        final primary = AppColors.primary(type, isDark);
+        final text = AppColors.text(type, isDark);
+        final surface = AppColors.surface(type, isDark);
 
         return Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: AppColors.background(type, isDark),
           appBar: AppBar(
             title: const Text('Cài đặt'),
             leading: IconButton(
@@ -22,21 +26,21 @@ class SettingsScreen extends StatelessWidget {
           ),
           body: ListView(
             children: [
-              // Theme Section
-              _buildSectionHeader(context, 'Giao diện'),
-              _buildThemeOptions(context, appProvider, isDark),
-
+              _buildSectionHeader(context, 'Giao diện', primary, text),
+              _buildThemeOptions(
+                context,
+                appProvider,
+                isDark,
+                primary,
+                text,
+                surface,
+              ),
               const Divider(height: 32),
-
-              // Study Settings Section
-              _buildSectionHeader(context, 'Cài đặt ôn tập'),
-              _buildStudySettings(context, appProvider, isDark),
-
+              _buildSectionHeader(context, 'Cài đặt ôn tập', primary, text),
+              _buildStudySettings(context, appProvider, isDark, primary, text),
               const Divider(height: 32),
-
-              // About Section
-              _buildSectionHeader(context, 'Thông tin'),
-              _buildAbout(context, isDark),
+              _buildSectionHeader(context, 'Thông tin', primary, text),
+              _buildAbout(context, isDark, primary, text, surface),
             ],
           ),
         );
@@ -44,7 +48,12 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title,
+    Color primary,
+    Color text,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
@@ -52,7 +61,7 @@ class SettingsScreen extends StatelessWidget {
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.primary,
+          color: primary,
         ),
       ),
     );
@@ -62,34 +71,42 @@ class SettingsScreen extends StatelessWidget {
     BuildContext context,
     AppProvider appProvider,
     bool isDark,
+    Color primary,
+    Color text,
+    Color surface,
   ) {
     return Column(
       children: ThemeModeOption.values.map((mode) {
         final isSelected = appProvider.themeMode == mode;
-        return _SettingsTile(
-          leading: Icon(
-            mode.icon,
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.onSurface.withAlpha(178),
-          ),
-          title: Text(
-            mode.name,
-            style: TextStyle(
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              color: isSelected
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSurface,
+        return Material(
+          color: surface,
+          child: InkWell(
+            onTap: () => appProvider.setThemeMode(mode),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(
+                    mode.icon,
+                    color: isSelected ? primary : text.withValues(alpha: 0.7),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      mode.displayName,
+                      style: TextStyle(
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                        color: isSelected ? primary : text,
+                      ),
+                    ),
+                  ),
+                  if (isSelected) Icon(Icons.check_circle, color: primary),
+                ],
+              ),
             ),
           ),
-          trailing: isSelected
-              ? Icon(
-                  Icons.check_circle,
-                  color: Theme.of(context).colorScheme.primary,
-                )
-              : null,
-          isDark: isDark,
-          onTap: () => appProvider.setThemeMode(mode),
         );
       }).toList(),
     );
@@ -99,140 +116,104 @@ class SettingsScreen extends StatelessWidget {
     BuildContext context,
     AppProvider appProvider,
     bool isDark,
+    Color primary,
+    Color text,
   ) {
     return Column(
       children: [
         SwitchListTile(
           secondary: Icon(
             Icons.auto_awesome,
-            color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
+            color: text.withValues(alpha: 0.7),
           ),
           title: const Text('Tự động chuyển câu'),
           subtitle: Text(
             appProvider.autoAdvance
                 ? 'Tự động chuyển câu sau khi trả lời'
                 : 'Chuyển câu thủ công',
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
-            ),
+            style: TextStyle(fontSize: 12, color: text.withValues(alpha: 0.5)),
           ),
           value: appProvider.autoAdvance,
+          activeThumbColor: primary,
           onChanged: (_) => appProvider.toggleAutoAdvance(),
         ),
         SwitchListTile(
-          secondary: Icon(
-            Icons.lightbulb,
-            color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
-          ),
+          secondary: Icon(Icons.lightbulb, color: text.withValues(alpha: 0.7)),
           title: const Text('Hiện giải thích'),
           subtitle: Text(
             appProvider.showExplanation
                 ? 'Hiển thị giải thích sau khi trả lời'
                 : 'Ẩn giải thích',
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
-            ),
+            style: TextStyle(fontSize: 12, color: text.withValues(alpha: 0.5)),
           ),
           value: appProvider.showExplanation,
+          activeThumbColor: primary,
           onChanged: (value) => appProvider.setShowExplanation(value),
         ),
         SwitchListTile(
-          secondary: Icon(
-            Icons.flash_on,
-            color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
-          ),
+          secondary: Icon(Icons.flash_on, color: text.withValues(alpha: 0.7)),
           title: const Text('Chấm điểm ngay'),
           subtitle: Text(
             appProvider.gradeImmediately
                 ? 'Biết đúng/sai sau mỗi câu trả lời'
                 : 'Chấm điểm sau khi nộp bài',
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
-            ),
+            style: TextStyle(fontSize: 12, color: text.withValues(alpha: 0.5)),
           ),
           value: appProvider.gradeImmediately,
+          activeThumbColor: primary,
           onChanged: (value) => appProvider.setGradeImmediately(value),
         ),
       ],
     );
   }
 
-  Widget _buildAbout(BuildContext context, bool isDark) {
+  Widget _buildAbout(
+    BuildContext context,
+    bool isDark,
+    Color primary,
+    Color text,
+    Color surface,
+  ) {
     return Column(
       children: [
-        _SettingsTile(
-          leading: const Icon(Icons.info_outline),
-          title: const Text('Phiên bản'),
-          trailing: Text(
-            '0.0.2',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
+        Material(
+          color: surface,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline),
+                const SizedBox(width: 16),
+                const Text('Phiên bản'),
+                const Spacer(),
+                Text(
+                  '0.1.0',
+                  style: TextStyle(color: text.withValues(alpha: 0.7)),
+                ),
+              ],
             ),
           ),
-          isDark: isDark,
-          onTap: () {},
         ),
-        _SettingsTile(
-          leading: const Icon(Icons.description),
-          title: const Text('GPLX - Ôn thi bằng lái'),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          isDark: isDark,
-          onTap: () {},
-        ),
-      ],
-    );
-  }
-}
-
-class _SettingsTile extends StatelessWidget {
-  final Widget leading;
-  final Widget title;
-  final Widget? trailing;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _SettingsTile({
-    required this.leading,
-    required this.title,
-    this.trailing,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: isDark ? Colors.grey[800] : Colors.white,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              leading,
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DefaultTextStyle.merge(
-                      child: title,
-                      style: const TextStyle(fontSize: 15),
-                    ),
-                  ],
+        Material(
+          color: surface,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                const Icon(Icons.description),
+                const SizedBox(width: 16),
+                const Text('GPLX - Ôn thi bằng lái'),
+                const Spacer(),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: text.withValues(alpha: 0.5),
                 ),
-              ),
-              if (trailing != null) ...[
-                const SizedBox(width: 8),
-                trailing!,
               ],
-            ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

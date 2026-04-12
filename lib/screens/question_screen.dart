@@ -25,39 +25,31 @@ class _QuestionScreenState extends State<QuestionScreen> {
     return Consumer2<AppProvider, QuestionProvider>(
       builder: (context, appProvider, questionProvider, child) {
         final question = questionProvider.currentQuestion;
-
         if (question == null) {
           return Scaffold(
             appBar: AppBar(title: const Text('Câu hỏi')),
-            body: const Center(
-              child: Text('Không có câu hỏi nào'),
-            ),
+            body: const Center(child: Text('Không có câu hỏi nào')),
           );
         }
 
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final type = appProvider.selectedLicense;
+        final primary = AppColors.primary(type, isDark);
         final isGradeImmediately = questionProvider.scoringMode == ScoringMode.gradeImmediately ||
             appProvider.gradeImmediately;
 
         return Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: AppColors.background(type, isDark),
           body: Column(
             children: [
-              // Top Section - Header with progress
-              _buildHeader(context, appProvider, questionProvider, question),
-
-              // Middle Section - Question content
+              _buildHeader(context, appProvider, questionProvider, question, primary, isDark),
               Expanded(
                 child: _buildQuestionContent(
-                  context,
-                  appProvider,
-                  questionProvider,
-                  question,
-                  isGradeImmediately,
+                  context, appProvider, questionProvider, question,
+                  primary, isDark, isGradeImmediately,
                 ),
               ),
-
-              // Bottom Section - Navigation
-              _buildBottomNavigation(context, appProvider, questionProvider),
+              _buildBottomNavigation(context, appProvider, questionProvider, primary, isDark),
             ],
           ),
         );
@@ -70,16 +62,21 @@ class _QuestionScreenState extends State<QuestionScreen> {
     AppProvider appProvider,
     QuestionProvider questionProvider,
     Question question,
+    Color primary,
+    bool isDark,
   ) {
+    final type = appProvider.selectedLicense;
+    final text = AppColors.text(type, isDark);
+    final surface = AppColors.surface(type, isDark);
     final modeLabel = questionProvider.isExamMode ? 'Thi' : 'Ôn tập';
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(13),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -89,11 +86,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
         bottom: false,
         child: Column(
           children: [
-            // Question counter and bookmark
             Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.arrow_back),
+                  icon: Icon(Icons.arrow_back, color: text),
                   onPressed: () => Navigator.pop(context),
                 ),
                 Expanded(
@@ -101,9 +97,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
                     children: [
                       Text(
                         'Câu ${questionProvider.currentIndex + 1} / ${questionProvider.totalQuestions}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: text,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -111,7 +108,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
                         modeLabel,
                         style: TextStyle(
                           fontSize: 11,
-                          color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
+                          color: text.withValues(alpha: 0.5),
                         ),
                       ),
                     ],
@@ -119,56 +116,33 @@ class _QuestionScreenState extends State<QuestionScreen> {
                 ),
                 IconButton(
                   icon: Icon(
-                    question.isMarked
-                        ? Icons.bookmark
-                        : Icons.bookmark_border,
+                    question.isMarked ? Icons.bookmark : Icons.bookmark_border,
                     color: question.isMarked
-                        ? Colors.orange
-                        : Theme.of(context).colorScheme.onSurface.withAlpha(128),
+                        ? AppColors.bookmarkColor(isDark)
+                        : text.withValues(alpha: 0.5),
                   ),
                   onPressed: () => questionProvider.toggleMark(appProvider.selectedLicense),
                 ),
               ],
             ),
-
             const SizedBox(height: 8),
-
-            // Progress bar
             LinearProgressIndicator(
               value: questionProvider.progress,
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                appProvider.primaryColor,
-              ),
+              backgroundColor: AppColors.dividerColor(isDark),
+              valueColor: AlwaysStoppedAnimation<Color>(primary),
               minHeight: 6,
             ),
-
             const SizedBox(height: 12),
-
-            // Status indicators
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildStatusChip(
-                  icon: Icons.check_circle,
-                  label: 'Đúng',
-                  count: questionProvider.correctCount,
-                  color: Colors.green,
-                ),
-                _buildStatusChip(
-                  icon: Icons.cancel,
-                  label: 'Sai',
-                  count: questionProvider.wrongCount,
-                  color: Colors.red,
-                ),
-                _buildStatusChip(
-                  icon: Icons.bookmark,
-                  label: 'Đánh dấu',
-                  count: questionProvider.currentQuestions
-                      .where((q) => q.isMarked)
-                      .length,
-                  color: Colors.orange,
-                ),
+                _buildStatusChip(icon: Icons.check_circle, label: 'Đúng',
+                    count: questionProvider.correctCount, color: AppColors.correctColor(isDark)),
+                _buildStatusChip(icon: Icons.cancel, label: 'Sai',
+                    count: questionProvider.wrongCount, color: AppColors.wrongColor(isDark)),
+                _buildStatusChip(icon: Icons.bookmark, label: 'Đánh dấu',
+                    count: questionProvider.currentQuestions.where((q) => q.isMarked).length,
+                    color: AppColors.bookmarkColor(isDark)),
               ],
             ),
           ],
@@ -177,35 +151,21 @@ class _QuestionScreenState extends State<QuestionScreen> {
     );
   }
 
-  Widget _buildStatusChip({
-    required IconData icon,
-    required String label,
-    required int count,
-    required Color color,
-  }) {
+  Widget _buildStatusChip({required IconData icon, required String label,
+    required int count, required Color color}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withAlpha(25),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: color.withAlpha(76),
-          width: 1,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 16, color: color),
           const SizedBox(width: 4),
-          Text(
-            '$count',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
+          Text('$count', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color)),
         ],
       ),
     );
@@ -216,10 +176,14 @@ class _QuestionScreenState extends State<QuestionScreen> {
     AppProvider appProvider,
     QuestionProvider questionProvider,
     Question question,
+    Color primary,
+    bool isDark,
     bool isGradeImmediately,
   ) {
+    final type = appProvider.selectedLicense;
+    final surface = AppColors.surface(type, isDark);
     final shouldShowExplanation = question.isAnswered &&
-        (appProvider.showExplanation) &&
+        appProvider.showExplanation &&
         (!questionProvider.isExamMode || isGradeImmediately);
 
     return SingleChildScrollView(
@@ -228,80 +192,71 @@ class _QuestionScreenState extends State<QuestionScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Question image (if exists)
-          if (question.image != null) ...[
+          if (question.image != null && question.image!.isNotEmpty) ...[
             Container(
               width: double.infinity,
-              height: 200,
+              constraints: const BoxConstraints(maxHeight: 300),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: AppColors.dividerColor(isDark),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.asset(
                   question.image!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Center(
-                      child: Icon(Icons.image_not_supported, size: 48),
-                    );
-                  },
+                  fit: BoxFit.contain,
+                  errorBuilder: (ctx, err, trace) => Container(
+                    padding: const EdgeInsets.all(32),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.image_not_supported, size: 48,
+                            color: AppColors.text(type, isDark).withValues(alpha: 0.3)),
+                          const SizedBox(height: 8),
+                          Text('Image not found: ${question.image}',
+                            style: TextStyle(fontSize: 12,
+                              color: AppColors.text(type, isDark).withValues(alpha: 0.5))),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 16),
           ],
-
-          // Question content
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+              color: surface,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha(13),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                  blurRadius: 4, offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: Text(
-              question.content,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: Text(question.content,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600,
+                color: AppColors.text(type, isDark))),
           ).animate().fadeIn(),
-
           const SizedBox(height: 20),
-
-          // Answer options
           ...List.generate(question.answers.length, (index) {
-            return _buildAnswerOption(
-              context,
-              appProvider,
-              questionProvider,
-              question,
-              index,
-              isGradeImmediately,
-            ).animate().fadeIn(delay: (100 * index).ms).slideX();
+            return _buildAnswerOption(context, appProvider, questionProvider,
+                question, index, primary, isDark, isGradeImmediately)
+                .animate().fadeIn(delay: (100 * index).ms).slideX();
           }),
-
-          // Explanation (shown after answering if enabled)
           if (shouldShowExplanation) ...[
             const SizedBox(height: 20),
-            _buildExplanation(context, appProvider, question),
+            _buildExplanation(context, appProvider, question, primary, isDark),
           ],
-
-          // Submit button for exam mode
           if (questionProvider.isExamMode &&
               questionProvider.currentIndex == questionProvider.totalQuestions - 1) ...[
             const SizedBox(height: 20),
-            _buildSubmitExamButton(context, questionProvider, appProvider),
+            _buildSubmitExamButton(context, questionProvider, appProvider, primary),
           ],
         ],
       ),
@@ -314,49 +269,48 @@ class _QuestionScreenState extends State<QuestionScreen> {
     QuestionProvider questionProvider,
     Question question,
     int index,
+    Color primary,
+    bool isDark,
     bool isGradeImmediately,
   ) {
+    final type = appProvider.selectedLicense;
     final answer = question.answers[index];
     final isSelected = question.selectedAnswerIndex == index;
     final hasAnswered = question.isAnswered;
-
-    // Determine if we should show correct/wrong feedback
     final showFeedback = hasAnswered && isGradeImmediately;
     final isCorrect = index == question.correctAnswer;
+    final surface = AppColors.surface(type, isDark);
+    final text = AppColors.text(type, isDark);
 
     Color? backgroundColor;
     Color? textColor;
-    Color borderColor = Theme.of(context).colorScheme.outline.withAlpha(76);
+    Color borderColor = AppColors.dividerColor(isDark);
 
     if (showFeedback) {
       if (isCorrect) {
-        backgroundColor = Colors.green.withAlpha(25);
-        borderColor = Colors.green;
-        textColor = Colors.green[700];
+        backgroundColor = AppColors.correctColor(isDark).withValues(alpha: 0.1);
+        borderColor = AppColors.correctColor(isDark);
+        textColor = AppColors.correctColor(isDark);
       } else if (isSelected && !isCorrect) {
-        backgroundColor = Colors.red.withAlpha(25);
-        borderColor = Colors.red;
-        textColor = Colors.red[700];
+        backgroundColor = AppColors.wrongColor(isDark).withValues(alpha: 0.1);
+        borderColor = AppColors.wrongColor(isDark);
+        textColor = AppColors.wrongColor(isDark);
       }
     } else if (isSelected) {
-      backgroundColor = appProvider.primaryColor.withAlpha(38);
-      borderColor = appProvider.primaryColor;
+      backgroundColor = primary.withValues(alpha: 0.15);
+      borderColor = primary;
     }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: backgroundColor ?? Theme.of(context).cardColor,
+        color: backgroundColor ?? surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: borderColor,
-          width: 2,
-        ),
+        border: Border.all(color: borderColor, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(13),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+            blurRadius: 4, offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -369,53 +323,36 @@ class _QuestionScreenState extends State<QuestionScreen> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Answer letter
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 36, height: 36,
                   decoration: BoxDecoration(
                     color: showFeedback
-                        ? (isCorrect
-                            ? Colors.green
-                            : (isSelected ? Colors.red : Colors.grey[200]))
-                        : appProvider.primaryColor.withAlpha(38),
+                        ? (isCorrect ? AppColors.correctColor(isDark) : (isSelected ? AppColors.wrongColor(isDark) : AppColors.dividerColor(isDark)))
+                        : primary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
-                    child: Text(
-                      String.fromCharCode(65 + index),
+                    child: Text(String.fromCharCode(65 + index),
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16, fontWeight: FontWeight.bold,
                         color: showFeedback
-                            ? (isCorrect || isSelected ? Colors.white : Colors.grey[700])
-                            : appProvider.primaryColor,
-                      ),
-                    ),
+                            ? (isCorrect || isSelected ? Colors.white : text.withValues(alpha: 0.7))
+                            : primary,
+                      )),
                   ),
                 ),
                 const SizedBox(width: 12),
-
-                // Answer content
                 Expanded(
-                  child: Text(
-                    answer,
+                  child: Text(answer,
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: showFeedback && (isCorrect || isSelected)
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                      color: textColor ?? Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
+                      fontWeight: showFeedback && (isCorrect || isSelected) ? FontWeight.bold : FontWeight.normal,
+                      color: textColor ?? text,
+                    )),
                 ),
-
-                // Status icon
                 if (showFeedback) ...[
-                  if (isCorrect)
-                    const Icon(Icons.check_circle, color: Colors.green)
-                  else if (isSelected)
-                    const Icon(Icons.cancel, color: Colors.red),
+                  if (isCorrect) const Icon(Icons.check_circle, color: Color(0xFF43A047))
+                  else if (isSelected) const Icon(Icons.cancel, color: Color(0xFFE53935)),
                 ],
               ],
             ),
@@ -425,60 +362,38 @@ class _QuestionScreenState extends State<QuestionScreen> {
     );
   }
 
-  Widget _buildExplanation(
-    BuildContext context,
-    AppProvider appProvider,
-    Question question,
-  ) {
+  Widget _buildExplanation(BuildContext context, AppProvider appProvider,
+      Question question, Color primary, bool isDark) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: appProvider.primaryColor.withAlpha(25),
+        color: primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: appProvider.primaryColor.withAlpha(76),
-          width: 2,
-        ),
+        border: Border.all(color: primary.withValues(alpha: 0.3), width: 2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.lightbulb,
-                color: appProvider.primaryColor,
-              ),
+              Icon(Icons.lightbulb, color: primary),
               const SizedBox(width: 8),
-              Text(
-                'Giải thích',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: appProvider.primaryColor,
-                ),
-              ),
+              Text('Giải thích',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: primary)),
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            question.explanation,
-            style: const TextStyle(
-              fontSize: 14,
-              height: 1.5,
-            ),
-          ),
+          Text(question.explanation,
+            style: TextStyle(fontSize: 14, height: 1.5,
+              color: AppColors.text(appProvider.selectedLicense, isDark))),
         ],
       ),
     ).animate().fadeIn();
   }
 
-  Widget _buildSubmitExamButton(
-    BuildContext context,
-    QuestionProvider questionProvider,
-    AppProvider appProvider,
-  ) {
+  Widget _buildSubmitExamButton(BuildContext context,
+      QuestionProvider questionProvider, AppProvider appProvider, Color primary) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
@@ -486,73 +401,55 @@ class _QuestionScreenState extends State<QuestionScreen> {
         icon: const Icon(Icons.check_circle),
         label: const Text('NỘP BÀI'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.correctColor(Theme.of(context).brightness == Brightness.dark),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );
   }
 
-  Widget _buildBottomNavigation(
-    BuildContext context,
-    AppProvider appProvider,
-    QuestionProvider questionProvider,
-  ) {
+  Widget _buildBottomNavigation(BuildContext context, AppProvider appProvider,
+      QuestionProvider questionProvider, Color primary, bool isDark) {
+    final type = appProvider.selectedLicense;
+    final surface = AppColors.surface(type, isDark);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(13),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+            blurRadius: 8, offset: const Offset(0, -2),
           ),
         ],
       ),
       child: SafeArea(
         child: Row(
           children: [
-            // Previous button
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: questionProvider.hasPrevious
-                    ? questionProvider.previousQuestion
-                    : null,
+                onPressed: questionProvider.hasPrevious ? questionProvider.previousQuestion : null,
                 icon: const Icon(Icons.arrow_back),
                 label: const Text('Trước'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
+                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
               ),
             ),
-
             const SizedBox(width: 12),
-
-            // Question list button
             IconButton(
-              icon: const Icon(Icons.view_list),
-              onPressed: () => _showQuestionList(context, questionProvider),
+              icon: Icon(Icons.view_list, color: primary),
+              onPressed: () => _showQuestionList(context, questionProvider, primary, isDark),
               tooltip: 'Danh sách câu hỏi',
             ),
-
             const SizedBox(width: 12),
-
-            // Next button
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: questionProvider.hasNext
-                    ? questionProvider.nextQuestion
-                    : null,
+                onPressed: questionProvider.hasNext ? questionProvider.nextQuestion : null,
                 icon: const Icon(Icons.arrow_forward),
                 label: const Text('Sau'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
+                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
               ),
             ),
           ],
@@ -561,53 +458,41 @@ class _QuestionScreenState extends State<QuestionScreen> {
     );
   }
 
-  void _handleAnswer(
-    QuestionProvider questionProvider,
-    Question question,
-    int answerIndex,
-    AppProvider appProvider,
-  ) {
+  void _handleAnswer(QuestionProvider questionProvider, Question question,
+      int answerIndex, AppProvider appProvider) {
     questionProvider.selectAnswer(answerIndex, appProvider.selectedLicense);
     appProvider.incrementQuestionsStudied();
   }
 
-  void _showSubmitConfirmation(
-    BuildContext context,
-    QuestionProvider questionProvider,
-    AppProvider appProvider,
-  ) {
-    final unanswered = questionProvider.currentQuestions
-        .where((q) => !q.isAnswered)
-        .length;
+  void _showSubmitConfirmation(BuildContext context,
+      QuestionProvider questionProvider, AppProvider appProvider) {
+    final unanswered = questionProvider.currentQuestions.where((q) => !q.isAnswered).length;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final type = appProvider.selectedLicense;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Nộp bài?'),
+        backgroundColor: AppColors.surface(type, isDark),
+        title: Text('Nộp bài?', style: TextStyle(color: AppColors.text(type, isDark))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Bạn đã trả lời ${questionProvider.answeredCount}/${questionProvider.totalQuestions} câu.'),
+            Text('Bạn đã trả lời ${questionProvider.answeredCount}/${questionProvider.totalQuestions} câu.',
+              style: TextStyle(color: AppColors.text(type, isDark))),
             if (unanswered > 0) ...[
               const SizedBox(height: 8),
-              Text(
-                'Còn $unanswered câu chưa trả lời!',
-                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
-              ),
+              Text('Còn $unanswered câu chưa trả lời!',
+                style: const TextStyle(color: Color(0xFFE53935), fontWeight: FontWeight.w600)),
             ],
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tiếp tục làm'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context),
+            child: const Text('Tiếp tục làm')),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _submitExam(context, questionProvider, appProvider);
-            },
+            onPressed: () { Navigator.pop(context); _submitExam(context, questionProvider, appProvider); },
             child: const Text('Nộp bài'),
           ),
         ],
@@ -615,14 +500,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
     );
   }
 
-  void _submitExam(
-    BuildContext context,
-    QuestionProvider questionProvider,
-    AppProvider appProvider,
-  ) {
+  void _submitExam(BuildContext context, QuestionProvider questionProvider, AppProvider appProvider) {
     final result = questionProvider.submitExam(appProvider.selectedLicense);
-
-    // Show results
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -630,137 +509,119 @@ class _QuestionScreenState extends State<QuestionScreen> {
     );
   }
 
-  void _showQuestionList(
-    BuildContext context,
-    QuestionProvider questionProvider,
-  ) {
+  void _showQuestionList(BuildContext context, QuestionProvider questionProvider,
+      Color primary, bool isDark) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Text(
-              'Danh sách câu hỏi',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 6,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                ),
-                itemCount: questionProvider.totalQuestions,
-                itemBuilder: (context, index) {
-                  final question = questionProvider.currentQuestions[index];
-                  final isCurrent = index == questionProvider.currentIndex;
-
-                  Color color;
-                  if (isCurrent) {
-                    color = context.read<AppProvider>().primaryColor;
-                  } else if (question.isCorrect) {
-                    color = Colors.green;
-                  } else if (question.isAnswered) {
-                    color = Colors.red;
-                  } else if (question.isMarked) {
-                    color = Colors.orange;
-                  } else {
-                    color = Colors.grey[300]!;
-                  }
-
-                  return Material(
-                    color: color,
-                    borderRadius: BorderRadius.circular(8),
-                    child: InkWell(
-                      onTap: () {
-                        questionProvider.jumpToQuestion(index);
-                        Navigator.pop(context);
-                      },
+      builder: (context) {
+        final type = context.read<AppProvider>().selectedLicense;
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          color: AppColors.surface(type, isDark),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Text('Danh sách câu hỏi',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,
+                  color: AppColors.text(type, isDark))),
+              const SizedBox(height: 16),
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 6, mainAxisSpacing: 8, crossAxisSpacing: 8),
+                  itemCount: questionProvider.totalQuestions,
+                  itemBuilder: (context, index) {
+                    final question = questionProvider.currentQuestions[index];
+                    final isCurrent = index == questionProvider.currentIndex;
+                    Color color;
+                    if (isCurrent) {
+                      color = primary;
+                    } else if (question.isCorrect) {
+                      color = AppColors.correctColor(isDark);
+                    } else if (question.isAnswered) {
+                      color = AppColors.wrongColor(isDark);
+                    } else if (question.isMarked) {
+                      color = AppColors.bookmarkColor(isDark);
+                    } else {
+                      color = AppColors.dividerColor(isDark);
+                    }
+                    return Material(
+                      color: color,
                       borderRadius: BorderRadius.circular(8),
-                      child: Center(
-                        child: Text(
-                          '${index + 1}',
-                          style: TextStyle(
-                            color: question.isAnswered || isCurrent
-                                ? Colors.white
-                                : Colors.black87,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      child: InkWell(
+                        onTap: () {
+                          questionProvider.jumpToQuestion(index);
+                          Navigator.pop(context);
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Center(
+                          child: Text('${index + 1}',
+                            style: TextStyle(
+                              color: question.isAnswered || isCurrent ? Colors.white : AppColors.text(type, isDark),
+                              fontWeight: FontWeight.bold)),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
 
 class _ExamResultDialog extends StatelessWidget {
   final ExamResult result;
-
   const _ExamResultDialog({required this.result});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final type = context.read<AppProvider>().selectedLicense;
+
     return AlertDialog(
+      backgroundColor: AppColors.surface(type, isDark),
       title: Row(
         children: [
-          Icon(
-            result.passed ? Icons.emoji_events : Icons.sentiment_dissatisfied,
-            color: result.passed ? Colors.amber : Colors.red,
-            size: 32,
-          ),
+          Icon(result.passed ? Icons.emoji_events : Icons.sentiment_dissatisfied,
+            color: result.passed ? AppColors.bookmarkColor(isDark) : AppColors.wrongColor(isDark),
+            size: 32),
           const SizedBox(width: 12),
-          Text(result.passed ? 'Chúc mừng!' : 'Chưa đạt'),
+          Text(result.passed ? 'Chúc mừng!' : 'Chưa đạt',
+            style: TextStyle(color: AppColors.text(type, isDark))),
         ],
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            '${result.correctAnswers}/${result.totalQuestions}',
+          Text('${result.correctAnswers}/${result.totalQuestions}',
             style: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-              color: result.passed ? Colors.green : Colors.red,
-            ),
-          ),
+              fontSize: 36, fontWeight: FontWeight.bold,
+              color: result.passed ? AppColors.correctColor(isDark) : AppColors.wrongColor(isDark))),
           const SizedBox(height: 8),
-          Text(
-            result.passed ? 'Bạn đã vượt qua kỳ thi!' : 'Bạn cần 23/30 câu để đạt',
+          Text(result.passed ? 'Bạn đã vượt qua kỳ thi!' : 'Bạn cần 23/30 câu để đạt',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16),
-          ),
+            style: TextStyle(fontSize: 16, color: AppColors.text(type, isDark))),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _statColumn('Đúng', '${result.correctAnswers}', Colors.green),
-              _statColumn('Sai', '${result.wrongAnswers}', Colors.red),
-              _statColumn('Trống', '${result.unansweredQuestions}', Colors.grey),
+              _statColumn('Đúng', '${result.correctAnswers}', AppColors.correctColor(isDark)),
+              _statColumn('Sai', '${result.wrongAnswers}', AppColors.wrongColor(isDark)),
+              _statColumn('Trống', '${result.unansweredQuestions}',
+                isDark ? Colors.grey[500]! : Colors.grey),
             ],
           ),
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.pop(context); // Go back to exam list
-          },
-          child: const Text('Xem lại'),
-        ),
+        TextButton(onPressed: () {
+          Navigator.pop(context);
+          Navigator.pop(context);
+        }, child: const Text('Xem lại')),
         ElevatedButton(
           onPressed: () {
             context.read<QuestionProvider>().resetCurrentExam();
@@ -775,19 +636,9 @@ class _ExamResultDialog extends StatelessWidget {
   Widget _statColumn(String label, String value, Color color) {
     return Column(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
+        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
-        ),
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
       ],
     );
   }

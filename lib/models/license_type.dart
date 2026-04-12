@@ -4,7 +4,7 @@ enum LicenseType {
 }
 
 extension LicenseTypeExtension on LicenseType {
-  String get name {
+  String get displayName {
     switch (this) {
       case LicenseType.a1:
         return 'A1';

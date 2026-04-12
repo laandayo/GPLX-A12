@@ -1,5 +1,5 @@
 class Chapter {
-  final String id;
+  final int id;
   final String title;
   final String description;
   final String? icon;
@@ -19,7 +19,7 @@ class Chapter {
       };
 
   factory Chapter.fromJson(Map<String, dynamic> json) => Chapter(
-        id: json['id'] as String,
+        id: json['id'] as int,
         title: json['title'] as String,
         description: json['description'] as String,
         icon: json['icon'] as String?,

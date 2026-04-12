@@ -28,7 +28,7 @@ class GplxApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => AppProvider()..initialize(),
+          create: (_) => AppProvider()..initialize(context),
         ),
         ChangeNotifierProvider(
           create: (_) => QuestionProvider(),
@@ -37,21 +37,28 @@ class GplxApp extends StatelessWidget {
           create: (_) => StatisticsProvider(),
         ),
       ],
-      child: Consumer<AppProvider>(
-        builder: (context, appProvider, child) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'GPLX - Ôn thi bằng lái',
-            theme: appProvider.lightTheme,
-            darkTheme: appProvider.darkTheme,
-            themeMode: appProvider.flutterThemeMode,
-            home: const HomeScreen(),
-            routes: {
-              '/question_screen': (context) => const QuestionScreen(),
-            },
-          );
-        },
-      ),
+      child: _GplxAppContent(),
+    );
+  }
+}
+
+class _GplxAppContent extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AppProvider>(
+      builder: (context, appProvider, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'GPLX - Ôn thi bằng lái',
+          theme: appProvider.lightTheme,
+          darkTheme: appProvider.darkTheme,
+          themeMode: appProvider.flutterThemeMode,
+          home: const HomeScreen(),
+          routes: {
+            '/question_screen': (context) => const QuestionScreen(),
+          },
+        );
+      },
     );
   }
 }

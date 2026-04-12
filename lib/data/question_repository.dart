@@ -75,4 +75,9 @@ class QuestionRepository {
   double getAccuracyRate(LicenseType type) {
     return _jsonService.getAccuracyRate(type);
   }
+
+  /// Search questions by text content.
+  List<Question> searchQuestions(LicenseType type, String query) {
+    return _jsonService.searchQuestions(type, query);
+  }
 }

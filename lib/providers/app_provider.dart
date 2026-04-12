@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
+import '../utils/theme_config.dart';
+import '../utils/app_colors.dart';
 
 enum ThemeModeOption {
   light,
@@ -9,7 +11,7 @@ enum ThemeModeOption {
 }
 
 extension ThemeModeExtension on ThemeModeOption {
-  String get name {
+  String get displayName {
     switch (this) {
       case ThemeModeOption.light:
         return 'Sáng';
@@ -40,6 +42,7 @@ class AppProvider with ChangeNotifier {
   bool _autoAdvance = false;
   bool _showExplanation = true;
   bool _gradeImmediately = true;
+  bool _isDark = false;
 
   // SharedPreferences keys
   static const _keyLicense = 'license_type';
@@ -58,24 +61,13 @@ class AppProvider with ChangeNotifier {
   bool get autoAdvance => _autoAdvance;
   bool get showExplanation => _showExplanation;
   bool get gradeImmediately => _gradeImmediately;
+  bool get isDark => _isDark;
 
-  Color get primaryColor {
-    return _selectedLicense == LicenseType.a1
-        ? const Color(0xFF2196F3)
-        : const Color(0xFF4CAF50);
-  }
+  /// Convenience: primary color for the selected license type (light variant).
+  Color get primaryColor => AppColors.primary(_selectedLicense, false);
 
-  Color get primaryColorLight {
-    return _selectedLicense == LicenseType.a1
-        ? const Color(0xFFBBDEFB)
-        : const Color(0xFFC8E6C9);
-  }
-
-  Color get primaryColorDark {
-    return _selectedLicense == LicenseType.a1
-        ? const Color(0xFF1976D2)
-        : const Color(0xFF388E3C);
-  }
+  /// Convenience: accent color for the selected license type (light variant).
+  Color get accentColor => AppColors.accent(_selectedLicense, false);
 
   ThemeMode get flutterThemeMode {
     switch (_themeMode) {
@@ -88,90 +80,34 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  ThemeData get lightTheme => ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: primaryColor,
-          brightness: Brightness.light,
-        ),
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          centerTitle: true,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-        ),
-        cardTheme: CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        snackBarTheme: SnackBarThemeData(
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
+  /// Generate the current light theme based on license type.
+  ThemeData get lightTheme => ThemeConfig.lightTheme(_selectedLicense);
 
-  ThemeData get darkTheme => ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: primaryColor,
-          brightness: Brightness.dark,
-        ),
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          centerTitle: true,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          filled: true,
-        ),
-        cardTheme: CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        snackBarTheme: SnackBarThemeData(
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
+  /// Generate the current dark theme based on license type.
+  ThemeData get darkTheme => ThemeConfig.darkTheme(_selectedLicense);
 
-  Future<void> initialize() async {
+  /// Resolve the actual brightness from system/theme settings.
+  Brightness resolveBrightness(BuildContext context) {
+    if (_themeMode == ThemeModeOption.system) {
+      return MediaQuery.platformBrightnessOf(context);
+    }
+    return _themeMode == ThemeModeOption.dark ? Brightness.dark : Brightness.light;
+  }
+
+  /// Whether the current display is dark mode.
+  bool isDarkMode(BuildContext context) {
+    return resolveBrightness(context) == Brightness.dark;
+  }
+
+  Future<void> initialize(BuildContext context) async {
+    // Capture brightness before async operations
+    final initialBrightness = resolveBrightness(context);
+
     final prefs = await SharedPreferences.getInstance();
 
     // Load license type
     final licenseStr = prefs.getString(_keyLicense) ?? 'A1';
-    _selectedLicense =
-        licenseStr == 'A2' ? LicenseType.a2 : LicenseType.a1;
+    _selectedLicense = licenseStr == 'A2' ? LicenseType.a2 : LicenseType.a1;
 
     // Load theme mode
     final themeStr = prefs.getString(_keyTheme) ?? 'system';
@@ -202,14 +138,15 @@ class AppProvider with ChangeNotifier {
       final lastDate = DateTime.parse(lastStudyDate);
       final diff = today.difference(lastDate).inDays;
       if (diff > 1) {
-        // Streak broken
         _streakDays = 0;
         _questionsStudiedToday = 0;
       } else if (diff == 1) {
-        // New day, reset count but keep streak
         _questionsStudiedToday = 0;
       }
     }
+
+    // Resolve current dark state
+    _isDark = initialBrightness == Brightness.dark;
 
     notifyListeners();
   }
@@ -225,6 +162,14 @@ class AppProvider with ChangeNotifier {
     await prefs.setInt(_keyQuestionsToday, _questionsStudiedToday);
     await prefs.setInt(_keyStreakDays, _streakDays);
     await prefs.setString(_keyLastStudyDate, DateTime.now().toIso8601String());
+  }
+
+  void updateDarkModeState(BuildContext context) {
+    final wasDark = _isDark;
+    _isDark = resolveBrightness(context) == Brightness.dark;
+    if (wasDark != _isDark) {
+      notifyListeners();
+    }
   }
 
   Future<void> switchLicenseType(LicenseType type) async {

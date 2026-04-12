@@ -14,21 +14,27 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final inactiveColor = isDark ? Colors.grey[600] : Colors.grey;
+
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
       selectedItemColor: activeColor,
-      unselectedItemColor: Colors.grey,
-      items: const [
+      unselectedItemColor: inactiveColor,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      items: [
         BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          activeIcon: Icon(Icons.home),
+          icon: Icon(
+            currentIndex == 0 ? Icons.home : Icons.home_outlined,
+          ),
           label: 'Trang chủ',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.bar_chart_outlined),
-          activeIcon: Icon(Icons.bar_chart),
+          icon: Icon(
+            currentIndex == 1 ? Icons.bar_chart : Icons.bar_chart_outlined,
+          ),
           label: 'Thống kê',
         ),
       ],

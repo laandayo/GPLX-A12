@@ -1,0 +1,524 @@
+ỦY BAN NHÂN DÂN TỈNH QUẢNG TRỊ
+TRƯỜNG CAO ĐẲNG KỸ THUẬT CÔNG - NÔNG NGHIỆP QT
+
+
+
+
+
+ĐỀ TÀI NGHIÊN CỨU KHOA HỌC CẤP TRƯỜNG
+
+“XÂY DỰNG ĐỀ TÀI PHẦN MỀM LUYỆN BỘ 250 CÂU HỎI DÙNG CHO SÁT HẠCH LÁI XE CƠ GIỚI ĐƯỜNG BỘ BẰNG A1 & A2 ”
+
+
+
+
+
+Nhóm tác giả
+1. Phan Trần Khánh Lân
+2. Hoàng Minh Thắng
+3. Đoàn Quốc Tuấn
+
+
+
+
+
+Quảng Trị, năm 2026
+LỜI CAM ĐOAN
+
+Tôi xin cam đoan đây là công trình nghiên cứu của nhóm chúng tôi. Các nội dung nghiên cứu, kết quả trong đề tài này là trung thực và chưa công bố dưới bất kỳ hình thức nào trước đây. Những số liệu  phục vụ cho việc phân tích, nhận xét, đánh giá được chính tác giả thu thập từ các nguồn khác nhau có ghi rõ trong phần tài liệu tham khảo. Ngoài ra, đề tài còn sử dụng một số nhận xét, đánh giá cũng như số liệu của các tác giả khác, cơ quan tổ chức khác đều có trích dẫn và chú thích nguồn gốc.
+                                           Quảng Trị, ngày	   tháng    năm 2026	    
+                                                            Nhóm tác giả				
+1. Phan Trần Khánh Lân
+2. 
+
+
+DANH MỤC TỪ VIẾT TẮT
+
+TT
+VIẾT TẮT
+VIẾT ĐẦY ĐỦ
+1
+CĐKTCNN
+Cao đẳng Kỹ thuật Công - Nông nghiệp
+2
+CNN
+Công - Nông nghiệp
+3
+TT
+Thông tư
+4
+BCA
+Bộ Công an
+5
+BXD
+Bộ Xây dựng
+6
+GTDB
+Giao thông đường bộ
+7
+HV
+Học viên
+8
+GV
+Giáo viên
+DANH MỤC CÁC HÌNH VÀ BẢNG BIỂU
+
+TT
+TÊN HÌNH
+NỘI DUNG
+TRANG
+1
+Hình 3.1
+Form chính
+16
+2
+Hình 3.2
+Form ôn tập theo nội dung
+17
+3
+Hình 3.3
+Form ôn tập theo bộ đề
+17
+4
+Hình 3.4
+Form đăng nhập thi thử
+17
+5
+Hình 3.5
+Form làm đề thi
+18
+6
+Hình 3.6
+Form kết quả
+18
+7
+Hình 3.7
+Form giới thiệu
+19
+8
+Hình 4.1
+Màn hình chính
+21
+9
+Hình 4.2
+Form ôn luyện theo nội dung
+22
+10
+Hình 4.3
+Form ôn luyện theo bộ đề
+23
+11
+Hình 4.4
+Màn hình đăng nhập thi thử
+24
+12
+Hình 4.5
+Màn hình kết quả
+24
+
+
+MỤC LỤC
+
+ĐẶT VẤN ĐỀ	1
+CHƯƠNG 1: TỔNG QUAN VẤN ĐỀ NGHIÊN CỨU	3
+1. Cơ sở lý luận	3
+1.1. Vai trò của kiến thức lý thuyết trong đào tạo lái xe cơ giới đường bộ	3
+1.2. Bộ 600 câu hỏi sát hạch lái xe	3
+1.3. Cơ sở lý luận về ứng dụng công nghệ thông tin trong đào tạo nghề	4
+1.4. Ý nghĩa lý luận của việc xây dựng phần mềm luyện Bộ 600 câu hỏi	4
+2. Cơ sở thực tiễn	5
+2.1. Thực trạng học và ôn luyện lý thuyết lái xe hiện nay	5
+2.2. Nhu cầu luyện tập linh hoạt và toàn diện Bộ 600 câu hỏi	5
+2.3. Hiệu quả thực tiễn đối với người học và giáo viên	6
+2.4. Ý nghĩa thực tiễn đối với cơ sở đào tạo	6
+CHƯƠNG 2: MỤC TIÊU, PHẠM VI, NỘI DUNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU	7
+1. Mục tiêu nghiên cứu	7
+1.1. Mục tiêu chung	7
+1.2. Mục tiêu cụ thể	7
+2. Phạm vi đối tượng nghiên cứu	8
+2.1. Thời gian nghiên cứu	8
+2.2. Địa điểm nghiên cứu	8
+2.3. Phạm vi nghiên cứu	8
+2.4. Đối tượng nghiên cứu	8
+3. Nội dung nghiên cứu	9
+4. Phương pháp nghiên cứu	9
+CHƯƠNG 3: VIẾT PHẦN MỀM ÔN LUYỆN LÝ THUYẾT LÁI XE Ô TÔ CÁC HẠNG	10
+1. Phân tích yêu cầu hệ thống	10
+1.1. Mục tiêu của phần mềm:	10
+1.2. Xác định các đối tượng sử dụng:	10
+1.3. Yêu cầu chức năng:	10
+1.4. Yêu cầu phi chức năng:	10
+2. Thiết kế hệ thống	11
+2.1.Sơ đồ chức năng	11
+2.2. Sơ đồ Use Case	11
+2.3.Cấu trúc dữ liệu	11
+3. Công nghệ và môi trường phát triển	12
+4. Cài đặt và triển khai chi tiết	12
+4.1. Thuật toán tạo đề thi ngẫu nhiên	12
+4.2. Tính điểm và xét kết quả	15
+4.3. Xây dựng giao diện người dùng (UI)	16
+5. Kiểm thử và đánh giá kết quả	19
+5.1. Kiểm thử	19
+5.2. Đánh giá ưu và nhược điểm	20
+CHƯƠNG 4: SỬ DỤNG PHẦN MỀM ÔN LUYỆN LÝ THUYẾT LÁI XE Ô TÔ CÁC HẠNG	21
+1. Tổng quan chung của phần mềm	21
+2. Ôn luyện theo nội dung chủ đề	22
+3. Ôn luyện theo bộ đề thi mẫu của từng hạng xe	22
+4. Nội dung thi thử	23
+CHƯƠNG 5: KẾT LUẬN VÀ KIẾN NGHỊ	25
+1. Kết luận	25
+2. Kiến nghị	25
+TÀI LIỆU THAM KHẢO	26
+
+ĐẶT VẤN ĐỀ	
+
+Trong những năm gần đây, công tác đào tạo và sát hạch lái xe cơ giới đường bộ ở Việt Nam có sự thay đổi lớn về cơ quan quản lý nhà nước. Theo đó, nhiệm vụ quản lý sát hạch, cấp giấy phép lái xe được chuyển từ Bộ Giao thông vận tải sang Bộ Công an. Sự thay đổi này kéo theo việc rà soát, điều chỉnh và ban hành Bộ 600 câu hỏi dùng cho sát hạch lái xe cơ giới đường bộ (Sau đây viết gọn là Bộ 600 câu hỏi) nhằm bảo đảm phù hợp với hệ thống pháp luật mới, tăng cường yêu cầu về an toàn giao thông, kỹ năng xử lý tình huống và ý thức chấp hành pháp luật giao thông đường bộ của người lái xe.
+So với bộ câu hỏi trước đây do Bộ Giao thông vận tải quản lý, Bộ 600 câu hỏi mới có nhiều điểm thay đổi quan trọng về nội dung, câu trúc và cách đánh giá, như: bổ sung các câu hỏi tình huống thực tiễn, tăng số lượng câu hỏi khó, điều chỉnh cách diễn đạt theo hướng chặt chẽ, phức tạp hơn. Điều này đặt ra yêu cầu cấp thiết đối với các cơ sở đào tạo lái xe, giáo viên và học viên trong việc nhanh chóng tiếp cận, cập nhật và luyện tập hiệu quả bộ câu hỏi mới.
+Hiện nay, phần mềm thi sát hạch cấp giấy phép lái xe cơ giới đường bộ của Bộ công an cung cấp chỉ cho phép học viên luyện tập các đề thi ngẫu nhiên, mỗi khi học viên luyện tập chương trình sẽ chọn ngẫu nhiên các câu hỏi trong bộ 600 câu theo một cấu trúc định sẵn; Do đó trong quá trình luyện tập, học viên sẽ gặp nhiều câu hỏi không được luyện, cho nên khi vào thi kết thúc môn học hoặc sát hạch gặp các câu hỏi này sẽ bở ngỡ, có thể không làm được, kết quả thi sẽ không cao; Chính vì vậy, việc phát triển phần mềm giúp học viên có thể luyện tập được toàn bộ câu hỏi lý thuyết tương ứng với từng hạng đào tạo là một điều cấp thiết và có ý nghĩa rất quan trọng trong việc nâng cao chất lượng đào tạo lái xe tại nhà trường.
+Xuất phát từ yêu cầu đổi mới nội dung sát hạch, nhu cầu thực tiễn của công tác đào tạo lái xe và định hướng đẩy mạnh ứng dụng công nghệ thông tin, việc nghiên cứu xây dựng phần mềm luyện Bộ 600 câu hỏi dùng cho sát hạch lái xe cơ giới đường bộ là hết sức cần thiết. Phần mềm không chỉ giúp học viên học tập chủ động, hiệu quả, mà còn hỗ trợ giáo viên, đánh giá quá trình học tập, góp phần nâng cao chất lượng đào tạo lái xe trong giai đoạn chuyển giao quản lý từ Bộ Giao thông vận tải sang Bộ Công an.
+CHƯƠNG 1: TỔNG QUAN VẤN ĐỀ NGHIÊN CỨU
+
+1. Cơ sở lý luận
+1.1. Vai trò của kiến thức lý thuyết trong đào tạo lái xe cơ giới đường bộ
+Đào tạo lái xe cơ giới đường bộ là một lĩnh vực đào tạo đặc thù, vừa mang tính giáo dục nghề nghiệp, vừa liên quan trực tiếp đến an toàn xã hội. Trong đó, kiến thức lý thuyết giữ vai trò nền tảng, quyết định đến nhận thức, hành vi và kỹ năng của người lái xe khi tham gia giao thông. Việc nắm vững kiến thức lý thuyết không chỉ nhằm đáp ứng yêu cầu thi sát hạch cấp giấy phép lái xe, mà quan trọng hơn là hình thành ý thức tự giác chấp hành pháp luật, kỹ năng xử lý tình huống và trách nhiệm đối với bản thân và cộng đồng.
+Theo chương trình đào tạo lái xe hiện hành, học viên phải được trang bị đầy đủ các môn học lý thuyết, bao gồm: Luật trật tự an toàn giao thông đường bộ; Kỹ thuật lái xe; Cấu tạo và sửa chữa thông thường; Đạo đức, văn hóa giao thông; Phòng chống tác hại của rượu, bia khi tham gia giao thông; Kỹ năng phòng cháy, chữa cháy và cứu nạn, cứu hộ. Đây là hệ thống kiến thức có tính liên ngành, kết hợp giữa pháp luật, kỹ thuật và kỹ năng sống, đòi hỏi người học không chỉ ghi nhớ mà còn phải hiểu và biết vận dụng vào thực tiễn.
+Trong bối cảnh tai nạn giao thông vẫn còn diễn biến phức tạp, nguyên nhân chủ yếu xuất phát từ ý thức chấp hành pháp luật giao thông đường bộ và kỹ năng của người điều khiển phương tiện, việc nâng cao chất lượng dạy - học lý thuyết lái xe có ý nghĩa đặc biệt quan trọng, góp phần bảo đảm trật tự an toàn giao thông và phát triển bền vững xã hội.
+1.2. Bộ 600 câu hỏi sát hạch lái xe
+Bộ 600 câu hỏi dùng cho sát hạch lái xe cơ giới đường bộ được xây dựng nhằm chuẩn hóa nội dung đánh giá kiến thức lý thuyết của người học trên phạm vi toàn quốc. Bộ câu hỏi bao quát đầy đủ các nội dung cốt lõi của chương trình đào tạo, phản ánh các quy định pháp luật, yêu cầu kỹ thuật và chuẩn mực đạo đức của người lái xe.
+So với các bộ câu hỏi trước đây, Bộ 600 câu hỏi hiện hành được thiết kế theo hướng:
+- Tăng cường các câu hỏi tình huống thực tế;
+- Bổ sung các câu hỏi điểm liệt nhằm nâng cao ý thức chấp hành pháp luật;
+- Chuẩn hóa nội dung theo hệ thống văn bản quy phạm pháp luật mới;
+- Phân loại rõ ràng theo từng nhóm kiến thức.
+Do đó, việc vận dụng kiến thức đã học để lựa chọn đáp án đúng trong Bộ 600 câu hỏi không đơn thuần là học thuộc lòng, mà là quá trình rèn luyện tư duy pháp lý, khả năng phân tích tình huống và ra quyết định đúng đắn khi tham gia giao thông. Thông qua việc luyện tập thường xuyên, học viên từng bước hiểu sâu các quy định của Luật trật tự an toàn giao thông và biết cách áp dụng vào thực tiễn.
+1.3. Cơ sở lý luận về ứng dụng công nghệ thông tin trong đào tạo nghề
+Ứng dụng công nghệ thông tin trong giáo dục và đào tạo nghề là xu thế tất yếu trong bối cảnh chuyển đổi số quốc gia. Việc xây dựng các phần mềm hỗ trợ học tập giúp đổi mới phương pháp dạy - học theo hướng lấy người học làm trung tâm, phát huy tính chủ động, tự học và tự đánh giá của học viên.
+Theo lý thuyết dạy học hiện đại, học tập đạt hiệu quả cao khi:
+- Người học được tương tác thường xuyên với nội dung học tập;
+- Có phản hồi kịp thời về kết quả học tập;
+- Được học tập theo tiến độ và năng lực cá nhân;
+- Có môi trường học tập linh hoạt, không phụ thuộc hoàn toàn vào không gian và thời gian.
+Phần mềm luyện thi Bộ 600 câu hỏi là một hình thức dạy học hỗ trợ bằng công nghệ, giúp chuyển hóa kiến thức lý thuyết khô khan thành các hoạt động học tập trực quan, sinh động, có tính lặp lại và củng cố cao. Qua đó, góp phần nâng cao chất lượng đào tạo lý thuyết lái xe cơ giới đường bộ.
+1.4. Ý nghĩa lý luận của việc xây dựng phần mềm luyện Bộ 600 câu hỏi
+Việc xây dựng phần mềm luyện Bộ 600 câu hỏi góp phần:
+Cụ thể hóa mục tiêu đào tạo lái xe theo hướng học đi đôi với hành, lý thuyết gắn với thực tiễn;
+Tạo công cụ hỗ trợ giúp học viên nắm vững kiến thức các môn học lý thuyết một cách hệ thống; 
+Tăng khả năng ghi nhớ, hiểu sâu và vận dụng kiến thức pháp luật giao thông;
+Phù hợp với đặc điểm người học trong giáo dục nghề nghiệp, đa dạng về độ tuổi, trình độ và điều kiện học tập.
+Như vậy, phần mềm luyện thi không chỉ là công cụ ôn tập, mà còn là phương tiện giáo dục góp phần hình thành văn hóa giao thông và ý thức công dân cho người học.
+2. Cơ sở thực tiễn
+2.1. Thực trạng học và ôn luyện lý thuyết lái xe hiện nay
+Trong thực tế đào tạo lái xe tại các cơ sở giáo dục nghề nghiệp, việc học lý thuyết của học viên còn gặp nhiều khó khăn. Phần lớn học viên:
+- Có thời gian học tập hạn chế;
+- Trình độ tiếp thu không đồng đều;
+- Chưa có thói quen tự học, tự ôn luyện ngoài giờ lên lớp;
+- Phụ thuộc nhiều vào tài liệu in hoặc file PDF truyền thống.
+- Việc ôn luyện Bộ 600 câu hỏi chủ yếu diễn ra theo hình thức học thuộc hoặc làm đề mẫu, thiếu sự phân tích, hệ thống hóa kiến thức. Điều này dẫn đến tình trạng học viên làm bài thi đạt yêu cầu nhưng chưa thực sự hiểu và vận dụng tốt khi tham gia giao thông, tiềm ẩn nguy cơ mất an toàn sau khi được cấp giấy phép lái xe.
+2.2. Nhu cầu luyện tập linh hoạt và toàn diện Bộ 600 câu hỏi
+Bộ 600 câu hỏi có dung lượng lớn, nội dung rộng, nếu không có phương pháp học phù hợp sẽ gây áp lực cho người học. Thực tiễn cho thấy, học viên có nhu cầu:
+- Luyện tập toàn bộ 600 câu hỏi một cách thuận tiện;
+- Ôn tập theo từng nhóm nội dung kiến thức;
+- Ôn tập theo thứ tự câu hỏi để nắm vững từng phần;
+- Luyện tập theo từng đề thi mô phỏng sát với thực tế sát hạch.
+Việc xây dựng phần mềm luyện thi cho phép học viên tự lựa chọn hình thức ôn tập sẽ đáp ứng tốt các nhu cầu trên, giúp học viên học tập chủ động, linh hoạt và hiệu quả hơn so với phương pháp truyền thống.
+2.3. Hiệu quả thực tiễn đối với người học và giáo viên
+Việc sử dụng phần mềm luyện Bộ 600 câu hỏi trong đào tạo lái xe mang lại nhiều lợi ích thiết thực:
+- Giúp học viên nắm vững kiến thức Luật trật tự an toàn giao thông và cách thức thực hiện bài thi;
+- Tăng tỷ lệ đạt trong kỳ thi kết thúc khóa học và kỳ thi sát hạch lý thuyết;
+- Giảm tâm lý lo lắng, áp lực cho học viên khi bước vào kỳ thi;
+- Hỗ trợ giáo viên theo dõi quá trình học tập, đánh giá mức độ tiếp thu của học viên.
+Qua đó, chất lượng đào tạo lý thuyết lái xe được nâng cao một cách rõ rệt, góp phần hình thành đội ngũ người lái xe có kiến thức, kỹ năng và ý thức chấp hành pháp luật tốt.
+2.4. Ý nghĩa thực tiễn đối với cơ sở đào tạo
+Đối với nhà trường, việc xây dựng phần mềm luyện thi Bộ 600 câu hỏi giúp:
+- Chủ động trong việc điều chỉnh, cập nhật nội dung giảng dạy khi có sự thay đổi của các văn bản quy phạm pháp luật; Chuẩn hóa nội dung ôn tập, tránh phụ thuộc vào các phần mềm thương mại bên ngoài;
+- Góp phần quảng bá hình ảnh, thương hiệu đào tạo lái xe cơ giới đường bộ của nhà trường;
+- Phù hợp với định hướng chuyển đổi số trong giáo dục nghề nghiệp.
+Từ thực tiễn đó có thể khẳng định, việc xây dựng phần mềm luyện Bộ 600 câu hỏi dùng cho sát hạch cấp giấy phép lái xe là yêu cầu cấp thiết, có ý nghĩa cả về mặt khoa học và thực tiễn, góp phần nâng cao chất lượng đào tạo, bảo đảm an toàn giao thông và phục vụ tốt hơn nhu cầu của xã hội.
+CHƯƠNG 2: MỤC TIÊU, PHẠM VI, NỘI DUNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU
+
+1. Mục tiêu nghiên cứu
+1.1. Mục tiêu chung
+Xây dựng phần mềm luyện thi Bộ 600 câu hỏi dùng cho sát hạch lái xe trên máy tính giúp học viên học lái xe ô tô các hạng có thể dễ dàng luyện tập toàn bộ 600 câu hỏi dùng cho sát hạch lái xe,  giúp học viên nắm vững kiến thức luật trật tự an toàn giao thông, cách thức thực hiện bài thi góp phần nâng cao chất lượng thi kết thúc khóa học và thi sát hạch môn lý thuyết lái xe.
+Thông qua việc thực hiện phần mềm, góp phần quảng bá thương hiệu đào tạo nói chung và đào tạo lái xe nói riêng của Trường Cao đẳng Kỹ thuật Công-Nông nghiệp Quảng Trị.
+1.2. Mục tiêu cụ thể 
+- Xây dựng phần mềm luyện thi Bộ 600 câu hỏi dùng cho sát hạch lái xe cơ giới đường bộ trên máy tính, bảo đảm đầy đủ, chính xác nội dung theo quy định hiện hành, phục vụ học viên học lái xe ô tô các hạng trong quá trình học tập và ôn luyện môn lý thuyết.
+- Nâng cao chất lượng đào tạo lý thuyết lái xe ô tô các hạng thông qua việc hỗ trợ học viên nắm vững kiến thức Luật trật tự an toàn giao thông, kỹ thuật làm bài thi và kỹ năng phân tích, lựa chọn đáp án đúng trong Bộ 600 câu hỏi.
+- Tạo điều kiện cho học viên luyện tập chủ động, thường xuyên và linh hoạt, cho phép ôn tập theo từng nội dung kiến thức, theo thứ tự câu hỏi và theo đề thi mô phỏng, góp phần nâng cao hiệu quả tiếp thu kiến thức và giảm áp lực cho học viên khi tham gia kỳ thi sát hạch.
+- Góp phần nâng cao tỷ lệ đạt trong kỳ thi kết thúc khóa học và kỳ thi sát hạch môn lý thuyết lái xe, thông qua việc chuẩn hóa nội dung ôn luyện và tăng cường mức độ tương đồng giữa quá trình luyện tập và bài thi thực tế.
+- Hỗ trợ giáo viên trong công tác giảng dạy và quản lý đào tạo, thông qua việc sử dụng phần mềm làm công cụ bổ trợ giảng dạy, theo dõi kết quả học tập và đánh giá mức độ tiếp thu kiến thức của học viên.
+- Chủ động trong việc cập nhật, điều chỉnh nội dung đào tạo khi có sự thay đổi của các văn bản quy phạm pháp luật liên quan đến công tác đào tạo, sát hạch và cấp giấy phép lái xe cơ giới đường bộ.
+- Góp phần quảng bá hình ảnh, uy tín và thương hiệu đào tạo của Trường Cao đẳng Kỹ thuật Công - Nông nghiệp Quảng Trị trong lĩnh vực đào tạo lái xe cơ giới đường bộ, đáp ứng yêu cầu đổi mới, hiện đại hóa và chuyển đổi số trong giáo dục nghề nghiệp.
+2. Phạm vi đối tượng nghiên cứu
+2.1. Thời gian nghiên cứu
+Nghiên cứu được giới hạn trong khoảng thời gian từ tháng 05/2025 đến tháng 06/2025
+2.2. Địa điểm nghiên cứu
+Đề tài nghiên cứu được tiến hành tại Trường Cao đẳng Kỹ thuật Công - Nông Nghiệp Quảng Trị
+2.3. Phạm vi nghiên cứu
+Với phạm vi là đề tài cấp trường, phần mềm được thiết kế, xây dựng trên cơ sở bộ 600 câu hỏi dùng cho sát hạch lái xe, bộ giáo trình các môn học lý thuyết đào tạo lái xe ô tô, nhu cầu học tập, ôn luyện của học viên và nhu cầu giảng dạy lý thuyết Luật GTĐB của giáo viên Trường Cao đẳng Kỹ thuật C-N nghiệp Quảng Trị.	
+2.4. Đối tượng nghiên cứu
+Thực hiện nghiên cứu sắp xếp, bố trí bộ 600 câu hỏi dùng cho sát hạch lái xe một cách hợp lý, khoa học, dễ sử dụng; Giúp học viên có thể lựa chọn luyện tập theo nội dung, tuần tự câu hỏi và từng bộ đề hoặc theo từng đề được lựa chọn ngẫu nhiên tương ứng với từng hạng đào tạo lái xe.
+3. Nội dung nghiên cứu
+Nội dung 1: Sắp xếp, bố trí 600 câu hỏi dùng cho sát hạch lái xe một cách hợp lý, khoa học, dễ sử dụng; 
+Nội dung 2: Xây dựng phần mềm ôn luyện 600 câu hỏi dùng cho sát hạch lái xe, Kiểm thử và đánh giá kết quả 
+Nội dung 3: Sử dụng phần mềm 600 câu hỏi dùng cho sát hạch lái xe 
+4. Phương pháp nghiên cứu
+Trong quá trình nghiên cứu, nhóm tác giả đã sử dụng một số phương pháp nghiên cứu sau:
+- Phương pháp quan sát: Quan sát thực tiễn quá trình dạy học.
+- Phương pháp chuyên gia: Nhằm thu thập thêm những thông tin, ý kiến cần thiết bổ sung cho những nhận xét và đánh giá của đề tài.
+- Phương pháp thống kê toán học: Xử lý và đánh giá chính xác kết quả thực nghiệm, rút ra kết luận và khẳng định tính khả thi của đề tài.
+- Phương pháp thực nghiệm: Đánh giá hiệu quả của việc sử dụng phần mềm ôn luyện, dạy học 600 câu hỏi lý thuyết đào tạo lái xe ô tô các hạng.
+CHƯƠNG 3: VIẾT PHẦN MỀM ÔN LUYỆN LÝ THUYẾT LÁI XE Ô TÔ CÁC HẠNG
+
+1. Phân tích yêu cầu hệ thống
+1.1. Mục tiêu của phần mềm: 
+- Hỗ trợ học tập: Giúp học viên nắm vững bộ câu hỏi Luật giao thông đường bộ 600 câu hỏi sát hạch mới nhất.
+- Tối ưu hóa thời gian: Thay thế tài liệu giấy truyền thống bằng ứng dụng tương tác, cho phép học mọi lúc, mọi nơi.
+- Nâng cao tỉ lệ đậu: Cung cấp trải nghiệm thi thử giống như thực tế để học viên làm quen với áp lực phòng thi và cấu trúc đề.
+- Hệ thống hóa kiến thức: Phân loại câu hỏi giúp học viên dễ dàng tập trung vào những phần còn yếu (ví dụ: biển báo, sa hình).
+1.2. Xác định các đối tượng sử dụng:
+- Học viên: Đối tượng chính sử dụng phần mềm để ôn luyện và thi thử.
+- Giảng viên/Trung tâm đào tạo: Sử dụng phần mềm như một công cụ hỗ trợ giảng dạy và kiểm tra đánh giá học viên.
+1.3. Yêu cầu chức năng:
+Luyện tập theo câu hỏi: Cho phép xem từng câu hỏi một cách tuần tự (từ 1 đến 600), kèm hình ảnh minh họa và giải thích đáp án.
+Luyện tập theo nội dung: Phân loại câu hỏi theo nội dung: Khái niệm & quy tắc, Hệ thống biển báo, Giải thế sa hình, Câu hỏi điểm liệt...
+Luyện tập theo đề mẫu: Cung cấp danh sách các bộ đề được soạn sẵn theo cấu trúc chuẩn của Bộ Công an.
+Thi thử: Chế độ làm bài giới hạn thời gian, tự động chấm điểm và thông báo kết quả "Đạt" hoặc "Không đạt" như sát hạch.
+1.4. Yêu cầu phi chức năng: 
+- Tính chính xác: Nội dung câu hỏi và đáp án phải tuyệt đối chính xác theo quy định của Bộ 600 câu hỏi.
+- Hiệu năng: Tốc độ tải hình ảnh câu hỏi phải nhanh (dưới 1-2 giây) để không làm gián đoạn quá trình học.
+- Giao diện: Trực quan, dễ sử dụng, phù hợp với nhiều độ tuổi học viên khác nhau; hình ảnh biển báo và sa hình phải rõ nét.
+- Tính tương thích: Chạy ổn định trên hệ điều hành window 7, Netframework 4.0 trở lên
+- Tính bảo mật: Không ghi lại nhật ký người dùng
+2. Thiết kế hệ thống
+2.1.Sơ đồ chức năng
+Quản lý dữ liệu: Khởi tạo danh sách 600 câu hỏi trong bộ nhớ.
+Ôn tập: Duyệt danh sách theo chỉ số (Index) hoặc theo phân loại nội dung.
+Sát hạch (Thi thử): Thuật toán lấy ngẫu nhiên các phần tử từ danh sách tĩnh theo quy định của từng hạng bằng.
+Xử lý kết quả: So sánh đáp án người dùng chọn với thuộc tính DapAnDung của đối tượng trong lớp tĩnh.
+2.2. Sơ đồ Use Case
+Học viên: Là người dùng duy nhất tác động vào hệ thống.
+Hệ thống: Phản hồi tức thì dữ liệu từ các hằng số (Constants) và danh sách tĩnh (Static Lists).
+2.3.Cấu trúc dữ liệu
+Lớp đối tượng CauhoiLT: Đây là cấu trúc của mỗi câu hỏi trong danh sách:
+int SttCauhoi: Số thứ tự câu hỏi
+public Image Anh: Nội dung câu hỏi
+public int SoPATraloi: Số phương án trả lời
+public int PaTraloiDung: Phương án trả lời đúng
+public String Ghichu: Ghi chú
+public Object Tag: Thuộc tính này dùng cho tương lai
+public bool CauDiemliet: Xác định câu điểm liệt
+Lớp đối tượng HangthiLT: Đây là cấu trúc của mỗi hạng thi
+ public int Hangthi: Hạng thi, A1=1;A2=2;B1=3; B2=4; C=5;D,E,F=6
+ public int Socauhoi: Số câu hỏi trong đề thi
+ public int thoigianthi: Thời gian làm bài thi
+ public int Socauhoidung: Số câu hỏi trả lời đúng để đạt hạng thi
+ public int sodemau: Số đề mẫu
+Lớp Danh sách Câu hỏi: DsCauhoi: Đây là lớp tĩnh, chứa một danh sách 600 câu hỏi lý thuyết.
+Lớp Đề thi lý thuyết DethiLT: Lớp này cung cấp đề thi mẫu và đề thi ngẫu nhiên.
+Lớp Danh sách hạng thi DsHangthiLT: Lớp này chứa thông tin của các hạng thi.
+3. Công nghệ và môi trường phát triển
+- Ứng dụng Windows (Desktop)
+- Ngôn ngữ: C# (.NET): Là ngôn ngữ mạnh mẽ, hỗ trợ cực tốt cho các cấu trúc dữ liệu tĩnh (Static List, Dictionary). Dữ liệu câu hỏi gồm 600 câu hỏi là dữ liệu tĩnh, ít thay đổi nên chúng tôi không sử dụng cơ sở dữ liệu cho ứng dụng này. Phương án này giúp ứng dụng đạt tốc độ phản hồi tối đa, đơn giản hóa kiến trúc hệ thống và đảm bảo phần mềm hoạt động ổn định trong môi trường ngoại tuyến mà không cần cấu hình bộ cài đặt phức tạp.
+- Môi trường phát triển: Microsoft Visual Studio 2022.
+4. Cài đặt và triển khai chi tiết
+4.1. Thuật toán tạo đề thi ngẫu nhiên
+Để đảm bảo đề thi đúng cấu trúc của các hạng xe trong cấu trúc để thi. Chúng tôi chia 600 câu hỏi thành các nhóm nội dung tương ứng trong cấu trúc đề thi như sau:
+Chương I: Gồm 180 câu về Quy định chung và quy tắc giao thông đường bộ (từ câu số 1 đến câu số 180).
+Chương II: Gồm 25 câu về Văn hóa giao thông, đạo đức người lái xe, kỹ năng phòng cháy, chữa cháy và cứu hộ, cứu nạn (từ câu số 181 đến câu số 205).
+Chương III: Gồm 58 câu về Kỹ thuật lái xe (từ câu 206 đến câu 263).
+Chương IV: Gồm 37 câu về Cấu tạo và sửa chữa (từ câu 264 đến câu 300).
+Chương V: Gồm 185 câu về Báo hiệu đường bộ (từ số 301 đến câu số 485).
+Chương VI: Gồm 115 câu về Giải thế sa hình và kỹ năng xử lý tình huống giao thông (từ số 486 đến câu số 600).
+Cấu trúc đề thi trắc nghiệm theo hướng dẫn sử dụng bộ câu hỏi sát hạch GPLX ban hành ngày 07/05/2025 như sau:
+- Bộ đề sát hạch cấp Giấy phép lái xe ô tô hạng B gồm 30 câu hỏi được chọn ngẫu nhiên trong bộ 600 câu hỏi.
+Trong đó: 
++ 08 câu về một số quy định chung và quy tắc giao thông đường bộ; 
++ 01 câu hỏi về tình huống mất an toàn giao thông nghiêm trọng; 
++ 01 câu về văn hóa giao thông, đạo đức người lái xe, kỹ năng phòng cháy, chữa cháy và cứu hộ, cứu nạn; 
++ 01 câu về kỹ thuật lái xe; 
++ 01 câu về cấu tạo và sửa chữa; 
++ 09 câu về báo hiệu đường bộ; 
++ 09 câu về giải thế sa hình và kỹ năng xử lý tình huống giao thông.
+- Bộ đề sát hạch cấp Giấy phép lái xe ô tô hạng C1 gồm 35 câu hỏi được chọn ngẫu nhiên trong bộ 600 câu hỏi.
+Trong đó: 
++ 10 câu về một số quy định chung và quy tắc giao thông đường bộ; 
++ 01 câu hỏi về tình huống mất an toàn giao thông nghiêm trọng; 
++ 01 câu về văn hóa giao thông, đạo đức người lái xe, kỹ năng phòng cháy, chữa cháy và cứu hộ, cứu nạn; 
++ 02 câu về kỹ thuật lái xe; 
++ 01 câu về cấu tạo sửa chữa; 
++ 10 câu về báo hiệu đường bộ; 
++ 10 câu về giải thế sa hình và kỹ năng xử lý tình huống giao thông.
+- Bộ đề sát hạch cấp Giấy phép lái xe ô tô hạng C gồm 40 câu hỏi được chọn ngẫu nhiên trong bộ 600 câu hỏi.
+Trong đó: 
++ 10 câu về một số quy định chung và quy tắc giao thông đường bộ;
++ 01 câu hỏi về tình huống mất an toàn giao thông nghiêm trọng;
++ 01 câu về văn hóa giao thông, đạo đức người lái xe, kỹ năng phòng cháy, chữa cháy và cứu hộ, cứu nạn;
++ 02 câu về kỹ thuật lái xe;
++ 01 câu về cấu tạo sửa chữa;
++ 14 câu về báo hiệu đường bộ;
+11 câu về giải thế sa hình và kỹ năng xử lý tình huống giao thông.
+- Bộ đề sát hạch cấp Giấy phép lái xe ô tô hạng D1, D2, D, BE, C1E, CE, D1E, D2E, DE gồm 45 câu hỏi được chọn ngẫu nhiên trong bộ 600 câu hỏi.
+Trong đó: 
++ 10 câu về một số quy định chung và quy tắc giao thông đường bộ; 
++ 01 câu hỏi về tình huống mất an toàn giao thông nghiêm trọng; 
++ 01 câu về văn hóa giao thông, đạo đức người lái xe, kỹ năng phòng cháy, chữa cháy và cứu hộ, cứu nạn; 
++ 02 câu về kỹ thuật lái xe; 
++ 01 câu về cấu tạo sửa chữa; 
++ 16 câu về báo hiệu đường bộ; 
++ 14 câu về giải thế sa hình và kỹ năng xử lý tình huống giao thông.
+- Bộ đề sát hạch cấp Giấy phép lái xe mô tô hạng A1, A, B1 gồm 25 câu hỏi (sát hạch cấp giấy phép lái xe hạng B1 được chọn ngẫu nhiên trong 300 câu hỏi ; sát hạch cấp giấy phép lái xe hạng A1, A được chọn ngẫu nhiên trong 250 câu hỏi.
+Trong đó: 
++ 08 câu về một số quy định chung và quy tắc giao thông đường bộ; 
++ 01 câu hỏi về tình huống mất an toàn giao thông nghiêm trọng; 
++ 01 câu về văn hóa giao thông, đạo đức người lái xe; 
++ 01 câu về kỹ thuật lái xe hoặc cấu tạo sửa chữa;
++ 08 câu về báo hiệu đường bộ;
++ 06 câu về giải thế sa hình và kỹ năng xử lý tình huống giao thông.
+Lấy ngẫu nhiên: Sử dụng thuật toán trộn để hoán đổi vị trí các câu hỏi trong từng nhóm con.
+Lấy định mức: Lấy ra số lượng câu hỏi theo đúng quy định cho từng hạng bằng từ các nhóm đã trộn.
+//Tạo n số nguyên ngầu nhiên không lặp trong mảng
+public int[] Taoso(int[] a, int n)
+Hợp nhất: Dựa vào từng hạng xe, hàm tạo đề thi sẽ tạo đề thi theo đúng yêu cầu của hạng xe.
+ public int[] Taodethi(int hangxe)
+4.2. Tính điểm và xét kết quả
+Logic tính điểm không chỉ đơn thuần là cộng dồn câu đúng mà còn phải xử lý "Câu hỏi điểm liệt".
+Biến lưu trữ: socaudung và saicauliet.
+Quy trình:
+- Lấy danh sách đáp án đúng lưu vào mảng
+- Duyệt qua danh sách câu trả lời của người dùng.
+So sánh từng câu hỏi với phương án đúng
+Nếu đúng thì tăng số câu đúng, nếu sai thì tăng số câu sai và kiểm tra xem câu sai đó có phải là câu điểm liệt hay không nếu là câu điểm liệt thì tăng số câu điểm liệt lên 1.
+Kết quả sẽ có số câu hỏi trả lời đúng, số câu hỏi trả lời sai, số câu hỏi điểm liệt trả lời sai. Căn cứ vào kết quả này và so sánh với yêu cầu đạt của từng hạng xe để cho kết quả đạt. 
+  if ((socaudung < DsHangthiLT.Hang[hang].Socauhoidung) || 
+(saicauliet > 0))
+  {      ketqua = "Không đạt"; dat = false; khongdat++;
+      txtKhongdat.Text = khongdat.ToString();
+  }  else { ndat++; txtDat.Text = ndat.ToString(); }
+4.3. Xây dựng giao diện người dùng (UI)
+Màn hình chính
+
+Hình 3.1. Form chính
+Tại màn hình này, hiển thị thông tin tuyển sinh cơ bản, thông tin tuyển sinh này có thể cập nhật bằng cách thay đổi hình ảnh lưu tại website ktcnn.edu.vn và các nút lệnh chức năng. Người dùng chọn hạng xe, sau đó chọn cách ôn tập (Theo nội dung, Bộ đề, Thi thử).
+Màn hình ôn tập theo nội dung
+
+Hình 3.2. Form ôn tập theo nội dung
+Tại màn hình này sẽ hiển thị các nội dung ôn tập, người dùng sẽ chọn từng nội dung để ôn tập.
+Màn hình ôn tập theo bộ đề mẫu
+
+Hình 3.3. Form ôn tập theo bộ đề
+Màn hình nhập số báo danh của thi thử
+
+Hình 3.4. Form đăng nhập thi thử
+Màn hình này có giao diện gần giống với cửa sổ của phần mềm sát hạch.
+Màn hình làm đề thi
+
+Hình 3.5. Form làm đề thi
+- Màn hình Kết quả
+
+Hình 3.6. Form kết quả
+Hiển thị số câu làm đúng, số câu làm sai, số câu chưa làm, số câu điểm liệt bị sai và kết quả.
+Màn hình giới thiệu
+
+Hình 3.7. Form giới thiệu
+5. Kiểm thử và đánh giá kết quả
+5.1. Kiểm thử
+Để đảm bảo phần mềm vận hành ổn định, chúng tôi thực hiện kiểm thử các tình huống quan trọng nhất. Dưới đây là bảng kịch bản kiểm thử mẫu:
+STT
+Tên kịch bản
+Các bước thực hiện
+Kết quả mong đợi
+1
+Kiểm tra tính đúng đắn của chấm điểm
+Chọn đáp án đúng cho 35/35 câu.
+Hệ thống báo: "Đạt", số câu đúng: 35/35.
+2
+Kiểm tra logic câu điểm liệt
+Làm đúng 34 câu, riêng câu điểm liệt chọn đáp án sai.
+Hệ thống báo: "Không đạt" (do sai câu điểm liệt).
+3
+Kiểm tra đếm ngược thời gian
+Bắt đầu thi thử và chờ đồng hồ chạy.
+Thời gian giảm dần từng giây; khi về 00:00, hệ thống tự động khóa đề và nộp bài.
+4
+Kiểm tra hiển thị hình ảnh
+Duyệt qua các câu hỏi sa hình và biển báo.
+Hình ảnh hiển thị đúng theo ID câu hỏi, rõ nét, không bị vỡ hình.
+5
+Kiểm tra tính ngẫu nhiên
+Nhấn "Thi thử" 2 lần liên tiếp.
+Danh sách câu hỏi của 2 đề phải khác nhau (đã được trộn ngẫu nhiên).
+5.2. Đánh giá ưu và nhược điểm
+Ưu điểm:
+Tốc độ xử lý: Nhờ sử dụng lớp tĩnh (Static Classes), việc truy xuất 600 câu hỏi và hình ảnh diễn ra tức thì, không có độ trễ như khi dùng CSDL truyền thống.
+Tính di động (Portable): Phần mềm gọn nhẹ, không cần cài đặt các bộ thư viện CSDL phức tạp, dễ dàng sao chép và chạy ngay.
+Giao diện trực quan: Bố cục được thiết kế bám sát thực tế, giúp học viên không bị bỡ ngỡ khi đi thi thật.
+Độ tin cậy: Thuật toán trộn đề đảm bảo đúng cấu trúc của đề của từng hạng thi,  giúp học viên ôn luyện đúng trọng tâm.
+Nhược điểm và Hướng cải thiện:
+Chưa có tính năng âm thanh: Hiện tại phần mềm mới chỉ hỗ trợ đọc bằng mắt. Trong tương lai, cần tích hợp giọng nói (Text-to-Speech) để hỗ trợ học viên lớn tuổi hoặc người khiếm thị.
+Dữ liệu cứng: Vì dùng lớp tĩnh, mỗi khi có thay đổi nhỏ về luật, người lập trình phải cập nhật vào code và biên dịch lại. Hướng cải thiện là tách dữ liệu ra file JSON hoặc XML để cập nhật dễ dàng hơn mà không cần sửa code.
+Thiếu đồng bộ: Chưa có chức năng lưu kết quả lên Cloud để học viên có thể xem lại lịch sử học tập trên nhiều thiết bị khác nhau.
+Phần ôn luyện theo nội dung chưa lọc được các câu hỏi đối với các hạng xe A1, A, B1.
+
+CHƯƠNG 4: SỬ DỤNG PHẦN MỀM ÔN LUYỆN LÝ THUYẾT LÁI XE Ô TÔ CÁC HẠNG
+
+1. Tổng quan chung của phần mềm
+Phần mềm ôn luyện lý thuyết lái xe ô tô được thiết kế với giao diện thân thiện, tối giản và tập trung vào trải nghiệm người dùng. Hệ thống sử dụng bộ dữ liệu chuẩn 600 câu hỏi Luật Giao thông đường bộ 2025.
+Màn hình chính: Cung cấp các lựa để người dùng chọn hạng thi, chọn vào các chế độ học tập: Học theo nội dung, ôn luyện theo bộ đề mẫu và Thi thử.
+Cấu trúc dữ liệu: Toàn bộ câu hỏi và hình ảnh được tích hợp sẵn trong ứng dụng, cho phép truy xuất tức thì mà không cần kết nối Internet.
+Tính tương tác: Người dùng có thể dễ dàng chuyển đổi giữa các câu hỏi bằng bàn phím hoặc chuột, xem giải thích đáp án ngay sau khi chọn để củng cố kiến thức.
+Để ôn tập có hiệu quả học viên nên ôn luyện theo trình tự như sau: Đọc tài liệu ->Ôn tập theo nội dung -> Ôn tập theo bộ đề thi mẫu -> Thi thử
+
+Hình 4.1. Màn hình chính
+2. Ôn luyện theo nội dung chủ đề
+Chức năng này chia nhỏ 600 câu hỏi thành các nhóm kiến thức riêng biệt, giúp học viên ôn tập theo phương pháp "cuốn chiếu". Các chủ đề bao gồm:
+- Qui định chung và qui tắc đường bộ
+- Tình huống mất an toàn giao thông: Gồm các câu hỏi về mất an toàn giao thông.
+- Văn hóa giao thông: Rèn luyện kỹ năng
+- Kỹ thuật lái xe
+- Cấu tạo và sửa chữa
+- Biển báo cấm
+- Biển báo nguy hiểm
+- Biển báo hiệu lệnh
+- Biển báo chỉ dẫn
+- Vạch kẻ đường
+- Sa hình
+
+Hình 4.2. Form ôn luyện theo nội dung
+3. Ôn luyện theo bộ đề thi mẫu của từng hạng xe
+Đây là chức năng giúp học viên tập trung vào đúng phạm vi kiến thức của hạng bằng mình đang theo học.
+Cấu hình theo hạng: Khi người dùng chọn một hạng xe cụ thể, phần mềm sẽ tự động áp dụng bộ lọc từ danh sách 600 câu hỏi để hiển thị các câu hỏi liên quan.
+Phân bổ câu hỏi: Hệ thống hiển thị số lượng câu hỏi tương ứng với cấu trúc đề thi thật của hạng đó.
+Mục tiêu: Giúp học viên không bị choáng ngợp bởi toàn bộ 600 câu hỏi mà chỉ tập trung vào những nội dung thực sự cần thiết cho kỳ thi của mình.
+
+Hình 4.3. Form ôn luyện theo bộ đề
+4. Nội dung thi thử
+Đây là chế độ mô phỏng sát thực tế nhất kỳ thi sát hạch của Tổng cục Đường bộ Việt Nam.
+Tạo đề ngẫu nhiên: Hệ thống sử dụng thuật toán lấy ngẫu nhiên các câu hỏi từ lớp tĩnh để tạo thành một đề thi hoàn chỉnh, đảm bảo không có hai đề thi nào hoàn toàn giống nhau.
+Áp lực thời gian: Đồng hồ đếm ngược sẽ kích hoạt ngay khi bắt đầu. Người dùng phải hoàn thành bài thi trong khoảng thời gian quy định.
+Kết quả và đánh giá: * Sau khi nhấn "Kết thúc" hoặc hết thời gian làm bài, hệ thống sẽ đối chiếu đáp án từ các biến tĩnh và trả về kết quả ngay lập tức.
+Phần mềm hiển thị rõ số câu đúng, số câu sai và đặc biệt cảnh báo nếu học viên làm sai câu điểm liệt.
+Người dùng có thể xem lại danh sách các câu đã làm sai để rút kinh nghiệm cho lần thi sau.
+
+Hình 4.4. Màn hình đăng nhập thi thử
+
+Hình 4.5. Màn hình kết quả
+
+CHƯƠNG 5: KẾT LUẬN VÀ KIẾN NGHỊ
+
+1. Kết luận
+Là phần mềm luyện thi Lý thuyết lái xe trên máy tính giúp học viên học lái xe ô tô các hạng có thể dễ dàng luyện tập toàn bộ 600 câu hỏi dùng cho sát hạch lái xe, giúp học viên nắm vững kiến thức luật trật tự an toàn giao thông, cách thức thực hiện bài thi góp phần nâng cao chất lượng thi kết thúc môn học và thi sát hạch lái xe cơ giới đường bộ.
+Phần mềm có thể được nâng cấp để tham dự một số Hội thi khác như Hội thi sáng tạo kỹ thuật cấp tỉnh, Hội thi thiết bị  đào tạo tự làm...
+2. Kiến nghị
+Với những kết quả đạt được sau khi thực hiện đề tài khoa học thiết kế “Phần mềm luyện Bộ 600 câu hỏi dùng cho sát hạch lái xe cơ giới đường bộ” ứng dụng vào công tác giảng dạy và học tập của giáo viên, giảng viên, học viên nghề lái xe của nhà trường, nhóm tác giả thực hiện đề tài kiến nghị Hội đồng Khoa học nhà trường xét duyệt để triển khai trong thời gian như đã đề ra.
+TÀI LIỆU THAM KHẢO
+
+ [1]  Luật Trật tự an toàn giao thông năm 2025;
+ [2] Quy định ban hành bộ 600 câu hỏi thi lái xe cơ giới đường bộ do Bộ Công an (Cục Cảnh sát giao thông) biên soạn và áp dụng từ ngày 01/06/2025, theo Khoản 1 Điều 35 Thông tư 12/2025/TT-BCA ngày 28/02/2025
+ [3] Thông tư 12/2025/TT‑BCA do Bộ Công an ban hành ngày 28/02/2025, có hiệu lực từ 01/03/2025, quy định toàn diện về sát hạch, cấp, đổi, cấp lại, thu hồi GPLX và cấp, sử dụng GPLX quốc tế (IDP).
+ [4] Thông tư 38/2024/TT‑BGTVT, ban hành ngày 15/11/2024, có hiệu lực từ ngày 01/01/2025, quy định tốc độ và khoảng cách an toàn cho xe cơ giới và xe máy chuyên dùng trên đường bộ. 
+ [5] Quy chuẩn kỹ thuật Quốc gia QCVN 41:2024/BGTVT, ban hành theo Thông tư 51/2024/TT-BGTVT ngày 15/11/2024, có hiệu lực từ 01/01/2025, thay thế QCVN 41:2019/BGTVT về báo hiệu đường bộ.
+ [6] Giáo trình đào tạo lái xe các hạng - Trường Cao đẳng Kỹ thuật Công nông nghiệp Quảng Trị.
+[7] Các văn bản quy phạm về Pháp luật Giao thông đường bộ.
+[8] Phần mềm ôn luyện của Bộ công an
+
+

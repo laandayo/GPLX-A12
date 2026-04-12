@@ -18,11 +18,13 @@ class MenuGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Material(
-      color: Colors.white,
+      color: Theme.of(context).cardTheme.color ?? (isDark ? const Color(0xFF121A26) : Colors.white),
       borderRadius: BorderRadius.circular(16),
       elevation: 2,
-      shadowColor: Colors.black.withAlpha(25),
+      shadowColor: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -47,14 +49,14 @@ class MenuGridItem extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (subtitle != null) ...[
+              if (subtitle != null && subtitle!.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(
                   subtitle!,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11,
-                    color: color.withAlpha(204),
+                    color: color.withValues(alpha: 0.8),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

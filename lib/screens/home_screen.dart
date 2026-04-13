@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ).animate().fadeIn(duration: 400.ms).slideY(),
                   const SizedBox(height: 12),
                   Text(
-                    'Đang ôn thi ${appProvider.selectedLicense.displayName}',
+                    'Đang ôn thi bằng lái ${appProvider.selectedLicense.displayName}',
                     style: TextStyle(
                       fontSize: 14,
                       color: primary,

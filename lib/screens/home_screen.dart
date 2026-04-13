@@ -118,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Text(
-                    'Trường Cao Đẳng Kỹ Thuật Công - Nông Nghiệp Quảng Trị',
+                    'Trường Cao đẳng Kỹ thuật Công - Nông nghiệp Quảng Trị',
                     style: TextStyle(
                       fontSize: 11,
                       color: text.withValues(alpha: 0.5),

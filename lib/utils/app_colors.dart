@@ -37,10 +37,10 @@ class AppColors {
   // ═══════════════════════════════════════════
   // 🌙🟢 A2 - DARK
   // ═══════════════════════════════════════════
-  static const Color a2DarkPrimary = Color(0xFF1B5E20);
+  static const Color a2DarkPrimary = Color.fromARGB(255, 74, 168, 80);
   static const Color a2DarkAccent = Color(0xFF81C784);
   static const Color a2DarkBackground = Color(0xFF0E1512);
-  static const Color a2DarkSurface = Color.fromARGB(255, 136, 207, 164);
+  static const Color a2DarkSurface = Color(0xFF16201A);
   static const Color a2DarkText = Color(0xFFE8F5E9);
 
   // ═══════════════════════════════════════════

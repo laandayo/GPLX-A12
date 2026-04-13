@@ -30,12 +30,8 @@ class GplxApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => AppProvider()..initialize(context),
         ),
-        ChangeNotifierProvider(
-          create: (_) => QuestionProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => StatisticsProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => QuestionProvider()),
+        ChangeNotifierProvider(create: (_) => StatisticsProvider()),
       ],
       child: _GplxAppContent(),
     );
@@ -54,9 +50,7 @@ class _GplxAppContent extends StatelessWidget {
           darkTheme: appProvider.darkTheme,
           themeMode: appProvider.flutterThemeMode,
           home: const HomeScreen(),
-          routes: {
-            '/question_screen': (context) => const QuestionScreen(),
-          },
+          routes: {'/question_screen': (context) => const QuestionScreen()},
         );
       },
     );

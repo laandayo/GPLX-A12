@@ -104,17 +104,13 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.directions_car,
-                size: 32,
-                color: AppColors.primary(type, isDark),
-              ),
+              Image.asset('assets/logo1.png', width: 32, height: 32),
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'GPLX',
+                    'Ứng Dụng Ôn Luyện',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -122,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Text(
-                    'Ôn thi bằng lái',
+                    'Trường Cao Đẳng Kỹ Thuật Công - Nông Nghiệp Quảng Trị',
                     style: TextStyle(
                       fontSize: 11,
                       color: text.withValues(alpha: 0.5),
@@ -176,9 +172,15 @@ class _HomeScreenState extends State<HomeScreen> {
         final totalQuestions = QuestionRepository().getTotalQuestions(type);
         final answeredCount = QuestionRepository().getAnsweredCount(type);
         final wrongCount = QuestionRepository().getWrongQuestions(type).length;
-        final markedCount = QuestionRepository().getMarkedQuestions(type).length;
-        final unansweredCount = QuestionRepository().getUnansweredQuestions(type).length;
-        final importantCount = QuestionRepository().getImportantQuestions(type).length;
+        final markedCount = QuestionRepository()
+            .getMarkedQuestions(type)
+            .length;
+        final unansweredCount = QuestionRepository()
+            .getUnansweredQuestions(type)
+            .length;
+        final importantCount = QuestionRepository()
+            .getImportantQuestions(type)
+            .length;
 
         return GridView.count(
           shrinkWrap: true,
@@ -189,40 +191,67 @@ class _HomeScreenState extends State<HomeScreen> {
           childAspectRatio: 0.85,
           children: [
             MenuGridItem(
-              icon: '📝', title: 'Thi thử', subtitle: 'Chọn đề thi',
-              color: primary, onTap: () => _navigateToExamList(context),
+              icon: '📝',
+              title: 'Thi thử',
+              subtitle: 'Chọn đề thi',
+              color: primary,
+              onTap: () => _navigateToExamList(context),
             ),
             MenuGridItem(
-              icon: '📚', title: 'Ôn tập', subtitle: '$answeredCount/$totalQuestions câu',
-              color: primary, onTap: () => _navigateToChapters(context, StudyMode.all),
+              icon: '📚',
+              title: 'Ôn tập',
+              subtitle: '$answeredCount/$totalQuestions câu',
+              color: primary,
+              onTap: () => _navigateToChapters(context, StudyMode.all),
             ),
             MenuGridItem(
-              icon: '🔖', title: 'Đánh dấu', subtitle: '$markedCount câu',
-              color: primary, onTap: () => _navigateToQuestions(context, StudyMode.marked),
+              icon: '🔖',
+              title: 'Đánh dấu',
+              subtitle: '$markedCount câu',
+              color: primary,
+              onTap: () => _navigateToQuestions(context, StudyMode.marked),
             ),
             MenuGridItem(
-              icon: '❌', title: 'Sai', subtitle: '$wrongCount câu',
-              color: primary, onTap: () => _navigateToQuestions(context, StudyMode.wrong),
+              icon: '❌',
+              title: 'Sai',
+              subtitle: '$wrongCount câu',
+              color: primary,
+              onTap: () => _navigateToQuestions(context, StudyMode.wrong),
             ),
             MenuGridItem(
-              icon: '⚠️', title: 'Quan trọng', subtitle: '$importantCount câu',
-              color: primary, onTap: () => _navigateToQuestions(context, StudyMode.important),
+              icon: '⚠️',
+              title: 'Quan trọng',
+              subtitle: '$importantCount câu',
+              color: primary,
+              onTap: () => _navigateToQuestions(context, StudyMode.important),
             ),
             MenuGridItem(
-              icon: '🎲', title: 'Ngẫu nhiên', subtitle: '',
-              color: primary, onTap: () => _navigateToQuestions(context, StudyMode.random),
+              icon: '🎲',
+              title: 'Ngẫu nhiên',
+              subtitle: '',
+              color: primary,
+              onTap: () => _navigateToQuestions(context, StudyMode.random),
             ),
             MenuGridItem(
-              icon: '✅', title: 'Chưa trả lời', subtitle: '$unansweredCount câu',
-              color: primary, onTap: () => _navigateToQuestions(context, StudyMode.unanswered),
+              icon: '✅',
+              title: 'Chưa trả lời',
+              subtitle: '$unansweredCount câu',
+              color: primary,
+              onTap: () => _navigateToQuestions(context, StudyMode.unanswered),
             ),
             MenuGridItem(
-              icon: '🔄', title: 'Ôn lại câu sai', subtitle: '',
-              color: primary, onTap: () => _retryWrongQuestions(context),
+              icon: '🔄',
+              title: 'Ôn lại câu sai',
+              subtitle: '',
+              color: primary,
+              onTap: () => _retryWrongQuestions(context),
             ),
             MenuGridItem(
-              icon: '📖', title: 'Danh sách câu hỏi', subtitle: 'Tra cứu nhanh',
-              color: primary, onTap: () => _navigateToCatalog(context),
+              icon: '📖',
+              title: 'Danh sách câu hỏi',
+              subtitle: 'Tra cứu nhanh',
+              color: primary,
+              onTap: () => _navigateToCatalog(context),
             ),
           ],
         );
@@ -231,11 +260,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateToExamList(BuildContext context) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamListScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ExamListScreen()),
+    );
   }
 
   void _navigateToCatalog(BuildContext context) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const QuestionCatalogScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const QuestionCatalogScreen()),
+    );
   }
 
   void _navigateToChapters(BuildContext context, StudyMode mode) {
@@ -257,13 +292,19 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const QuestionScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const QuestionScreen()),
+    );
   }
 
   void _retryWrongQuestions(BuildContext context) {
     final appProvider = context.read<AppProvider>();
     final questionProvider = context.read<QuestionProvider>();
-    questionProvider.loadFilteredQuestions(appProvider.selectedLicense, StudyMode.wrong);
+    questionProvider.loadFilteredQuestions(
+      appProvider.selectedLicense,
+      StudyMode.wrong,
+    );
 
     if (questionProvider.currentQuestions.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -272,10 +313,16 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const QuestionScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const QuestionScreen()),
+    );
   }
 
   void _showSettings(BuildContext context) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+    );
   }
 }

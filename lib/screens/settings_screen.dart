@@ -187,7 +187,7 @@ class SettingsScreen extends StatelessWidget {
                 const Text('Phiên bản'),
                 const Spacer(),
                 Text(
-                  '0.1.0',
+                  '0.1.1',
                   style: TextStyle(color: text.withValues(alpha: 0.7)),
                 ),
               ],

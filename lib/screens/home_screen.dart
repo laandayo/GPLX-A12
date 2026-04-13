@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Ứng Dụng Ôn Luyện',
+                    'App Ôn Luyện',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -118,7 +118,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Text(
-                    'Trường Cao đẳng Kỹ thuật Công - Nông nghiệp Quảng Trị',
+                    'Trường Cao đẳng Kỹ thuật',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: text.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  Text(
+                    'Công - Nông nghiệp Quảng Trị',
                     style: TextStyle(
                       fontSize: 11,
                       color: text.withValues(alpha: 0.5),

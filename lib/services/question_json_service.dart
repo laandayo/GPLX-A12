@@ -131,7 +131,7 @@ class QuestionJsonService {
 
   List<Question> getWrongQuestions(LicenseType type) {
     final questions = _questions[type] ?? [];
-    return questions.where((q) => q.wrongCount > 0).toList();
+    return questions.where((q) => q.wrongCount >= 2).toList();
   }
 
   List<Question> getMarkedQuestions(LicenseType type) {
@@ -166,11 +166,14 @@ class QuestionJsonService {
 
   double getAccuracyRate(LicenseType type) {
     final questions = _questions[type] ?? [];
-    final answered = questions.where((q) => q.isAnswered).toList();
-    if (answered.isEmpty) return 0.0;
+    final totalAttempts = questions.fold<int>(
+      0,
+      (sum, q) => sum + q.correctCount + q.wrongCount,
+    );
+    if (totalAttempts == 0) return 0.0;
 
-    final correct = answered.where((q) => q.isCorrect).length;
-    return correct / answered.length;
+    final totalCorrect = questions.fold<int>(0, (sum, q) => sum + q.correctCount);
+    return totalCorrect / totalAttempts;
   }
 
   /// Search questions by text content (not ID).

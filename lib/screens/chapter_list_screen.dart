@@ -5,6 +5,7 @@ import '../providers/providers.dart';
 import '../models/models.dart';
 import '../data/data.dart';
 import 'question_screen.dart';
+import 'study_mode_info_screen.dart';
 
 class ChapterListScreen extends StatelessWidget {
   final StudyMode studyMode;
@@ -61,23 +62,23 @@ class ChapterListScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(child: _StudyModeButton(icon: Icons.book, label: 'Ôn tất cả',
-                onTap: () => questionProvider.setStudyMode(StudyMode.all),
+                onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.all),
                 isSelected: questionProvider.studyMode == StudyMode.all, color: primary, isDark: isDark)),
               const SizedBox(width: 8),
               Expanded(child: _StudyModeButton(icon: Icons.help_outline, label: 'Chưa trả lời',
-                onTap: () => questionProvider.setStudyMode(StudyMode.unanswered),
+                onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.unanswered),
                 isSelected: questionProvider.studyMode == StudyMode.unanswered, color: primary, isDark: isDark)),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: _StudyModeButton(icon: Icons.error_outline, label: 'Câu sai',
-                onTap: () => questionProvider.setStudyMode(StudyMode.wrong),
+              Expanded(child: _StudyModeButton(icon: Icons.error_outline, label: 'Câu hay sai',
+                onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.wrong),
                 isSelected: questionProvider.studyMode == StudyMode.wrong, color: primary, isDark: isDark)),
               const SizedBox(width: 8),
               Expanded(child: _StudyModeButton(icon: Icons.bookmark_outline, label: 'Đánh dấu',
-                onTap: () => questionProvider.setStudyMode(StudyMode.marked),
+                onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.marked),
                 isSelected: questionProvider.studyMode == StudyMode.marked, color: primary, isDark: isDark)),
             ],
           ),
@@ -95,6 +96,18 @@ class ChapterListScreen extends StatelessWidget {
       return;
     }
     Navigator.push(context, MaterialPageRoute(builder: (_) => const QuestionScreen()));
+  }
+
+  void _openStudyModeInfo(
+    BuildContext context,
+    QuestionProvider questionProvider,
+    StudyMode mode,
+  ) {
+    questionProvider.setStudyMode(mode);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => StudyModeInfoScreen(studyMode: mode)),
+    );
   }
 }
 

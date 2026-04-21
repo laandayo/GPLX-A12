@@ -12,7 +12,7 @@ extension CatalogFilterExtension on CatalogFilter {
     switch (this) {
       case CatalogFilter.all: return 'Tất cả';
       case CatalogFilter.marked: return 'Đánh dấu';
-      case CatalogFilter.wrong: return 'Câu sai';
+      case CatalogFilter.wrong: return 'Câu hay sai';
       case CatalogFilter.unanswered: return 'Chưa trả lời';
       case CatalogFilter.important: return 'Quan trọng';
     }
@@ -250,7 +250,7 @@ class _QuestionCatalogItem extends StatelessWidget {
                                   fontWeight: FontWeight.w600))),
                           if (question.isMarked)
                             Icon(Icons.bookmark, size: 16, color: AppColors.bookmarkColor(isDark)),
-                          if (question.status == QuestionStatus.wrong)
+                          if (question.wrongCount >= 2)
                             Icon(Icons.error, size: 16, color: AppColors.wrongColor(isDark)),
                         ],
                       ),

@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             MenuGridItem(
               icon: '❌',
-              title: 'Sai',
+              title: 'Câu hay sai',
               subtitle: '$wrongCount câu',
               color: primary,
               onTap: () => _navigateToQuestions(context, StudyMode.wrong),

@@ -150,19 +150,6 @@ class SettingsScreen extends StatelessWidget {
           activeThumbColor: primary,
           onChanged: (value) => appProvider.setShowExplanation(value),
         ),
-        SwitchListTile(
-          secondary: Icon(Icons.flash_on, color: text.withValues(alpha: 0.7)),
-          title: const Text('Chấm điểm ngay'),
-          subtitle: Text(
-            appProvider.gradeImmediately
-                ? 'Biết đúng/sai sau mỗi câu trả lời'
-                : 'Chấm điểm sau khi nộp bài',
-            style: TextStyle(fontSize: 12, color: text.withValues(alpha: 0.5)),
-          ),
-          value: appProvider.gradeImmediately,
-          activeThumbColor: primary,
-          onChanged: (value) => appProvider.setGradeImmediately(value),
-        ),
       ],
     );
   }
@@ -187,7 +174,7 @@ class SettingsScreen extends StatelessWidget {
                 const Text('Phiên bản'),
                 const Spacer(),
                 Text(
-                  '0.1.1',
+                  '0.2.0',
                   style: TextStyle(color: text.withValues(alpha: 0.7)),
                 ),
               ],

@@ -15,6 +15,7 @@ class Question {
   int correctCount;
   bool isMarked;
   DateTime? lastAnsweredAt;
+  bool isEvaluated;
 
   Question({
     required this.id,
@@ -31,6 +32,7 @@ class Question {
     this.correctCount = 0,
     this.isMarked = false,
     this.lastAnsweredAt,
+    this.isEvaluated = false,
   });
 
   bool get isCorrect {
@@ -42,6 +44,30 @@ class Question {
     if (!isAnswered) return QuestionStatus.unanswered;
     if (isCorrect) return QuestionStatus.correct;
     return QuestionStatus.wrong;
+  }
+
+  Question copyForSession() => Question(
+        id: id,
+        chapter: chapter,
+        content: content,
+        answers: List<String>.from(answers),
+        correctAnswer: correctAnswer,
+        explanation: explanation,
+        image: image,
+        isImportant: isImportant,
+        isAnswered: false,
+        selectedAnswerIndex: -1,
+        wrongCount: wrongCount,
+        correctCount: correctCount,
+        isMarked: isMarked,
+        lastAnsweredAt: lastAnsweredAt,
+        isEvaluated: false,
+      );
+
+  void resetSessionState() {
+    isAnswered = false;
+    selectedAnswerIndex = -1;
+    isEvaluated = false;
   }
 
   Map<String, dynamic> toJson() => {
@@ -78,6 +104,7 @@ class Question {
         lastAnsweredAt: json['lastAnsweredAt'] != null
             ? DateTime.parse(json['lastAnsweredAt'] as String)
             : null,
+        isEvaluated: json['isEvaluated'] as bool? ?? false,
       );
 
   factory Question.fromJsonSimple(Map<String, dynamic> json) => Question(

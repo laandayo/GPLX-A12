@@ -24,13 +24,13 @@ class QuestionProvider with ChangeNotifier {
   final QuestionRepository _repository = QuestionRepository();
 
   StudyMode _studyMode = StudyMode.all;
-  ScoringMode _scoringMode = ScoringMode.gradeImmediately;
+  ScoringMode _scoringMode = ScoringMode.gradeAfterSubmission;
   List<Question> _currentQuestions = [];
   int _currentIndex = 0;
   Exam? _currentExam;
   bool _isExamMode = false;
+  bool _hasSubmittedSession = false;
 
-  // Getters
   StudyMode get studyMode => _studyMode;
   ScoringMode get scoringMode => _scoringMode;
   List<Question> get currentQuestions => _currentQuestions;
@@ -42,153 +42,158 @@ class QuestionProvider with ChangeNotifier {
   bool get hasPrevious => _currentIndex > 0;
   Exam? get currentExam => _currentExam;
   bool get isExamMode => _isExamMode;
+  bool get hasSubmittedSession => _hasSubmittedSession;
 
-  // Progress tracking
   double get progress {
     if (_currentQuestions.isEmpty) return 0.0;
     return (_currentIndex + 1) / _currentQuestions.length;
   }
 
-  int get answeredCount {
-    return _currentQuestions.where((q) => q.isAnswered).length;
-  }
+  int get answeredCount => _currentQuestions.where((q) => q.isAnswered).length;
 
-  int get correctCount {
-    return _currentQuestions.where((q) => q.isCorrect).length;
-  }
+  int get correctCount =>
+      _currentQuestions.where((q) => q.isEvaluated && q.isCorrect).length;
 
-  int get wrongCount {
-    return _currentQuestions.where((q) => q.isAnswered && !q.isCorrect).length;
-  }
+  int get wrongCount =>
+      _currentQuestions.where((q) => q.isEvaluated && !q.isCorrect).length;
 
-  // Set study mode
   void setStudyMode(StudyMode mode) {
     _studyMode = mode;
     _isExamMode = mode == StudyMode.exam;
     notifyListeners();
   }
 
-  // Set scoring mode
   void setScoringMode(ScoringMode mode) {
     _scoringMode = mode;
     notifyListeners();
   }
 
-  // Load all questions by license type
   void loadAllQuestions(LicenseType type) {
-    _currentQuestions = List.from(_repository.getQuestions(type));
-    _currentIndex = 0;
-    _currentExam = null;
-    _isExamMode = false;
-    notifyListeners();
+    _startSession(
+      questions: _repository.getQuestions(type),
+      mode: StudyMode.all,
+      isExamMode: false,
+    );
   }
 
-  // Load questions for a specific exam
   void loadExam(LicenseType type, int examId) {
     final exam = _repository.getExamById(type, examId);
     if (exam == null) return;
 
-    _currentExam = exam;
-    _currentQuestions = _repository.getQuestionsByIds(type, exam.questionIds);
-    _currentIndex = 0;
-    _isExamMode = true;
-    _studyMode = StudyMode.exam;
-    notifyListeners();
+    _startSession(
+      questions: _repository.getQuestionsByIds(type, exam.questionIds),
+      mode: StudyMode.exam,
+      isExamMode: true,
+      exam: exam,
+    );
   }
 
-  // Load random exam
   void loadRandomExam(LicenseType type) {
     final exams = _repository.getExams(type);
     if (exams.isEmpty) return;
 
     exams.shuffle();
-    final exam = exams.first;
-    loadExam(type, exam.id);
+    loadExam(type, exams.first.id);
   }
 
-  // Load questions by chapter
   void loadQuestionsByChapter(LicenseType type, String chapterName) {
-    _currentQuestions = _repository.getQuestionsByChapter(type, chapterName);
-    _currentIndex = 0;
-    _currentExam = null;
-    _isExamMode = false;
-    _studyMode = StudyMode.practice;
-    notifyListeners();
+    _startSession(
+      questions: _repository.getQuestionsByChapter(type, chapterName),
+      mode: StudyMode.practice,
+      isExamMode: false,
+    );
   }
 
-  // Load filtered questions
   void loadFilteredQuestions(LicenseType type, StudyMode mode) {
-    _studyMode = mode;
-    _isExamMode = false;
-    _currentExam = null;
-
     switch (mode) {
       case StudyMode.all:
-        _currentQuestions = List.from(_repository.getQuestions(type));
+        _startSession(
+          questions: _repository.getQuestions(type),
+          mode: mode,
+          isExamMode: false,
+        );
         break;
       case StudyMode.unanswered:
-        _currentQuestions = List.from(_repository.getUnansweredQuestions(type));
+        _startSession(
+          questions: _repository.getUnansweredQuestions(type),
+          mode: mode,
+          isExamMode: false,
+        );
         break;
       case StudyMode.wrong:
-        _currentQuestions = List.from(_repository.getWrongQuestions(type));
+        _startSession(
+          questions: _repository.getWrongQuestions(type),
+          mode: mode,
+          isExamMode: false,
+        );
         break;
       case StudyMode.marked:
-        _currentQuestions = List.from(_repository.getMarkedQuestions(type));
+        _startSession(
+          questions: _repository.getMarkedQuestions(type),
+          mode: mode,
+          isExamMode: false,
+        );
         break;
       case StudyMode.random:
-        _currentQuestions = _repository.getRandomQuestions(type, count: 50);
+        _startSession(
+          questions: _repository.getRandomQuestions(type, count: 50),
+          mode: mode,
+          isExamMode: false,
+        );
         break;
       case StudyMode.important:
-        _currentQuestions = List.from(_repository.getImportantQuestions(type));
+        _startSession(
+          questions: _repository.getImportantQuestions(type),
+          mode: mode,
+          isExamMode: false,
+        );
         break;
       case StudyMode.practice:
       case StudyMode.exam:
         break;
     }
-    _currentIndex = 0;
-    notifyListeners();
   }
 
-  // Load all questions for catalog
   void loadAllQuestionsForCatalog(LicenseType type) {
-    _currentQuestions = List.from(_repository.getQuestions(type));
-    _currentIndex = 0;
-    _currentExam = null;
-    _isExamMode = false;
-    _studyMode = StudyMode.all;
-    notifyListeners();
+    _startSession(
+      questions: _repository.getQuestions(type),
+      mode: StudyMode.all,
+      isExamMode: false,
+    );
   }
 
-  // Select answer
-  void selectAnswer(int answerIndex, LicenseType type) {
-    if (currentQuestion == null) return;
+  void selectAnswer(
+    int answerIndex,
+    LicenseType type, {
+    required bool gradeImmediately,
+  }) {
+    final question = currentQuestion;
+    if (question == null || question.isAnswered) return;
 
-    final question = currentQuestion!;
     question.isAnswered = true;
     question.selectedAnswerIndex = answerIndex;
-    question.lastAnsweredAt = DateTime.now();
 
-    if (answerIndex == question.correctAnswer) {
-      question.correctCount++;
-    } else {
-      question.wrongCount++;
+    if (gradeImmediately) {
+      _evaluateQuestion(question, type);
     }
 
-    // Persist state
-    QuestionStatePersistence().saveQuestionState(type, question);
-
     notifyListeners();
   }
 
-  // Toggle bookmark
   void toggleMark(LicenseType type) {
-    if (currentQuestion == null) return;
-    currentQuestion!.isMarked = !currentQuestion!.isMarked;
-    QuestionStatePersistence().saveQuestionState(type, currentQuestion!);
+    final sessionQuestion = currentQuestion;
+    if (sessionQuestion == null) return;
+
+    final sourceQuestion = _repository.getQuestionById(type, sessionQuestion.id);
+    final nextValue = !sessionQuestion.isMarked;
+    sessionQuestion.isMarked = nextValue;
+    if (sourceQuestion != null) {
+      sourceQuestion.isMarked = nextValue;
+      QuestionStatePersistence().saveQuestionState(type, sourceQuestion);
+    }
     notifyListeners();
   }
 
-  // Navigation
   void nextQuestion() {
     if (hasNext) {
       _currentIndex++;
@@ -210,61 +215,108 @@ class QuestionProvider with ChangeNotifier {
     }
   }
 
-  // Submit exam (for grading)
   ExamResult submitExam(LicenseType type) {
-    int correct = 0;
-    int wrong = 0;
-    int unanswered = 0;
+    if (_hasSubmittedSession) {
+      return _buildResult();
+    }
 
-    for (var q in _currentQuestions) {
-      if (!q.isAnswered) {
-        unanswered++;
-      } else if (q.isCorrect) {
-        correct++;
-      } else {
-        wrong++;
+    for (final question in _currentQuestions) {
+      if (question.isAnswered && !question.isEvaluated) {
+        _evaluateQuestion(question, type);
       }
     }
 
-    final result = ExamResult(
-      totalQuestions: _currentQuestions.length,
-      correctAnswers: correct,
-      wrongAnswers: wrong,
-      unansweredQuestions: unanswered,
-      passed: correct >= 23, // Passing score is 23
-    );
+    _hasSubmittedSession = true;
 
-    // Save exam attempt
+    final result = _buildResult();
+
     if (_currentExam != null) {
       final attempt = ExamAttemptRecord(
         date: DateTime.now(),
         totalQuestions: _currentQuestions.length,
-        correctAnswers: correct,
-        wrongAnswers: wrong,
-        unansweredQuestions: unanswered,
-        passed: correct >= 23,
+        correctAnswers: result.correctAnswers,
+        wrongAnswers: result.wrongAnswers,
+        unansweredQuestions: result.unansweredQuestions,
+        passed: result.passed,
       );
       ExamPersistenceService().saveExamAttempt(type, _currentExam!.id, attempt);
     }
 
+    notifyListeners();
     return result;
   }
 
-  // Reset exam state (for retry)
   void resetCurrentExam() {
-    for (var q in _currentQuestions) {
-      q.isAnswered = false;
-      q.selectedAnswerIndex = -1;
+    for (final question in _currentQuestions) {
+      question.resetSessionState();
     }
     _currentIndex = 0;
+    _hasSubmittedSession = false;
     notifyListeners();
   }
 
-  // Toggle bookmark for any question (not just current)
   void toggleMarkQuestion(Question question, LicenseType type) {
-    question.isMarked = !question.isMarked;
-    QuestionStatePersistence().saveQuestionState(type, question);
+    final sourceQuestion = _repository.getQuestionById(type, question.id);
+    if (sourceQuestion == null) return;
+
+    final nextValue = !sourceQuestion.isMarked;
+    sourceQuestion.isMarked = nextValue;
+    question.isMarked = nextValue;
+    for (final current in _currentQuestions.where((q) => q.id == question.id)) {
+      current.isMarked = nextValue;
+    }
+    QuestionStatePersistence().saveQuestionState(type, sourceQuestion);
     notifyListeners();
+  }
+
+  void _startSession({
+    required List<Question> questions,
+    required StudyMode mode,
+    required bool isExamMode,
+    Exam? exam,
+  }) {
+    _studyMode = mode;
+    _isExamMode = isExamMode;
+    _currentExam = exam;
+    _currentQuestions = questions.map((question) => question.copyForSession()).toList();
+    _currentIndex = 0;
+    _hasSubmittedSession = false;
+    notifyListeners();
+  }
+
+  void _evaluateQuestion(Question sessionQuestion, LicenseType type) {
+    if (sessionQuestion.isEvaluated) return;
+
+    sessionQuestion.isEvaluated = true;
+    final sourceQuestion = _repository.getQuestionById(type, sessionQuestion.id);
+    if (sourceQuestion == null) return;
+
+    sourceQuestion.isAnswered = true;
+    sourceQuestion.selectedAnswerIndex = sessionQuestion.selectedAnswerIndex;
+    sourceQuestion.lastAnsweredAt = DateTime.now();
+
+    if (sessionQuestion.isCorrect) {
+      sourceQuestion.correctCount++;
+      sourceQuestion.wrongCount = 0;
+    } else {
+      sourceQuestion.wrongCount++;
+    }
+
+    QuestionStatePersistence().saveQuestionState(type, sourceQuestion);
+  }
+
+  ExamResult _buildResult() {
+    final correct = _currentQuestions.where((q) => q.isEvaluated && q.isCorrect).length;
+    final wrong = _currentQuestions.where((q) => q.isEvaluated && !q.isCorrect).length;
+    final unanswered = _currentQuestions.where((q) => !q.isAnswered).length;
+
+    return ExamResult(
+      totalQuestions: _currentQuestions.length,
+      correctAnswers: correct,
+      wrongAnswers: wrong,
+      unansweredQuestions: unanswered,
+      passed: correct >= 23,
+    );
   }
 }
 

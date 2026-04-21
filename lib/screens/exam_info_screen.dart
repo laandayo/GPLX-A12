@@ -91,7 +91,7 @@ class ExamInfoScreen extends StatelessWidget {
           value: '23/$totalQuestions', color: AppColors.correctColor(isDark), isDark: isDark),
         const SizedBox(height: 12),
         _InfoCard(icon: Icons.timer, title: 'Thời gian',
-          value: 'Không giới hạn', color: const Color(0xFFFFA000), isDark: isDark),
+          value: '20 phút', color: const Color(0xFFFFA000), isDark: isDark),
         const SizedBox(height: 12),
         _InfoCard(icon: Icons.history, title: 'Số lần thi',
           value: '$attemptCount lần', color: const Color(0xFF42A5F5), isDark: isDark),

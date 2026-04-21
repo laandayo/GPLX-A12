@@ -147,7 +147,7 @@ class _RandomExamCard extends StatelessWidget {
       elevation: 2,
       shadowColor: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
       child: InkWell(
-        onTap: () => _startRandomExam(context),
+        onTap: () => _openRandomExamInfo(context),
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(12),
@@ -166,15 +166,19 @@ class _RandomExamCard extends StatelessWidget {
     );
   }
 
-  void _startRandomExam(BuildContext context) {
+  void _openRandomExamInfo(BuildContext context) {
     final appProvider = context.read<AppProvider>();
     final questionProvider = context.read<QuestionProvider>();
     questionProvider.loadRandomExam(appProvider.selectedLicense);
 
-    if (questionProvider.currentQuestions.isEmpty) {
+    final randomExam = questionProvider.currentExam;
+    if (questionProvider.currentQuestions.isEmpty || randomExam == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Không có đề thi nào')));
       return;
     }
-    Navigator.pushReplacementNamed(context, '/question_screen');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ExamInfoScreen(exam: randomExam)),
+    );
   }
 }

@@ -77,6 +77,60 @@ class StudyModeInfoScreen extends StatelessWidget {
                         color: primary,
                         isDark: isDark,
                       ),
+                      if (studyMode == StudyMode.wrong) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: primary.withValues(alpha: 0.2)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Số lần sai theo từng câu',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: text,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ...questions.take(8).map((question) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            'Câu ${question.id}',
+                                            style: TextStyle(color: text),
+                                          ),
+                                        ),
+                                        Text(
+                                          '${question.wrongCount} lần sai',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.wrongColor(isDark),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )),
+                              if (questions.length > 8)
+                                Text(
+                                  'Và ${questions.length - 8} câu khác',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: text.withValues(alpha: 0.6),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 12),
                       _InfoCard(
                         icon: Icons.collections_bookmark,

@@ -46,7 +46,7 @@ class QuestionProvider with ChangeNotifier {
 
   double get progress {
     if (_currentQuestions.isEmpty) return 0.0;
-    return (_currentIndex + 1) / _currentQuestions.length;
+    return answeredCount / _currentQuestions.length;
   }
 
   int get answeredCount => _currentQuestions.where((q) => q.isAnswered).length;
@@ -309,13 +309,17 @@ class QuestionProvider with ChangeNotifier {
     final correct = _currentQuestions.where((q) => q.isEvaluated && q.isCorrect).length;
     final wrong = _currentQuestions.where((q) => q.isEvaluated && !q.isCorrect).length;
     final unanswered = _currentQuestions.where((q) => !q.isAnswered).length;
+    final failedImportantQuestions = _currentQuestions
+        .where((q) => q.isImportant && q.isEvaluated && !q.isCorrect)
+        .toList(growable: false);
 
     return ExamResult(
       totalQuestions: _currentQuestions.length,
       correctAnswers: correct,
       wrongAnswers: wrong,
       unansweredQuestions: unanswered,
-      passed: correct >= 23,
+      passed: correct >= 23 && failedImportantQuestions.isEmpty,
+      failedImportantQuestions: failedImportantQuestions,
     );
   }
 }
@@ -326,6 +330,7 @@ class ExamResult {
   final int wrongAnswers;
   final int unansweredQuestions;
   final bool passed;
+  final List<Question> failedImportantQuestions;
 
   ExamResult({
     required this.totalQuestions,
@@ -333,8 +338,11 @@ class ExamResult {
     required this.wrongAnswers,
     required this.unansweredQuestions,
     required this.passed,
+    this.failedImportantQuestions = const [],
   });
 
   double get accuracy =>
       totalQuestions > 0 ? correctAnswers / totalQuestions : 0.0;
+
+  bool get failedByImportantQuestion => failedImportantQuestions.isNotEmpty;
 }

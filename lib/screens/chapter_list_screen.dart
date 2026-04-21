@@ -63,11 +63,11 @@ class ChapterListScreen extends StatelessWidget {
             children: [
               Expanded(child: _StudyModeButton(icon: Icons.book, label: 'Ôn tất cả',
                 onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.all),
-                isSelected: questionProvider.studyMode == StudyMode.all, color: primary, isDark: isDark)),
+                color: primary, isDark: isDark)),
               const SizedBox(width: 8),
               Expanded(child: _StudyModeButton(icon: Icons.help_outline, label: 'Chưa trả lời',
                 onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.unanswered),
-                isSelected: questionProvider.studyMode == StudyMode.unanswered, color: primary, isDark: isDark)),
+                color: primary, isDark: isDark)),
             ],
           ),
           const SizedBox(height: 8),
@@ -75,11 +75,11 @@ class ChapterListScreen extends StatelessWidget {
             children: [
               Expanded(child: _StudyModeButton(icon: Icons.error_outline, label: 'Câu hay sai',
                 onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.wrong),
-                isSelected: questionProvider.studyMode == StudyMode.wrong, color: primary, isDark: isDark)),
+                color: primary, isDark: isDark)),
               const SizedBox(width: 8),
               Expanded(child: _StudyModeButton(icon: Icons.bookmark_outline, label: 'Đánh dấu',
                 onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.marked),
-                isSelected: questionProvider.studyMode == StudyMode.marked, color: primary, isDark: isDark)),
+                color: primary, isDark: isDark)),
             ],
           ),
         ],
@@ -167,21 +167,19 @@ class _StudyModeButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool isSelected;
   final Color color;
   final bool isDark;
 
   const _StudyModeButton({required this.icon, required this.label, required this.onTap,
-    required this.isSelected, required this.color, required this.isDark});
+    required this.color, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+    return Container(
       decoration: BoxDecoration(
-        color: isSelected ? color : Theme.of(context).cardColor,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isSelected ? color : AppColors.dividerColor(isDark), width: 2),
+        border: Border.all(color: AppColors.dividerColor(isDark), width: 2),
       ),
       child: Material(
         color: Colors.transparent,
@@ -190,10 +188,10 @@ class _StudyModeButton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(
               children: [
-                Icon(icon, color: isSelected ? Colors.white : color, size: 24),
+                Icon(icon, color: color, size: 24),
                 const SizedBox(height: 4),
                 Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white : color)),
+                  color: color)),
               ],
             ),
           ),

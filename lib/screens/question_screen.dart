@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/providers.dart';
 import '../models/models.dart';
 
@@ -17,8 +16,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
   static const int _examDurationSeconds = 20 * 60;
 
   final ScrollController _scrollController = ScrollController();
+  final ValueNotifier<int> _remainingSecondsNotifier =
+      ValueNotifier<int>(_examDurationSeconds);
   Timer? _examTimer;
-  int _remainingSeconds = _examDurationSeconds;
   bool _fiveMinuteWarningShown = false;
   bool _oneMinuteWarningShown = false;
 
@@ -26,6 +26,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
   void dispose() {
     _examTimer?.cancel();
     _scrollController.dispose();
+    _remainingSecondsNotifier.dispose();
     super.dispose();
   }
 
@@ -49,37 +50,47 @@ class _QuestionScreenState extends State<QuestionScreen> {
         final isGradeImmediately = !questionProvider.isExamMode ||
             questionProvider.scoringMode == ScoringMode.gradeImmediately;
 
-        return Scaffold(
-          backgroundColor: AppColors.background(type, isDark),
-          body: Column(
-            children: [
-              _buildHeader(
-                context,
-                appProvider,
-                questionProvider,
-                question,
-                primary,
-                isDark,
-              ),
-              Expanded(
-                child: _buildQuestionContent(
+        return PopScope(
+          canPop: !questionProvider.isExamMode || questionProvider.hasSubmittedSession,
+          onPopInvokedWithResult: (didPop, result) async {
+            if (didPop) return;
+            final shouldPop = await _handleExitAttempt(context, questionProvider);
+            if (shouldPop && context.mounted) {
+              Navigator.pop(context);
+            }
+          },
+          child: Scaffold(
+            backgroundColor: AppColors.background(type, isDark),
+            body: Column(
+              children: [
+                _buildHeader(
                   context,
                   appProvider,
                   questionProvider,
                   question,
                   primary,
                   isDark,
-                  isGradeImmediately,
                 ),
-              ),
-              _buildBottomNavigation(
-                context,
-                appProvider,
-                questionProvider,
-                primary,
-                isDark,
-              ),
-            ],
+                Expanded(
+                  child: _buildQuestionContent(
+                    context,
+                    appProvider,
+                    questionProvider,
+                    question,
+                    primary,
+                    isDark,
+                    isGradeImmediately,
+                  ),
+                ),
+                _buildBottomNavigation(
+                  context,
+                  appProvider,
+                  questionProvider,
+                  primary,
+                  isDark,
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -88,33 +99,25 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
   void _syncExamTimer(QuestionProvider questionProvider) {
     if (!questionProvider.isExamMode) {
-      _examTimer?.cancel();
-      _examTimer = null;
-      _remainingSeconds = _examDurationSeconds;
-      _fiveMinuteWarningShown = false;
-      _oneMinuteWarningShown = false;
+      _stopTimer();
+      _resetTimerState();
       return;
     }
 
-    if (!questionProvider.hasSubmittedSession &&
-        questionProvider.currentIndex == 0 &&
+    if (questionProvider.hasSubmittedSession) {
+      _stopTimer();
+      return;
+    }
+
+    if (questionProvider.currentIndex == 0 &&
         questionProvider.answeredCount == 0 &&
-        _remainingSeconds != _examDurationSeconds &&
-        _examTimer == null) {
-      _remainingSeconds = _examDurationSeconds;
-      _fiveMinuteWarningShown = false;
-      _oneMinuteWarningShown = false;
+        _examTimer == null &&
+        _remainingSecondsNotifier.value != _examDurationSeconds) {
+      _resetTimerState();
     }
 
-    if (_examTimer != null || questionProvider.hasSubmittedSession) {
-      return;
-    }
+    if (_examTimer != null) return;
 
-    if (_remainingSeconds < 0) {
-      _remainingSeconds = 0;
-    } else if (_remainingSeconds > _examDurationSeconds) {
-      _remainingSeconds = _examDurationSeconds;
-    }
     _examTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
@@ -123,30 +126,36 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
       final provider = context.read<QuestionProvider>();
       if (!provider.isExamMode || provider.hasSubmittedSession) {
-        timer.cancel();
-        _examTimer = null;
+        _stopTimer();
         return;
       }
 
-      if (_remainingSeconds <= 0) {
-        timer.cancel();
-        _examTimer = null;
-        _handleTimeUp();
-        return;
-      }
+      final nextValue = _remainingSecondsNotifier.value - 1;
+      _remainingSecondsNotifier.value = nextValue;
 
-      setState(() {
-        _remainingSeconds--;
-      });
-
-      if (_remainingSeconds == 5 * 60 && !_fiveMinuteWarningShown) {
+      if (nextValue == 5 * 60 && !_fiveMinuteWarningShown) {
         _fiveMinuteWarningShown = true;
         _showTimeWarning('Còn 5 phút, hãy kiểm tra lại các câu chưa làm.');
-      } else if (_remainingSeconds == 60 && !_oneMinuteWarningShown) {
+      } else if (nextValue == 60 && !_oneMinuteWarningShown) {
         _oneMinuteWarningShown = true;
         _showTimeWarning('Còn 1 phút, bài thi sẽ được nộp tự động.');
+      } else if (nextValue <= 0) {
+        _remainingSecondsNotifier.value = 0;
+        _stopTimer();
+        _handleTimeUp();
       }
     });
+  }
+
+  void _stopTimer() {
+    _examTimer?.cancel();
+    _examTimer = null;
+  }
+
+  void _resetTimerState() {
+    _remainingSecondsNotifier.value = _examDurationSeconds;
+    _fiveMinuteWarningShown = false;
+    _oneMinuteWarningShown = false;
   }
 
   Widget _buildHeader(
@@ -182,7 +191,12 @@ class _QuestionScreenState extends State<QuestionScreen> {
               children: [
                 IconButton(
                   icon: Icon(Icons.arrow_back, color: text),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () async {
+                    final shouldPop = await _handleExitAttempt(context, questionProvider);
+                    if (shouldPop && context.mounted) {
+                      Navigator.pop(context);
+                    }
+                  },
                 ),
                 Expanded(
                   child: Column(
@@ -213,37 +227,14 @@ class _QuestionScreenState extends State<QuestionScreen> {
                         ? AppColors.bookmarkColor(isDark)
                         : text.withValues(alpha: 0.5),
                   ),
-                  onPressed: () => questionProvider.toggleMark(appProvider.selectedLicense),
+                  onPressed: () =>
+                      questionProvider.toggleMark(appProvider.selectedLicense),
                 ),
               ],
             ),
             if (questionProvider.isExamMode) ...[
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFA000).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: const Color(0xFFFFA000).withValues(alpha: 0.4),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.timer_outlined, color: Color(0xFFFFA000), size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      _formatTime(_remainingSeconds),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFFFA000),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _ExamTimerChip(remainingSecondsListenable: _remainingSecondsNotifier),
             ],
             const SizedBox(height: 8),
             LinearProgressIndicator(
@@ -252,26 +243,34 @@ class _QuestionScreenState extends State<QuestionScreen> {
               valueColor: AlwaysStoppedAnimation<Color>(primary),
               minHeight: 6,
             ),
+            const SizedBox(height: 8),
+            Text(
+              '${questionProvider.answeredCount}/${questionProvider.totalQuestions} câu đã làm',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: primary,
+              ),
+            ),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildStatusChip(
                   icon: Icons.check_circle,
-                  label: 'Đúng',
                   count: questionProvider.correctCount,
                   color: AppColors.correctColor(isDark),
                 ),
                 _buildStatusChip(
                   icon: Icons.cancel,
-                  label: 'Sai',
                   count: questionProvider.wrongCount,
                   color: AppColors.wrongColor(isDark),
                 ),
                 _buildStatusChip(
                   icon: Icons.bookmark,
-                  label: 'Đánh dấu',
-                  count: questionProvider.currentQuestions.where((q) => q.isMarked).length,
+                  count: questionProvider.currentQuestions
+                      .where((q) => q.isMarked)
+                      .length,
                   color: AppColors.bookmarkColor(isDark),
                 ),
               ],
@@ -284,7 +283,6 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
   Widget _buildStatusChip({
     required IconData icon,
-    required String label,
     required int count,
     required Color color,
   }) {
@@ -302,7 +300,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
           const SizedBox(width: 4),
           Text(
             '$count',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
         ],
       ),
@@ -320,9 +322,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
   ) {
     final type = appProvider.selectedLicense;
     final surface = AppColors.surface(type, isDark);
-    final shouldShowExplanation = question.isAnswered &&
-        question.isEvaluated &&
-        appProvider.showExplanation;
+    final shouldShowExplanation =
+        question.isAnswered && question.isEvaluated && appProvider.showExplanation;
 
     return SingleChildScrollView(
       controller: _scrollController,
@@ -330,6 +331,57 @@ class _QuestionScreenState extends State<QuestionScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (questionProvider.isExamMode && question.isImportant) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.wrongColor(isDark).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.wrongColor(isDark).withValues(alpha: 0.35),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: AppColors.wrongColor(isDark),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Câu điểm liệt: trả lời sai câu này sẽ không đạt bài thi.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.wrongColor(isDark),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          if (questionProvider.studyMode == StudyMode.wrong) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.wrongColor(isDark).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                'Đã sai ${question.wrongCount} lần',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.wrongColor(isDark),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           if (question.image != null && question.image!.isNotEmpty) ...[
             Container(
               width: double.infinity,
@@ -352,14 +404,16 @@ class _QuestionScreenState extends State<QuestionScreen> {
                           Icon(
                             Icons.image_not_supported,
                             size: 48,
-                            color: AppColors.text(type, isDark).withValues(alpha: 0.3),
+                            color:
+                                AppColors.text(type, isDark).withValues(alpha: 0.3),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Image not found: ${question.image}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.text(type, isDark).withValues(alpha: 0.5),
+                              color: AppColors.text(type, isDark)
+                                  .withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -393,10 +447,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
                 color: AppColors.text(type, isDark),
               ),
             ),
-          ).animate().fadeIn(),
+          ),
           const SizedBox(height: 20),
-          ...List.generate(question.answers.length, (index) {
-            return _buildAnswerOption(
+          ...List.generate(
+            question.answers.length,
+            (index) => _buildAnswerOption(
               context,
               appProvider,
               questionProvider,
@@ -405,27 +460,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
               primary,
               isDark,
               isGradeImmediately,
-            ).animate().fadeIn(delay: (100 * index).ms).slideX();
-          }),
-          if (!isGradeImmediately && question.isAnswered && !question.isEvaluated) ...[
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: primary.withValues(alpha: 0.2)),
-              ),
-              child: Text(
-                'Đáp án đã được lưu. Kết quả sẽ được chấm khi nộp bài.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.text(type, isDark),
-                ),
-              ),
             ),
-          ],
+          ),
           if (shouldShowExplanation) ...[
             const SizedBox(height: 20),
             _buildExplanation(context, appProvider, question, primary, isDark),
@@ -454,7 +490,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
     final answer = question.answers[index];
     final isSelected = question.selectedAnswerIndex == index;
     final hasAnswered = question.isAnswered;
-    final showFeedback = question.isEvaluated && (isGradeImmediately || questionProvider.hasSubmittedSession);
+    final showFeedback = question.isEvaluated &&
+        (isGradeImmediately || questionProvider.hasSubmittedSession);
     final isCorrect = index == question.correctAnswer;
     final surface = AppColors.surface(type, isDark);
     final text = AppColors.text(type, isDark);
@@ -518,9 +555,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
                             : (isSelected
                                 ? AppColors.wrongColor(isDark)
                                 : AppColors.dividerColor(isDark)))
-                        : (isSelected
-                            ? primary
-                            : primary.withValues(alpha: 0.15)),
+                        : (isSelected ? primary : primary.withValues(alpha: 0.15)),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -608,7 +643,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
           ),
         ],
       ),
-    ).animate().fadeIn();
+    );
   }
 
   Widget _buildSubmitExamButton(
@@ -630,7 +665,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
           ),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );
@@ -663,7 +699,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: questionProvider.hasPrevious ? questionProvider.previousQuestion : null,
+                onPressed: questionProvider.hasPrevious
+                    ? questionProvider.previousQuestion
+                    : null,
                 icon: const Icon(Icons.arrow_back),
                 label: const Text('Trước'),
                 style: ElevatedButton.styleFrom(
@@ -674,13 +712,15 @@ class _QuestionScreenState extends State<QuestionScreen> {
             const SizedBox(width: 12),
             IconButton(
               icon: Icon(Icons.view_list, color: primary),
-              onPressed: () => _showQuestionList(context, questionProvider, primary, isDark),
+              onPressed: () =>
+                  _showQuestionList(context, questionProvider, primary, isDark),
               tooltip: 'Danh sách câu hỏi',
             ),
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: questionProvider.hasNext ? questionProvider.nextQuestion : null,
+                onPressed:
+                    questionProvider.hasNext ? questionProvider.nextQuestion : null,
                 icon: const Icon(Icons.arrow_forward),
                 label: const Text('Sau'),
                 style: ElevatedButton.styleFrom(
@@ -708,12 +748,44 @@ class _QuestionScreenState extends State<QuestionScreen> {
     appProvider.incrementQuestionsStudied();
   }
 
+  Future<bool> _handleExitAttempt(
+    BuildContext context,
+    QuestionProvider questionProvider,
+  ) async {
+    if (!questionProvider.isExamMode || questionProvider.hasSubmittedSession) {
+      return true;
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Rời bài thi?'),
+        content: const Text(
+          'Bạn đang làm bài thi thử. Nếu thoát ra bây giờ, tiến trình của đề này sẽ bị mất.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Ở lại'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Thoát'),
+          ),
+        ],
+      ),
+    );
+
+    return result ?? false;
+  }
+
   void _showSubmitConfirmation(
     BuildContext context,
     QuestionProvider questionProvider,
     AppProvider appProvider,
   ) {
-    final unanswered = questionProvider.currentQuestions.where((q) => !q.isAnswered).length;
+    final unanswered =
+        questionProvider.currentQuestions.where((q) => !q.isAnswered).length;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final type = appProvider.selectedLicense;
 
@@ -721,7 +793,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface(type, isDark),
-        title: Text('Nộp bài?', style: TextStyle(color: AppColors.text(type, isDark))),
+        title: Text(
+          'Nộp bài?',
+          style: TextStyle(color: AppColors.text(type, isDark)),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -764,8 +839,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
     QuestionProvider questionProvider,
     AppProvider appProvider,
   ) {
-    _examTimer?.cancel();
-    _examTimer = null;
+    _stopTimer();
     final result = questionProvider.submitExam(appProvider.selectedLicense);
     showDialog(
       context: context,
@@ -774,12 +848,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
         result: result,
         onRetry: () {
           questionProvider.resetCurrentExam();
-          setState(() {
-            _remainingSeconds = _examDurationSeconds;
-            _fiveMinuteWarningShown = false;
-            _oneMinuteWarningShown = false;
-          });
+          _resetTimerState();
           Navigator.pop(dialogContext);
+        },
+        onGoHome: () {
+          Navigator.of(dialogContext).popUntil((route) => route.isFirst);
         },
       ),
     );
@@ -836,6 +909,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
                     } else {
                       color = AppColors.dividerColor(isDark);
                     }
+
                     return Material(
                       color: color,
                       borderRadius: BorderRadius.circular(8),
@@ -896,21 +970,60 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
     _submitExam(context, questionProvider, context.read<AppProvider>());
   }
+}
 
-  String _formatTime(int seconds) {
-    final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
-    final remainingSeconds = (seconds % 60).toString().padLeft(2, '0');
-    return '$minutes:$remainingSeconds';
+class _ExamTimerChip extends StatelessWidget {
+  final ValueNotifier<int> remainingSecondsListenable;
+
+  const _ExamTimerChip({required this.remainingSecondsListenable});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: remainingSecondsListenable,
+      builder: (context, seconds, child) {
+        final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
+        final remainingSeconds = (seconds % 60).toString().padLeft(2, '0');
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFA000).withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: const Color(0xFFFFA000).withValues(alpha: 0.4),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.timer_outlined, color: Color(0xFFFFA000), size: 18),
+              const SizedBox(width: 8),
+              Text(
+                '$minutes:$remainingSeconds',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFFFA000),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
 class _ExamResultDialog extends StatelessWidget {
   final ExamResult result;
   final VoidCallback onRetry;
+  final VoidCallback onGoHome;
 
   const _ExamResultDialog({
     required this.result,
     required this.onRetry,
+    required this.onGoHome,
   });
 
   @override
@@ -935,45 +1048,70 @@ class _ExamResultDialog extends StatelessWidget {
             size: 32,
           ),
           const SizedBox(width: 12),
-          Text(
-            result.passed ? 'Chúc mừng!' : 'Chưa đạt',
-            style: TextStyle(color: AppColors.text(type, isDark)),
+          Expanded(
+            child: Text(
+              result.passed ? 'Chúc mừng!' : 'Chưa đạt',
+              style: TextStyle(color: AppColors.text(type, isDark)),
+            ),
           ),
         ],
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '${result.correctAnswers}/${result.totalQuestions}',
-            style: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-              color: result.passed
-                  ? AppColors.correctColor(isDark)
-                  : AppColors.wrongColor(isDark),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${result.correctAnswers}/${result.totalQuestions}',
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: result.passed
+                    ? AppColors.correctColor(isDark)
+                    : AppColors.wrongColor(isDark),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            result.passed ? 'Bạn đã vượt qua kỳ thi!' : 'Bạn cần 23/30 câu để đạt',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: AppColors.text(type, isDark)),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _statColumn('Đúng', '${result.correctAnswers}', AppColors.correctColor(isDark)),
-              _statColumn('Sai', '${result.wrongAnswers}', AppColors.wrongColor(isDark)),
-              _statColumn(
-                'Trống',
-                '${result.unansweredQuestions}',
-                isDark ? Colors.grey[500]! : Colors.grey,
+            const SizedBox(height: 8),
+            Text(
+              result.passed
+                  ? 'Bạn đã vượt qua kỳ thi!'
+                  : 'Bạn chưa đạt yêu cầu của đề thi.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: AppColors.text(type, isDark)),
+            ),
+            if (result.failedByImportantQuestion) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.wrongColor(isDark).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Bạn bị rớt vì trả lời sai ${result.failedImportantQuestions.length} câu điểm liệt.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.wrongColor(isDark),
+                  ),
+                ),
               ),
             ],
-          ),
-        ],
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _statColumn('Đúng', '${result.correctAnswers}', AppColors.correctColor(isDark)),
+                _statColumn('Sai', '${result.wrongAnswers}', AppColors.wrongColor(isDark)),
+                _statColumn(
+                  'Trống',
+                  '${result.unansweredQuestions}',
+                  isDark ? Colors.grey[500]! : Colors.grey,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
       actions: [
         if (wrongQuestions.isNotEmpty)
@@ -981,6 +1119,10 @@ class _ExamResultDialog extends StatelessWidget {
             onPressed: () => _showWrongQuestions(context, wrongQuestions),
             child: const Text('Xem câu bị sai'),
           ),
+        TextButton(
+          onPressed: onGoHome,
+          child: const Text('Trở về'),
+        ),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Xem lại bài'),
@@ -1015,7 +1157,7 @@ class _ExamResultDialog extends StatelessWidget {
       isScrollControlled: true,
       builder: (sheetContext) {
         return Container(
-          height: MediaQuery.of(context).size.height * 0.75,
+          height: MediaQuery.of(context).size.height * 0.78,
           color: AppColors.surface(type, isDark),
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -1033,11 +1175,10 @@ class _ExamResultDialog extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                   itemCount: wrongQuestions.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  separatorBuilder: (context, index) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final question = wrongQuestions[index];
                     return Container(
-                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.background(type, isDark),
                         borderRadius: BorderRadius.circular(12),
@@ -1045,10 +1186,15 @@ class _ExamResultDialog extends StatelessWidget {
                           color: AppColors.wrongColor(isDark).withValues(alpha: 0.2),
                         ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
+                      child: Theme(
+                        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                        child: ExpansionTile(
+                          tilePadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                          title: Text(
                             'Câu ${question.id}',
                             style: TextStyle(
                               fontSize: 13,
@@ -1056,15 +1202,55 @@ class _ExamResultDialog extends StatelessWidget {
                               color: AppColors.wrongColor(isDark),
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            question.content,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.text(type, isDark),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              question.content,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: AppColors.text(type, isDark)),
                             ),
                           ),
-                        ],
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Bạn chọn: ${_answerLabel(question.selectedAnswerIndex)} ${question.selectedAnswerIndex >= 0 ? question.answers[question.selectedAnswerIndex] : 'Chưa chọn'}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.wrongColor(isDark),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Đáp án đúng: ${_answerLabel(question.correctAnswer)} ${question.answers[question.correctAnswer]}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.correctColor(isDark),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary(type, isDark).withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                question.explanation,
+                                style: TextStyle(
+                                  height: 1.5,
+                                  color: AppColors.text(type, isDark),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -1075,5 +1261,10 @@ class _ExamResultDialog extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _answerLabel(int index) {
+    if (index < 0) return '-';
+    return String.fromCharCode(65 + index);
   }
 }

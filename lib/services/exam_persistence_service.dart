@@ -7,10 +7,8 @@ class ExamPersistenceService {
   factory ExamPersistenceService() => _instance;
   ExamPersistenceService._internal();
 
-  // Exam attempts storage
   final Map<String, List<ExamAttemptRecord>> _examAttempts = {};
 
-  // Key format: "attempts_{licenseType}_{examId}"
   String _attemptsKey(LicenseType type, int examId) {
     return 'attempts_${type.name}_$examId';
   }

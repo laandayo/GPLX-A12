@@ -44,7 +44,6 @@ class AppProvider with ChangeNotifier {
   bool _gradeImmediately = true;
   bool _isDark = false;
 
-  // SharedPreferences keys
   static const _keyLicense = 'license_type';
   static const _keyTheme = 'theme_mode';
   static const _keyAutoAdvance = 'auto_advance';
@@ -63,10 +62,8 @@ class AppProvider with ChangeNotifier {
   bool get gradeImmediately => _gradeImmediately;
   bool get isDark => _isDark;
 
-  /// Convenience: primary color for the selected license type (light variant).
   Color get primaryColor => AppColors.primary(_selectedLicense, false);
 
-  /// Convenience: accent color for the selected license type (light variant).
   Color get accentColor => AppColors.accent(_selectedLicense, false);
 
   ThemeMode get flutterThemeMode {
@@ -80,13 +77,10 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  /// Generate the current light theme based on license type.
   ThemeData get lightTheme => ThemeConfig.lightTheme(_selectedLicense);
 
-  /// Generate the current dark theme based on license type.
   ThemeData get darkTheme => ThemeConfig.darkTheme(_selectedLicense);
 
-  /// Resolve the actual brightness from system/theme settings.
   Brightness resolveBrightness(BuildContext context) {
     if (_themeMode == ThemeModeOption.system) {
       return MediaQuery.platformBrightnessOf(context);
@@ -94,22 +88,18 @@ class AppProvider with ChangeNotifier {
     return _themeMode == ThemeModeOption.dark ? Brightness.dark : Brightness.light;
   }
 
-  /// Whether the current display is dark mode.
   bool isDarkMode(BuildContext context) {
     return resolveBrightness(context) == Brightness.dark;
   }
 
   Future<void> initialize(BuildContext context) async {
-    // Capture brightness before async operations
     final initialBrightness = resolveBrightness(context);
 
     final prefs = await SharedPreferences.getInstance();
 
-    // Load license type
     final licenseStr = prefs.getString(_keyLicense) ?? 'A1';
     _selectedLicense = licenseStr == 'A2' ? LicenseType.a2 : LicenseType.a1;
 
-    // Load theme mode
     final themeStr = prefs.getString(_keyTheme) ?? 'system';
     switch (themeStr) {
       case 'light':
@@ -122,16 +112,13 @@ class AppProvider with ChangeNotifier {
         _themeMode = ThemeModeOption.system;
     }
 
-    // Load settings
     _autoAdvance = prefs.getBool(_keyAutoAdvance) ?? false;
     _showExplanation = prefs.getBool(_keyShowExplanation) ?? true;
     _gradeImmediately = prefs.getBool(_keyGradeImmediately) ?? true;
 
-    // Load study stats
     _questionsStudiedToday = prefs.getInt(_keyQuestionsToday) ?? 0;
     _streakDays = prefs.getInt(_keyStreakDays) ?? 0;
 
-    // Check if we need to reset daily count
     final lastStudyDate = prefs.getString(_keyLastStudyDate);
     final today = DateTime.now();
     if (lastStudyDate != null) {
@@ -145,7 +132,6 @@ class AppProvider with ChangeNotifier {
       }
     }
 
-    // Resolve current dark state
     _isDark = initialBrightness == Brightness.dark;
 
     notifyListeners();

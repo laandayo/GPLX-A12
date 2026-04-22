@@ -45,7 +45,6 @@ class QuestionJsonService {
       final jsonString = await rootBundle.loadString(fileName);
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
 
-      // Load chapters
       final chaptersJson = data['chapters'] as List;
       _chapters[type] = chaptersJson
           .map((c) => Chapter.fromJson(c as Map<String, dynamic>))
@@ -55,7 +54,6 @@ class QuestionJsonService {
         debugPrint('[QuestionJsonService] Loaded ${_chapters[type]!.length} chapters');
       }
 
-      // Load questions
       final questionsJson = data['questions'] as List;
       _questions[type] = questionsJson
           .map((q) => Question.fromJsonSimple(q as Map<String, dynamic>))
@@ -65,10 +63,8 @@ class QuestionJsonService {
         debugPrint('[QuestionJsonService] Loaded ${_questions[type]!.length} questions');
       }
 
-      // Load persisted question states
       await QuestionStatePersistence().loadAllQuestionStates(type, _questions[type]!);
 
-      // Load exams
       final examsJson = data['exams'] as List;
       final licenseStr = type == LicenseType.a1 ? 'A1' : 'A2';
       _exams[type] = examsJson
@@ -176,7 +172,6 @@ class QuestionJsonService {
     return totalCorrect / totalAttempts;
   }
 
-  /// Search questions by text content (not ID).
   List<Question> searchQuestions(LicenseType type, String query) {
     if (query.trim().isEmpty) return [];
     final lowerQuery = query.toLowerCase().trim();

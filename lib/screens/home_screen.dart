@@ -227,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             MenuGridItem(
               icon: '⚠️',
-              title: 'Quan trọng',
+              title: 'Câu Liệt',
               subtitle: '$importantCount câu',
               color: primary,
               onTap: () => _navigateToQuestions(context, StudyMode.important),

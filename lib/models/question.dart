@@ -8,7 +8,6 @@ class Question {
   final String? image;
   final bool isImportant;
 
-  // User interaction state
   bool isAnswered;
   int selectedAnswerIndex;
   int wrongCount;

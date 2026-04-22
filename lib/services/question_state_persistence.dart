@@ -43,7 +43,7 @@ class QuestionStatePersistence {
           question.lastAnsweredAt = DateTime.parse(data['lastAnsweredAt'] as String);
         }
       } catch (e) {
-        // Ignore parsing errors
+        return;
       }
     }
   }

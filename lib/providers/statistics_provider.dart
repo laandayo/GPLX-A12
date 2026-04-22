@@ -28,7 +28,6 @@ class StatisticsProvider with ChangeNotifier {
   double getPassProbability(LicenseType type) {
     final accuracy = getOverallAccuracy(type);
     if (accuracy == 0) return 0.0;
-    // Simple calculation - can be improved with more data
     return accuracy * 0.9;
   }
 
@@ -55,7 +54,6 @@ class StatisticsProvider with ChangeNotifier {
   }
 
   List<int> getStudyHeatmap() {
-    // Return last 30 days activity (placeholder)
     return List.generate(30, (index) => index % 5);
   }
 }

@@ -8,13 +8,11 @@ import 'screens/screens.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set preferred orientations
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // Initialize the question repository (async for JSON loading)
   await QuestionRepository().initializeAsync();
 
   runApp(const GplxApp());

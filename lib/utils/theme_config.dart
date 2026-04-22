@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/license_type.dart';
 import 'app_colors.dart';
 
-/// Generates consistent ThemeData based on license type and brightness.
-/// All theme generation is centralized here.
 class ThemeConfig {
   ThemeConfig._();
 
-  /// Generate the full ThemeData for the given license type and dark mode.
   static ThemeData generate(LicenseType type, bool isDark) {
     final primary = AppColors.primary(type, isDark);
     final accent = AppColors.accent(type, isDark);
@@ -148,9 +145,7 @@ class ThemeConfig {
     );
   }
 
-  /// Generate light theme for the given license type.
   static ThemeData lightTheme(LicenseType type) => generate(type, false);
 
-  /// Generate dark theme for the given license type.
   static ThemeData darkTheme(LicenseType type) => generate(type, true);
 }

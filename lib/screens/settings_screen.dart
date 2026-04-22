@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../data/data.dart';
 import '../providers/providers.dart';
+import '../screens/screens.dart';
+import '../services/exam_persistence_service.dart';
+import '../services/question_state_persistence.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -39,12 +43,43 @@ class SettingsScreen extends StatelessWidget {
               _buildSectionHeader(context, 'Cài đặt ôn tập', primary, text),
               _buildStudySettings(context, appProvider, isDark, primary, text),
               const Divider(height: 32),
+              _buildSectionHeader(context, 'Dữ liệu', primary, text),
+              _buildDataActions(context, appProvider, surface, text),
+              const Divider(height: 32),
               _buildSectionHeader(context, 'Thông tin', primary, text),
               _buildAbout(context, isDark, primary, text, surface),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildDataActions(
+    BuildContext context,
+    AppProvider appProvider,
+    Color surface,
+    Color text,
+  ) {
+    return Material(
+      color: surface,
+      child: ListTile(
+        leading: const Icon(
+          Icons.delete_forever_outlined,
+          color: Color(0xFFD32F2F),
+        ),
+        title: const Text('Xóa dữ liệu'),
+        subtitle: Text(
+          'Đưa ứng dụng về trạng thái ban đầu',
+          style: TextStyle(fontSize: 12, color: text.withValues(alpha: 0.6)),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: text.withValues(alpha: 0.5),
+        ),
+        onTap: () => _confirmResetData(context, appProvider),
+      ),
     );
   }
 
@@ -174,7 +209,7 @@ class SettingsScreen extends StatelessWidget {
                 const Text('Phiên bản'),
                 const Spacer(),
                 Text(
-                  '0.2.2',
+                  '0.2.6',
                   style: TextStyle(color: text.withValues(alpha: 0.7)),
                 ),
               ],
@@ -201,6 +236,55 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _confirmResetData(
+    BuildContext context,
+    AppProvider appProvider,
+  ) async {
+    final questionProvider = context.read<QuestionProvider>();
+    final statisticsProvider = context.read<StatisticsProvider>();
+    final navigator = Navigator.of(context);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Xóa toàn bộ dữ liệu?'),
+        content: const Text(
+          'Lịch sử làm bài, thống kê, đánh dấu, câu sai và cài đặt sẽ bị xóa. Thao tác này không thể hoàn tác.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Đồng ý'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    await QuestionStatePersistence().clearAllStatesForAllLicenses();
+    await ExamPersistenceService().clearAllAttempts();
+    QuestionRepository().resetAllProgress();
+    questionProvider.resetState();
+    statisticsProvider.clearHistory();
+    await appProvider.resetAppData();
+
+    if (!context.mounted) {
+      return;
+    }
+
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      (route) => false,
     );
   }
 }

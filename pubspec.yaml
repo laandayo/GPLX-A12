@@ -43,6 +43,7 @@ dependencies:
 
   # Animations
   flutter_animate: ^4.5.0
+  google_mobile_ads: ^8.0.0
 
 dev_dependencies:
   flutter_test:

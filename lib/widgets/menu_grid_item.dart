@@ -21,7 +21,9 @@ class MenuGridItem extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
-      color: Theme.of(context).cardTheme.color ?? (isDark ? const Color(0xFF121A26) : Colors.white),
+      color:
+          Theme.of(context).cardTheme.color ??
+          (isDark ? const Color(0xFF121A26) : Colors.white),
       borderRadius: BorderRadius.circular(16),
       elevation: 2,
       shadowColor: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
@@ -33,10 +35,7 @@ class MenuGridItem extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                icon,
-                style: const TextStyle(fontSize: 32),
-              ),
+              Text(icon, style: const TextStyle(fontSize: 32)),
               const SizedBox(height: 8),
               Text(
                 title,

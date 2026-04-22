@@ -269,6 +269,17 @@ class QuestionProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void resetState() {
+    _studyMode = StudyMode.all;
+    _currentQuestions = [];
+    _currentIndex = 0;
+    _currentExam = null;
+    _isExamMode = false;
+    _hasSubmittedSession = false;
+    _scoringMode = ScoringMode.gradeAfterSubmission;
+    notifyListeners();
+  }
+
   void _startSession({
     required List<Question> questions,
     required StudyMode mode,

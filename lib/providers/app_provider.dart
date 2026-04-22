@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../utils/theme_config.dart';
@@ -43,6 +44,7 @@ class AppProvider with ChangeNotifier {
   bool _showExplanation = true;
   bool _gradeImmediately = true;
   bool _isDark = false;
+  final Map<String, int> _studyActivity = {};
 
   static const _keyLicense = 'license_type';
   static const _keyTheme = 'theme_mode';
@@ -52,6 +54,7 @@ class AppProvider with ChangeNotifier {
   static const _keyQuestionsToday = 'questions_today';
   static const _keyStreakDays = 'streak_days';
   static const _keyLastStudyDate = 'last_study_date';
+  static const _keyStudyActivity = 'study_activity';
 
   LicenseType get selectedLicense => _selectedLicense;
   int get questionsStudiedToday => _questionsStudiedToday;
@@ -61,6 +64,7 @@ class AppProvider with ChangeNotifier {
   bool get showExplanation => _showExplanation;
   bool get gradeImmediately => _gradeImmediately;
   bool get isDark => _isDark;
+  Map<String, int> get studyActivity => Map.unmodifiable(_studyActivity);
 
   Color get primaryColor => AppColors.primary(_selectedLicense, false);
 
@@ -116,7 +120,8 @@ class AppProvider with ChangeNotifier {
     _showExplanation = prefs.getBool(_keyShowExplanation) ?? true;
     _gradeImmediately = prefs.getBool(_keyGradeImmediately) ?? true;
 
-    _questionsStudiedToday = prefs.getInt(_keyQuestionsToday) ?? 0;
+    _loadStudyActivity(prefs);
+    _questionsStudiedToday = _studyActivity[_dateKey(DateTime.now())] ?? 0;
     _streakDays = prefs.getInt(_keyStreakDays) ?? 0;
 
     final lastStudyDate = prefs.getString(_keyLastStudyDate);
@@ -137,7 +142,7 @@ class AppProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _savePrefs() async {
+  Future<void> _savePrefs({bool persistStudyTimestamp = false}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
         _keyLicense, _selectedLicense == LicenseType.a2 ? 'A2' : 'A1');
@@ -147,7 +152,10 @@ class AppProvider with ChangeNotifier {
     await prefs.setBool(_keyGradeImmediately, _gradeImmediately);
     await prefs.setInt(_keyQuestionsToday, _questionsStudiedToday);
     await prefs.setInt(_keyStreakDays, _streakDays);
-    await prefs.setString(_keyLastStudyDate, DateTime.now().toIso8601String());
+    await prefs.setString(_keyStudyActivity, jsonEncode(_studyActivity));
+    if (persistStudyTimestamp) {
+      await prefs.setString(_keyLastStudyDate, DateTime.now().toIso8601String());
+    }
   }
 
   void updateDarkModeState(BuildContext context) {
@@ -160,37 +168,56 @@ class AppProvider with ChangeNotifier {
 
   Future<void> switchLicenseType(LicenseType type) async {
     _selectedLicense = type;
-    await _savePrefs();
     notifyListeners();
+    await _savePrefs();
   }
 
   Future<void> setThemeMode(ThemeModeOption mode) async {
     _themeMode = mode;
-    await _savePrefs();
     notifyListeners();
+    await _savePrefs();
   }
 
   Future<void> toggleAutoAdvance() async {
     _autoAdvance = !_autoAdvance;
-    await _savePrefs();
     notifyListeners();
+    await _savePrefs();
   }
 
   Future<void> setShowExplanation(bool value) async {
     _showExplanation = value;
-    await _savePrefs();
     notifyListeners();
+    await _savePrefs();
   }
 
   Future<void> setGradeImmediately(bool value) async {
     _gradeImmediately = value;
-    await _savePrefs();
     notifyListeners();
+    await _savePrefs();
   }
 
   Future<void> incrementQuestionsStudied() async {
-    _questionsStudiedToday++;
-    await _savePrefs();
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    final todayKey = _dateKey(now);
+    final lastStudyDate = prefs.getString(_keyLastStudyDate);
+
+    if (lastStudyDate == null) {
+      _streakDays = 1;
+    } else {
+      final diff = _dateOnly(now).difference(_dateOnly(DateTime.parse(lastStudyDate))).inDays;
+      if (diff == 1) {
+        _streakDays++;
+      } else if (diff > 1) {
+        _streakDays = 1;
+      } else if (_streakDays == 0) {
+        _streakDays = 1;
+      }
+    }
+
+    _studyActivity[todayKey] = (_studyActivity[todayKey] ?? 0) + 1;
+    _questionsStudiedToday = _studyActivity[todayKey]!;
+    await _savePrefs(persistStudyTimestamp: true);
     notifyListeners();
   }
 
@@ -211,7 +238,75 @@ class AppProvider with ChangeNotifier {
       _streakDays = 1;
     }
 
-    await _savePrefs();
+    await _savePrefs(persistStudyTimestamp: true);
     notifyListeners();
   }
+
+  List<int> getStudyHeatmap({int days = 30}) {
+    final now = _dateOnly(DateTime.now());
+    final counts = List<int>.generate(days, (index) {
+      final day = now.subtract(Duration(days: days - index - 1));
+      return _studyActivity[_dateKey(day)] ?? 0;
+    });
+    final maxCount = counts.fold<int>(0, (max, count) => count > max ? count : max);
+
+    return counts.map((count) {
+      if (count == 0) return 0;
+      if (maxCount <= 4) return count.clamp(1, 4);
+      final normalized = ((count / maxCount) * 4).ceil();
+      return normalized.clamp(1, 4);
+    }).toList(growable: false);
+  }
+
+  Future<void> resetAppData() async {
+    _selectedLicense = LicenseType.a1;
+    _questionsStudiedToday = 0;
+    _streakDays = 0;
+    _themeMode = ThemeModeOption.system;
+    _autoAdvance = false;
+    _showExplanation = true;
+    _gradeImmediately = true;
+    _studyActivity.clear();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyLicense);
+    await prefs.remove(_keyTheme);
+    await prefs.remove(_keyAutoAdvance);
+    await prefs.remove(_keyShowExplanation);
+    await prefs.remove(_keyGradeImmediately);
+    await prefs.remove(_keyQuestionsToday);
+    await prefs.remove(_keyStreakDays);
+    await prefs.remove(_keyLastStudyDate);
+    await prefs.remove(_keyStudyActivity);
+
+    notifyListeners();
+  }
+
+  void _loadStudyActivity(SharedPreferences prefs) {
+    _studyActivity.clear();
+    final raw = prefs.getString(_keyStudyActivity);
+    if (raw == null || raw.isEmpty) {
+      return;
+    }
+
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      for (final entry in decoded.entries) {
+        final value = entry.value;
+        if (value is int) {
+          _studyActivity[entry.key] = value;
+        }
+      }
+    } catch (_) {}
+  }
+
+  String _dateKey(DateTime date) {
+    final normalized = _dateOnly(date);
+    final year = normalized.year.toString().padLeft(4, '0');
+    final month = normalized.month.toString().padLeft(2, '0');
+    final day = normalized.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
+  }
+
+  DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
 }

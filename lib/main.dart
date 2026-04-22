@@ -2,18 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/providers.dart';
-import 'data/data.dart';
 import 'screens/screens.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setPreferredOrientations([
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-
-  await QuestionRepository().initializeAsync();
 
   runApp(const GplxApp());
 }
@@ -47,7 +44,7 @@ class _GplxAppContent extends StatelessWidget {
           theme: appProvider.lightTheme,
           darkTheme: appProvider.darkTheme,
           themeMode: appProvider.flutterThemeMode,
-          home: const HomeScreen(),
+          home: const AppStartupScreen(),
           routes: {'/question_screen': (context) => const QuestionScreen()},
         );
       },

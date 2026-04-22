@@ -61,4 +61,12 @@ class QuestionStatePersistence {
       await prefs.remove(key);
     }
   }
+
+  Future<void> clearAllStatesForAllLicenses() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys().where((k) => k.startsWith(_keyPrefix)).toList();
+    for (final key in keys) {
+      await prefs.remove(key);
+    }
+  }
 }

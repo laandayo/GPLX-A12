@@ -1,5 +1,7 @@
+export 'app_startup_screen.dart';
 export 'home_screen.dart';
 export 'chapter_list_screen.dart';
+export 'chapter_info_screen.dart';
 export 'question_screen.dart';
 export 'statistics_screen.dart';
 export 'exam_list_screen.dart';

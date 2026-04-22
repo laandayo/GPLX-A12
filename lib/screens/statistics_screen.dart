@@ -5,7 +5,9 @@ import '../models/models.dart';
 import '../data/data.dart';
 
 class StatisticsScreen extends StatelessWidget {
-  const StatisticsScreen({super.key});
+  final VoidCallback? onBack;
+
+  const StatisticsScreen({super.key, this.onBack});
 
   @override
   Widget build(BuildContext context) {
@@ -21,12 +23,19 @@ class StatisticsScreen extends StatelessWidget {
         final total = statsProvider.getTotalQuestions(type);
         final passProb = statsProvider.getPassProbability(type);
 
+        final heatmap = statsProvider.getStudyHeatmap(appProvider.studyActivity);
+
         return Scaffold(
           backgroundColor: AppColors.background(type, isDark),
           appBar: AppBar(
             title: const Text('Thống kê'),
-            leading: IconButton(icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context)),
+            automaticallyImplyLeading: false,
+            leading: (onBack != null || Navigator.of(context).canPop())
+                ? IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: onBack ?? () => Navigator.pop(context),
+                  )
+                : null,
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -43,7 +52,7 @@ class StatisticsScreen extends StatelessWidget {
                 Text('Hoạt động ôn tập (30 ngày)',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: text)),
                 const SizedBox(height: 12),
-                _buildStudyHeatmap(context, statsProvider, surface, isDark),
+                _buildStudyHeatmap(context, heatmap, surface, isDark),
               ],
             ),
           ),
@@ -121,9 +130,8 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStudyHeatmap(BuildContext context, StatisticsProvider statsProvider,
+  Widget _buildStudyHeatmap(BuildContext context, List<int> heatmap,
       Color surface, bool isDark) {
-    final heatmap = statsProvider.getStudyHeatmap();
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

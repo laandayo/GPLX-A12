@@ -34,6 +34,12 @@ class ExamPersistenceService {
     }
   }
 
+  Future<void> initializeAll() async {
+    for (final type in LicenseType.values) {
+      await initialize(type);
+    }
+  }
+
   Future<void> saveExamAttempt(
     LicenseType type,
     int examId,
@@ -74,6 +80,15 @@ class ExamPersistenceService {
 
   bool hasAttemptedExam(LicenseType type, int examId) {
     return getExamAttempts(type, examId).isNotEmpty;
+  }
+
+  Future<void> clearAllAttempts() async {
+    _examAttempts.clear();
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys().where((key) => key.startsWith('attempts_')).toList();
+    for (final key in keys) {
+      await prefs.remove(key);
+    }
   }
 }
 

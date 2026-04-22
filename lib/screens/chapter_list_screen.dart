@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/providers.dart';
 import '../models/models.dart';
 import '../data/data.dart';
-import 'question_screen.dart';
+import 'chapter_info_screen.dart';
 import 'study_mode_info_screen.dart';
 
 class ChapterListScreen extends StatelessWidget {
@@ -38,7 +37,7 @@ class ChapterListScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final chapter = chapters[index];
                     return _ChapterCard(chapter: chapter, primary: primary,
-                      isDark: isDark, onTap: () => _navigateToChapter(context, chapter)).animate().fadeIn(delay: (100 * index).ms).slideX();
+                      isDark: isDark, onTap: () => _navigateToChapter(context, chapter));
                   },
                 ),
               ),
@@ -88,14 +87,10 @@ class ChapterListScreen extends StatelessWidget {
   }
 
   void _navigateToChapter(BuildContext context, Chapter chapter) {
-    final appProvider = context.read<AppProvider>();
-    final questionProvider = context.read<QuestionProvider>();
-    questionProvider.loadQuestionsByChapter(appProvider.selectedLicense, chapter.title);
-    if (questionProvider.currentQuestions.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Không có câu hỏi trong chương này')));
-      return;
-    }
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const QuestionScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ChapterInfoScreen(chapter: chapter)),
+    );
   }
 
   void _openStudyModeInfo(

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../ads/ads.dart';
 import '../providers/providers.dart';
 import '../models/models.dart';
 
@@ -740,12 +741,30 @@ class _QuestionScreenState extends State<QuestionScreen> {
     required AppProvider appProvider,
     required bool gradeImmediately,
   }) {
+    final answeredIndex = questionProvider.currentIndex;
     questionProvider.selectAnswer(
       answerIndex,
       appProvider.selectedLicense,
       gradeImmediately: gradeImmediately,
     );
     appProvider.incrementQuestionsStudied();
+
+    if (!appProvider.autoAdvance || !questionProvider.hasNext) {
+      return;
+    }
+
+    final advanceDelay = gradeImmediately
+        ? (appProvider.showExplanation
+              ? const Duration(milliseconds: 900)
+              : const Duration(milliseconds: 250))
+        : const Duration(milliseconds: 200);
+
+    Future<void>.delayed(advanceDelay, () {
+      if (!mounted) return;
+      if (questionProvider.currentIndex != answeredIndex) return;
+      if (!questionProvider.hasNext) return;
+      questionProvider.nextQuestion();
+    });
   }
 
   Future<bool> _handleExitAttempt(
@@ -841,20 +860,32 @@ class _QuestionScreenState extends State<QuestionScreen> {
   ) {
     _stopTimer();
     final result = questionProvider.submitExam(appProvider.selectedLicense);
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => _ExamResultDialog(
-        result: result,
-        onRetry: () {
-          questionProvider.resetCurrentExam();
-          _resetTimerState();
-          Navigator.pop(dialogContext);
-        },
-        onGoHome: () {
-          Navigator.of(dialogContext).popUntil((route) => route.isFirst);
-        },
-      ),
+
+    Future<void> showResultDialog() {
+      return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => _ExamResultDialog(
+          result: result,
+          onRetry: () {
+            questionProvider.resetCurrentExam();
+            _resetTimerState();
+            Navigator.pop(dialogContext);
+          },
+          onGoHome: () {
+            Navigator.of(dialogContext).popUntil((route) => route.isFirst);
+          },
+        ),
+      );
+    }
+
+    if (!questionProvider.isExamMode) {
+      showResultDialog();
+      return;
+    }
+
+    InterstitialAdService.instance.showAfterExam(
+      onFinished: showResultDialog,
     );
   }
 

@@ -77,4 +77,8 @@ class QuestionRepository {
   List<Question> searchQuestions(LicenseType type, String query) {
     return _jsonService.searchQuestions(type, query);
   }
+
+  void resetAllProgress() {
+    _jsonService.resetAllProgress();
+  }
 }

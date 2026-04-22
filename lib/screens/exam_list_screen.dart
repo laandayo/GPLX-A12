@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/providers.dart';
 import '../models/models.dart';
 import '../services/exam_persistence_service.dart';
@@ -37,7 +36,7 @@ class ExamListScreen extends StatelessWidget {
             itemCount: exams.length + 1,
             itemBuilder: (context, index) {
               if (index == exams.length) {
-                return _RandomExamCard(color: primary).animate().fadeIn(delay: (100 * index).ms);
+                return _RandomExamCard(color: primary);
               }
               final exam = exams[index];
               final attemptCount = ExamPersistenceService()
@@ -48,7 +47,7 @@ class ExamListScreen extends StatelessWidget {
               return _ExamCard(
                 exam: exam, attemptCount: attemptCount, bestScore: bestScore,
                 color: primary, onTap: () => _navigateToExamInfo(context, exam),
-              ).animate().fadeIn(delay: (100 * index).ms);
+              );
             },
           ),
         );

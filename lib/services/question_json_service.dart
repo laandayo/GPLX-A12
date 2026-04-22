@@ -13,23 +13,39 @@ class QuestionJsonService {
   final Map<LicenseType, List<Chapter>> _chapters = {};
   final Map<LicenseType, List<Exam>> _exams = {};
   bool _initialized = false;
+  Future<void>? _initializationFuture;
 
   bool get isInitialized => _initialized;
 
   Future<void> initialize() async {
-    if (_initialized) return;
-
-    for (var type in LicenseType.values) {
-      await _loadDataForType(type);
+    if (_initialized) {
+      return;
+    }
+    final inFlight = _initializationFuture;
+    if (inFlight != null) {
+      await inFlight;
+      return;
     }
 
-    _initialized = true;
-    if (kDebugMode) {
-      for (var type in LicenseType.values) {
-        debugPrint(
-            '[QuestionJsonService] ${type.name}: ${_questions[type]?.length ?? 0} questions, '
-            '${_chapters[type]?.length ?? 0} chapters, ${_exams[type]?.length ?? 0} exams');
+    final future = _initializeInternal();
+    _initializationFuture = future;
+    await future;
+  }
+
+  Future<void> _initializeInternal() async {
+    try {
+      await Future.wait(LicenseType.values.map(_loadDataForType));
+
+      _initialized = true;
+      if (kDebugMode) {
+        for (var type in LicenseType.values) {
+          debugPrint(
+              '[QuestionJsonService] ${type.name}: ${_questions[type]?.length ?? 0} questions, '
+              '${_chapters[type]?.length ?? 0} chapters, ${_exams[type]?.length ?? 0} exams');
+        }
       }
+    } finally {
+      _initializationFuture = null;
     }
   }
 
@@ -43,7 +59,7 @@ class QuestionJsonService {
         debugPrint('[QuestionJsonService] Loading $fileName...');
       }
       final jsonString = await rootBundle.loadString(fileName);
-      final data = jsonDecode(jsonString) as Map<String, dynamic>;
+      final data = await compute(_decodeQuestionAsset, jsonString);
 
       final chaptersJson = data['chapters'] as List;
       _chapters[type] = chaptersJson
@@ -180,4 +196,22 @@ class QuestionJsonService {
         .where((q) => q.content.toLowerCase().contains(lowerQuery))
         .toList();
   }
+
+  void resetAllProgress() {
+    for (final questions in _questions.values) {
+      for (final question in questions) {
+        question.isAnswered = false;
+        question.selectedAnswerIndex = -1;
+        question.wrongCount = 0;
+        question.correctCount = 0;
+        question.isMarked = false;
+        question.lastAnsweredAt = null;
+        question.isEvaluated = false;
+      }
+    }
+  }
+}
+
+Map<String, dynamic> _decodeQuestionAsset(String jsonString) {
+  return jsonDecode(jsonString) as Map<String, dynamic>;
 }

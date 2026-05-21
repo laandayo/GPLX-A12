@@ -5,6 +5,7 @@ export 'chapter_info_screen.dart';
 export 'question_screen.dart';
 export 'statistics_screen.dart';
 export 'exam_list_screen.dart';
+export 'exam_history_screen.dart';
 export 'exam_info_screen.dart';
 export 'study_mode_info_screen.dart';
 export 'question_catalog_screen.dart';

@@ -15,10 +15,7 @@ enum StudyMode {
   practice,
 }
 
-enum ScoringMode {
-  gradeAfterSubmission,
-  gradeImmediately,
-}
+enum ScoringMode { gradeAfterSubmission, gradeImmediately }
 
 class QuestionProvider with ChangeNotifier {
   final QuestionRepository _repository = QuestionRepository();
@@ -30,6 +27,7 @@ class QuestionProvider with ChangeNotifier {
   Exam? _currentExam;
   bool _isExamMode = false;
   bool _hasSubmittedSession = false;
+  DateTime? _sessionStartedAt;
 
   StudyMode get studyMode => _studyMode;
   ScoringMode get scoringMode => _scoringMode;
@@ -94,6 +92,23 @@ class QuestionProvider with ChangeNotifier {
 
     exams.shuffle();
     loadExam(type, exams.first.id);
+  }
+
+  void loadShuffledExam(LicenseType type) {
+    final questions = _repository.getShuffledExamQuestions(type);
+    if (questions.isEmpty) return;
+
+    _startSession(
+      questions: questions,
+      mode: StudyMode.exam,
+      isExamMode: true,
+      exam: Exam(
+        id: -1,
+        name: 'Đề câu hỏi xáo trộn',
+        questionIds: questions.map((q) => q.id).toList(growable: false),
+        licenseType: 'A1',
+      ),
+    );
   }
 
   void loadQuestionsByChapter(LicenseType type, String chapterName) {
@@ -184,7 +199,10 @@ class QuestionProvider with ChangeNotifier {
     final sessionQuestion = currentQuestion;
     if (sessionQuestion == null) return;
 
-    final sourceQuestion = _repository.getQuestionById(type, sessionQuestion.id);
+    final sourceQuestion = _repository.getQuestionById(
+      type,
+      sessionQuestion.id,
+    );
     final nextValue = !sessionQuestion.isMarked;
     sessionQuestion.isMarked = nextValue;
     if (sourceQuestion != null) {
@@ -231,13 +249,24 @@ class QuestionProvider with ChangeNotifier {
     final result = _buildResult();
 
     if (_currentExam != null) {
+      final completedAt = DateTime.now();
       final attempt = ExamAttemptRecord(
-        date: DateTime.now(),
+        date: completedAt,
+        examId: _currentExam!.id,
+        examName: _currentExam!.name,
         totalQuestions: _currentQuestions.length,
         correctAnswers: result.correctAnswers,
         wrongAnswers: result.wrongAnswers,
         unansweredQuestions: result.unansweredQuestions,
         passed: result.passed,
+        startedAt: _sessionStartedAt,
+        completedAt: completedAt,
+        durationSeconds: _sessionStartedAt == null
+            ? null
+            : completedAt.difference(_sessionStartedAt!).inSeconds,
+        questionDetails: _currentQuestions
+            .map((question) => ExamAttemptQuestionRecord.fromQuestion(question))
+            .toList(growable: false),
       );
       ExamPersistenceService().saveExamAttempt(type, _currentExam!.id, attempt);
     }
@@ -252,6 +281,7 @@ class QuestionProvider with ChangeNotifier {
     }
     _currentIndex = 0;
     _hasSubmittedSession = false;
+    _sessionStartedAt = DateTime.now();
     notifyListeners();
   }
 
@@ -276,6 +306,7 @@ class QuestionProvider with ChangeNotifier {
     _currentExam = null;
     _isExamMode = false;
     _hasSubmittedSession = false;
+    _sessionStartedAt = null;
     _scoringMode = ScoringMode.gradeAfterSubmission;
     notifyListeners();
   }
@@ -289,9 +320,12 @@ class QuestionProvider with ChangeNotifier {
     _studyMode = mode;
     _isExamMode = isExamMode;
     _currentExam = exam;
-    _currentQuestions = questions.map((question) => question.copyForSession()).toList();
+    _currentQuestions = questions
+        .map((question) => question.copyForSession())
+        .toList();
     _currentIndex = 0;
     _hasSubmittedSession = false;
+    _sessionStartedAt = DateTime.now();
     notifyListeners();
   }
 
@@ -299,7 +333,10 @@ class QuestionProvider with ChangeNotifier {
     if (sessionQuestion.isEvaluated) return;
 
     sessionQuestion.isEvaluated = true;
-    final sourceQuestion = _repository.getQuestionById(type, sessionQuestion.id);
+    final sourceQuestion = _repository.getQuestionById(
+      type,
+      sessionQuestion.id,
+    );
     if (sourceQuestion == null) return;
 
     sourceQuestion.isAnswered = true;
@@ -317,8 +354,12 @@ class QuestionProvider with ChangeNotifier {
   }
 
   ExamResult _buildResult() {
-    final correct = _currentQuestions.where((q) => q.isEvaluated && q.isCorrect).length;
-    final wrong = _currentQuestions.where((q) => q.isEvaluated && !q.isCorrect).length;
+    final correct = _currentQuestions
+        .where((q) => q.isEvaluated && q.isCorrect)
+        .length;
+    final wrong = _currentQuestions
+        .where((q) => q.isEvaluated && !q.isCorrect)
+        .length;
     final unanswered = _currentQuestions.where((q) => !q.isAnswered).length;
     final failedImportantQuestions = _currentQuestions
         .where((q) => q.isImportant && q.isEvaluated && !q.isCorrect)

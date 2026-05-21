@@ -7,7 +7,9 @@ import '../providers/providers.dart';
 import '../models/models.dart';
 
 class QuestionScreen extends StatefulWidget {
-  const QuestionScreen({super.key});
+  final bool isCatalogLookup;
+
+  const QuestionScreen({super.key, this.isCatalogLookup = false});
 
   @override
   State<QuestionScreen> createState() => _QuestionScreenState();
@@ -17,8 +19,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
   static const int _examDurationSeconds = 20 * 60;
 
   final ScrollController _scrollController = ScrollController();
-  final ValueNotifier<int> _remainingSecondsNotifier =
-      ValueNotifier<int>(_examDurationSeconds);
+  final ValueNotifier<int> _remainingSecondsNotifier = ValueNotifier<int>(
+    _examDurationSeconds,
+  );
   Timer? _examTimer;
   bool _fiveMinuteWarningShown = false;
   bool _oneMinuteWarningShown = false;
@@ -48,14 +51,20 @@ class _QuestionScreenState extends State<QuestionScreen> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final type = appProvider.selectedLicense;
         final primary = AppColors.primary(type, isDark);
-        final isGradeImmediately = !questionProvider.isExamMode ||
+        final isGradeImmediately =
+            !questionProvider.isExamMode ||
             questionProvider.scoringMode == ScoringMode.gradeImmediately;
 
         return PopScope(
-          canPop: !questionProvider.isExamMode || questionProvider.hasSubmittedSession,
+          canPop:
+              !questionProvider.isExamMode ||
+              questionProvider.hasSubmittedSession,
           onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return;
-            final shouldPop = await _handleExitAttempt(context, questionProvider);
+            final shouldPop = await _handleExitAttempt(
+              context,
+              questionProvider,
+            );
             if (shouldPop && context.mounted) {
               Navigator.pop(context);
             }
@@ -170,7 +179,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
     final type = appProvider.selectedLicense;
     final text = AppColors.text(type, isDark);
     final surface = AppColors.surface(type, isDark);
-    final modeLabel = questionProvider.isExamMode ? 'Thi thử' : 'Ôn tập';
+    final modeLabel = widget.isCatalogLookup
+        ? 'Tra cứu nhanh'
+        : (questionProvider.isExamMode ? 'Thi thử' : 'Ôn tập');
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -193,7 +204,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
                 IconButton(
                   icon: Icon(Icons.arrow_back, color: text),
                   onPressed: () async {
-                    final shouldPop = await _handleExitAttempt(context, questionProvider);
+                    final shouldPop = await _handleExitAttempt(
+                      context,
+                      questionProvider,
+                    );
                     if (shouldPop && context.mounted) {
                       Navigator.pop(context);
                     }
@@ -235,47 +249,51 @@ class _QuestionScreenState extends State<QuestionScreen> {
             ),
             if (questionProvider.isExamMode) ...[
               const SizedBox(height: 8),
-              _ExamTimerChip(remainingSecondsListenable: _remainingSecondsNotifier),
-            ],
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: questionProvider.progress,
-              backgroundColor: AppColors.dividerColor(isDark),
-              valueColor: AlwaysStoppedAnimation<Color>(primary),
-              minHeight: 6,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${questionProvider.answeredCount}/${questionProvider.totalQuestions} câu đã làm',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: primary,
+              _ExamTimerChip(
+                remainingSecondsListenable: _remainingSecondsNotifier,
               ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildStatusChip(
-                  icon: Icons.check_circle,
-                  count: questionProvider.correctCount,
-                  color: AppColors.correctColor(isDark),
+            ],
+            if (!widget.isCatalogLookup) ...[
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: questionProvider.progress,
+                backgroundColor: AppColors.dividerColor(isDark),
+                valueColor: AlwaysStoppedAnimation<Color>(primary),
+                minHeight: 6,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${questionProvider.answeredCount}/${questionProvider.totalQuestions} câu đã làm',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: primary,
                 ),
-                _buildStatusChip(
-                  icon: Icons.cancel,
-                  count: questionProvider.wrongCount,
-                  color: AppColors.wrongColor(isDark),
-                ),
-                _buildStatusChip(
-                  icon: Icons.bookmark,
-                  count: questionProvider.currentQuestions
-                      .where((q) => q.isMarked)
-                      .length,
-                  color: AppColors.bookmarkColor(isDark),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildStatusChip(
+                    icon: Icons.check_circle,
+                    count: questionProvider.correctCount,
+                    color: AppColors.correctColor(isDark),
+                  ),
+                  _buildStatusChip(
+                    icon: Icons.cancel,
+                    count: questionProvider.wrongCount,
+                    color: AppColors.wrongColor(isDark),
+                  ),
+                  _buildStatusChip(
+                    icon: Icons.bookmark,
+                    count: questionProvider.currentQuestions
+                        .where((q) => q.isMarked)
+                        .length,
+                    color: AppColors.bookmarkColor(isDark),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -324,7 +342,20 @@ class _QuestionScreenState extends State<QuestionScreen> {
     final type = appProvider.selectedLicense;
     final surface = AppColors.surface(type, isDark);
     final shouldShowExplanation =
-        question.isAnswered && question.isEvaluated && appProvider.showExplanation;
+        question.isAnswered &&
+        question.isEvaluated &&
+        appProvider.showExplanation;
+
+    if (widget.isCatalogLookup) {
+      return _buildCatalogLookupContent(
+        context,
+        appProvider,
+        questionProvider,
+        question,
+        primary,
+        isDark,
+      );
+    }
 
     return SingleChildScrollView(
       controller: _scrollController,
@@ -405,16 +436,20 @@ class _QuestionScreenState extends State<QuestionScreen> {
                           Icon(
                             Icons.image_not_supported,
                             size: 48,
-                            color:
-                                AppColors.text(type, isDark).withValues(alpha: 0.3),
+                            color: AppColors.text(
+                              type,
+                              isDark,
+                            ).withValues(alpha: 0.3),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Image not found: ${question.image}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.text(type, isDark)
-                                  .withValues(alpha: 0.5),
+                              color: AppColors.text(
+                                type,
+                                isDark,
+                              ).withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -468,10 +503,94 @@ class _QuestionScreenState extends State<QuestionScreen> {
             _buildExplanation(context, appProvider, question, primary, isDark),
           ],
           if (questionProvider.isExamMode &&
-              questionProvider.currentIndex == questionProvider.totalQuestions - 1) ...[
+              questionProvider.currentIndex ==
+                  questionProvider.totalQuestions - 1) ...[
             const SizedBox(height: 20),
             _buildSubmitExamButton(context, questionProvider, appProvider),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCatalogLookupContent(
+    BuildContext context,
+    AppProvider appProvider,
+    QuestionProvider questionProvider,
+    Question question,
+    Color primary,
+    bool isDark,
+  ) {
+    final type = appProvider.selectedLicense;
+    final surface = AppColors.surface(type, isDark);
+    final text = AppColors.text(type, isDark);
+    final correctColor = AppColors.correctColor(isDark);
+
+    return SingleChildScrollView(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (question.image != null && question.image!.isNotEmpty) ...[
+            Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(maxHeight: 300),
+              decoration: BoxDecoration(
+                color: AppColors.dividerColor(isDark),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(question.image!, fit: BoxFit.contain),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: surface,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              question.content,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: text,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: correctColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: correctColor.withValues(alpha: 0.4)),
+            ),
+            child: Text(
+              'Đáp án: ${String.fromCharCode(65 + question.correctAnswer)}. ${question.answers[question.correctAnswer]}',
+              style: TextStyle(
+                fontSize: 15,
+                height: 1.45,
+                fontWeight: FontWeight.w800,
+                color: correctColor,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildExplanation(context, appProvider, question, primary, isDark),
         ],
       ),
     );
@@ -491,7 +610,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
     final answer = question.answers[index];
     final isSelected = question.selectedAnswerIndex == index;
     final hasAnswered = question.isAnswered;
-    final showFeedback = question.isEvaluated &&
+    final showFeedback =
+        question.isEvaluated &&
         (isGradeImmediately || questionProvider.hasSubmittedSession);
     final isCorrect = index == question.correctAnswer;
     final surface = AppColors.surface(type, isDark);
@@ -536,11 +656,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
           onTap: hasAnswered
               ? null
               : () => _handleAnswer(
-                    questionProvider,
-                    answerIndex: index,
-                    appProvider: appProvider,
-                    gradeImmediately: isGradeImmediately,
-                  ),
+                  questionProvider,
+                  answerIndex: index,
+                  appProvider: appProvider,
+                  gradeImmediately: isGradeImmediately,
+                ),
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -552,11 +672,13 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   decoration: BoxDecoration(
                     color: showFeedback
                         ? (isCorrect
-                            ? AppColors.correctColor(isDark)
-                            : (isSelected
-                                ? AppColors.wrongColor(isDark)
-                                : AppColors.dividerColor(isDark)))
-                        : (isSelected ? primary : primary.withValues(alpha: 0.15)),
+                              ? AppColors.correctColor(isDark)
+                              : (isSelected
+                                    ? AppColors.wrongColor(isDark)
+                                    : AppColors.dividerColor(isDark)))
+                        : (isSelected
+                              ? primary
+                              : primary.withValues(alpha: 0.15)),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -567,8 +689,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
                         fontWeight: FontWeight.bold,
                         color: showFeedback
                             ? (isCorrect || isSelected
-                                ? Colors.white
-                                : text.withValues(alpha: 0.7))
+                                  ? Colors.white
+                                  : text.withValues(alpha: 0.7))
                             : (isSelected ? Colors.white : primary),
                       ),
                     ),
@@ -657,7 +779,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
       child: ElevatedButton.icon(
         onPressed: questionProvider.hasSubmittedSession
             ? null
-            : () => _showSubmitConfirmation(context, questionProvider, appProvider),
+            : () => _showSubmitConfirmation(
+                context,
+                questionProvider,
+                appProvider,
+              ),
         icon: const Icon(Icons.check_circle),
         label: const Text('NỘP BÀI'),
         style: ElevatedButton.styleFrom(
@@ -666,8 +792,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
           ),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );
@@ -720,8 +847,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed:
-                    questionProvider.hasNext ? questionProvider.nextQuestion : null,
+                onPressed: questionProvider.hasNext
+                    ? questionProvider.nextQuestion
+                    : null,
                 icon: const Icon(Icons.arrow_forward),
                 label: const Text('Sau'),
                 style: ElevatedButton.styleFrom(
@@ -749,7 +877,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
     );
     appProvider.incrementQuestionsStudied();
 
-    if (!appProvider.autoAdvance || !questionProvider.hasNext) {
+    if (!appProvider.autoAdvance ||
+        gradeImmediately ||
+        widget.isCatalogLookup ||
+        !questionProvider.hasNext) {
       return;
     }
 
@@ -803,8 +934,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
     QuestionProvider questionProvider,
     AppProvider appProvider,
   ) {
-    final unanswered =
-        questionProvider.currentQuestions.where((q) => !q.isAnswered).length;
+    final unanswered = questionProvider.currentQuestions
+        .where((q) => !q.isAnswered)
+        .length;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final type = appProvider.selectedLicense;
 
@@ -884,9 +1016,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
       return;
     }
 
-    InterstitialAdService.instance.showAfterExam(
-      onFinished: showResultDialog,
-    );
+    InterstitialAdService.instance.showAfterExam(onFinished: showResultDialog);
   }
 
   void _showQuestionList(
@@ -925,7 +1055,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   itemBuilder: (context, index) {
                     final question = questionProvider.currentQuestions[index];
                     final isCurrent = index == questionProvider.currentIndex;
-                    final isPending = question.isAnswered && !question.isEvaluated;
+                    final isPending =
+                        question.isAnswered && !question.isEvaluated;
                     Color color;
                     if (isCurrent) {
                       color = primary;
@@ -954,7 +1085,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
                           child: Text(
                             '${index + 1}',
                             style: TextStyle(
-                              color: (question.isAnswered || isCurrent || isPending)
+                              color:
+                                  (question.isAnswered ||
+                                      isCurrent ||
+                                      isPending)
                                   ? Colors.white
                                   : AppColors.text(type, isDark),
                               fontWeight: FontWeight.bold,
@@ -1028,7 +1162,11 @@ class _ExamTimerChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.timer_outlined, color: Color(0xFFFFA000), size: 18),
+              const Icon(
+                Icons.timer_outlined,
+                color: Color(0xFFFFA000),
+                size: 18,
+              ),
               const SizedBox(width: 8),
               Text(
                 '$minutes:$remainingSeconds',
@@ -1107,7 +1245,10 @@ class _ExamResultDialog extends StatelessWidget {
                   ? 'Bạn đã vượt qua kỳ thi!'
                   : 'Bạn chưa đạt yêu cầu của đề thi.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: AppColors.text(type, isDark)),
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.text(type, isDark),
+              ),
             ),
             if (result.failedByImportantQuestion) ...[
               const SizedBox(height: 12),
@@ -1132,8 +1273,16 @@ class _ExamResultDialog extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _statColumn('Đúng', '${result.correctAnswers}', AppColors.correctColor(isDark)),
-                _statColumn('Sai', '${result.wrongAnswers}', AppColors.wrongColor(isDark)),
+                _statColumn(
+                  'Đúng',
+                  '${result.correctAnswers}',
+                  AppColors.correctColor(isDark),
+                ),
+                _statColumn(
+                  'Sai',
+                  '${result.wrongAnswers}',
+                  AppColors.wrongColor(isDark),
+                ),
                 _statColumn(
                   'Trống',
                   '${result.unansweredQuestions}',
@@ -1150,18 +1299,12 @@ class _ExamResultDialog extends StatelessWidget {
             onPressed: () => _showWrongQuestions(context, wrongQuestions),
             child: const Text('Xem câu bị sai'),
           ),
-        TextButton(
-          onPressed: onGoHome,
-          child: const Text('Trở về'),
-        ),
+        TextButton(onPressed: onGoHome, child: const Text('Trở về')),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Xem lại bài'),
         ),
-        ElevatedButton(
-          onPressed: onRetry,
-          child: const Text('Làm lại'),
-        ),
+        ElevatedButton(onPressed: onRetry, child: const Text('Làm lại')),
       ],
     );
   }
@@ -1171,7 +1314,11 @@ class _ExamResultDialog extends StatelessWidget {
       children: [
         Text(
           value,
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
         const SizedBox(height: 4),
         Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
@@ -1179,7 +1326,10 @@ class _ExamResultDialog extends StatelessWidget {
     );
   }
 
-  void _showWrongQuestions(BuildContext context, List<Question> wrongQuestions) {
+  void _showWrongQuestions(
+    BuildContext context,
+    List<Question> wrongQuestions,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final type = context.read<AppProvider>().selectedLicense;
 
@@ -1206,7 +1356,8 @@ class _ExamResultDialog extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                   itemCount: wrongQuestions.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 8),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final question = wrongQuestions[index];
                     return Container(
@@ -1214,17 +1365,26 @@ class _ExamResultDialog extends StatelessWidget {
                         color: AppColors.background(type, isDark),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppColors.wrongColor(isDark).withValues(alpha: 0.2),
+                          color: AppColors.wrongColor(
+                            isDark,
+                          ).withValues(alpha: 0.2),
                         ),
                       ),
                       child: Theme(
-                        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                        data: Theme.of(
+                          context,
+                        ).copyWith(dividerColor: Colors.transparent),
                         child: ExpansionTile(
                           tilePadding: const EdgeInsets.symmetric(
                             horizontal: 14,
                             vertical: 6,
                           ),
-                          childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                          childrenPadding: const EdgeInsets.fromLTRB(
+                            14,
+                            0,
+                            14,
+                            14,
+                          ),
                           title: Text(
                             'Câu ${question.id}',
                             style: TextStyle(
@@ -1239,7 +1399,9 @@ class _ExamResultDialog extends StatelessWidget {
                               question.content,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: AppColors.text(type, isDark)),
+                              style: TextStyle(
+                                color: AppColors.text(type, isDark),
+                              ),
                             ),
                           ),
                           children: [
@@ -1269,7 +1431,10 @@ class _ExamResultDialog extends StatelessWidget {
                               width: double.infinity,
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.primary(type, isDark).withValues(alpha: 0.08),
+                                color: AppColors.primary(
+                                  type,
+                                  isDark,
+                                ).withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(

@@ -5,11 +5,7 @@ import '../models/models.dart';
 import '../utils/theme_config.dart';
 import '../utils/app_colors.dart';
 
-enum ThemeModeOption {
-  light,
-  dark,
-  system,
-}
+enum ThemeModeOption { light, dark, system }
 
 extension ThemeModeExtension on ThemeModeOption {
   String get displayName {
@@ -40,6 +36,7 @@ class AppProvider with ChangeNotifier {
   int _questionsStudiedToday = 0;
   int _streakDays = 0;
   ThemeModeOption _themeMode = ThemeModeOption.system;
+  AppThemePalette _themePalette = AppThemePalette.blue;
   bool _autoAdvance = false;
   bool _showExplanation = true;
   bool _gradeImmediately = true;
@@ -48,6 +45,7 @@ class AppProvider with ChangeNotifier {
 
   static const _keyLicense = 'license_type';
   static const _keyTheme = 'theme_mode';
+  static const _keyThemePalette = 'theme_palette';
   static const _keyAutoAdvance = 'auto_advance';
   static const _keyShowExplanation = 'show_explanation';
   static const _keyGradeImmediately = 'grade_immediately';
@@ -60,6 +58,7 @@ class AppProvider with ChangeNotifier {
   int get questionsStudiedToday => _questionsStudiedToday;
   int get streakDays => _streakDays;
   ThemeModeOption get themeMode => _themeMode;
+  AppThemePalette get themePalette => _themePalette;
   bool get autoAdvance => _autoAdvance;
   bool get showExplanation => _showExplanation;
   bool get gradeImmediately => _gradeImmediately;
@@ -81,15 +80,23 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  ThemeData get lightTheme => ThemeConfig.lightTheme(_selectedLicense);
+  ThemeData get lightTheme {
+    AppColors.activePalette = _themePalette;
+    return ThemeConfig.lightTheme(_selectedLicense);
+  }
 
-  ThemeData get darkTheme => ThemeConfig.darkTheme(_selectedLicense);
+  ThemeData get darkTheme {
+    AppColors.activePalette = _themePalette;
+    return ThemeConfig.darkTheme(_selectedLicense);
+  }
 
   Brightness resolveBrightness(BuildContext context) {
     if (_themeMode == ThemeModeOption.system) {
       return MediaQuery.platformBrightnessOf(context);
     }
-    return _themeMode == ThemeModeOption.dark ? Brightness.dark : Brightness.light;
+    return _themeMode == ThemeModeOption.dark
+        ? Brightness.dark
+        : Brightness.light;
   }
 
   bool isDarkMode(BuildContext context) {
@@ -101,8 +108,7 @@ class AppProvider with ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
 
-    final licenseStr = prefs.getString(_keyLicense) ?? 'A1';
-    _selectedLicense = licenseStr == 'A2' ? LicenseType.a2 : LicenseType.a1;
+    _selectedLicense = LicenseType.a1;
 
     final themeStr = prefs.getString(_keyTheme) ?? 'system';
     switch (themeStr) {
@@ -115,6 +121,13 @@ class AppProvider with ChangeNotifier {
       default:
         _themeMode = ThemeModeOption.system;
     }
+
+    final paletteStr = prefs.getString(_keyThemePalette) ?? 'blue';
+    _themePalette = AppThemePalette.values.firstWhere(
+      (palette) => palette.name == paletteStr,
+      orElse: () => AppThemePalette.blue,
+    );
+    AppColors.activePalette = _themePalette;
 
     _autoAdvance = prefs.getBool(_keyAutoAdvance) ?? false;
     _showExplanation = prefs.getBool(_keyShowExplanation) ?? true;
@@ -145,8 +158,11 @@ class AppProvider with ChangeNotifier {
   Future<void> _savePrefs({bool persistStudyTimestamp = false}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-        _keyLicense, _selectedLicense == LicenseType.a2 ? 'A2' : 'A1');
+      _keyLicense,
+      _selectedLicense == LicenseType.a2 ? 'A2' : 'A1',
+    );
     await prefs.setString(_keyTheme, _themeMode.name.toLowerCase());
+    await prefs.setString(_keyThemePalette, _themePalette.name);
     await prefs.setBool(_keyAutoAdvance, _autoAdvance);
     await prefs.setBool(_keyShowExplanation, _showExplanation);
     await prefs.setBool(_keyGradeImmediately, _gradeImmediately);
@@ -154,7 +170,10 @@ class AppProvider with ChangeNotifier {
     await prefs.setInt(_keyStreakDays, _streakDays);
     await prefs.setString(_keyStudyActivity, jsonEncode(_studyActivity));
     if (persistStudyTimestamp) {
-      await prefs.setString(_keyLastStudyDate, DateTime.now().toIso8601String());
+      await prefs.setString(
+        _keyLastStudyDate,
+        DateTime.now().toIso8601String(),
+      );
     }
   }
 
@@ -174,6 +193,13 @@ class AppProvider with ChangeNotifier {
 
   Future<void> setThemeMode(ThemeModeOption mode) async {
     _themeMode = mode;
+    notifyListeners();
+    await _savePrefs();
+  }
+
+  Future<void> setThemePalette(AppThemePalette palette) async {
+    _themePalette = palette;
+    AppColors.activePalette = palette;
     notifyListeners();
     await _savePrefs();
   }
@@ -205,7 +231,9 @@ class AppProvider with ChangeNotifier {
     if (lastStudyDate == null) {
       _streakDays = 1;
     } else {
-      final diff = _dateOnly(now).difference(_dateOnly(DateTime.parse(lastStudyDate))).inDays;
+      final diff = _dateOnly(
+        now,
+      ).difference(_dateOnly(DateTime.parse(lastStudyDate))).inDays;
       if (diff == 1) {
         _streakDays++;
       } else if (diff > 1) {
@@ -248,14 +276,19 @@ class AppProvider with ChangeNotifier {
       final day = now.subtract(Duration(days: days - index - 1));
       return _studyActivity[_dateKey(day)] ?? 0;
     });
-    final maxCount = counts.fold<int>(0, (max, count) => count > max ? count : max);
+    final maxCount = counts.fold<int>(
+      0,
+      (max, count) => count > max ? count : max,
+    );
 
-    return counts.map((count) {
-      if (count == 0) return 0;
-      if (maxCount <= 4) return count.clamp(1, 4);
-      final normalized = ((count / maxCount) * 4).ceil();
-      return normalized.clamp(1, 4);
-    }).toList(growable: false);
+    return counts
+        .map((count) {
+          if (count == 0) return 0;
+          if (maxCount <= 4) return count.clamp(1, 4);
+          final normalized = ((count / maxCount) * 4).ceil();
+          return normalized.clamp(1, 4);
+        })
+        .toList(growable: false);
   }
 
   Future<void> resetAppData() async {
@@ -263,6 +296,8 @@ class AppProvider with ChangeNotifier {
     _questionsStudiedToday = 0;
     _streakDays = 0;
     _themeMode = ThemeModeOption.system;
+    _themePalette = AppThemePalette.blue;
+    AppColors.activePalette = _themePalette;
     _autoAdvance = false;
     _showExplanation = true;
     _gradeImmediately = true;
@@ -271,6 +306,7 @@ class AppProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyLicense);
     await prefs.remove(_keyTheme);
+    await prefs.remove(_keyThemePalette);
     await prefs.remove(_keyAutoAdvance);
     await prefs.remove(_keyShowExplanation);
     await prefs.remove(_keyGradeImmediately);
@@ -308,5 +344,6 @@ class AppProvider with ChangeNotifier {
     return '$year-$month-$day';
   }
 
-  DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+  DateTime _dateOnly(DateTime date) =>
+      DateTime(date.year, date.month, date.day);
 }

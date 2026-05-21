@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import '../providers/providers.dart';
 import '../models/models.dart';
@@ -49,10 +52,14 @@ class QuestionCatalogScreen extends StatefulWidget {
 class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
   CatalogFilter _filter = CatalogFilter.all;
   final TextEditingController _searchController = TextEditingController();
+  Timer? _searchDebounce;
+  LicenseType? _cachedType;
+  List<Question> _visibleQuestions = [];
   String _searchQuery = '';
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -66,7 +73,8 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
         final primary = AppColors.primary(type, isDark);
         final text = AppColors.text(type, isDark);
         final surface = AppColors.surface(type, isDark);
-        final questions = _getFilteredQuestions(type);
+        _ensureQuestions(type);
+        final questions = _visibleQuestions;
 
         return Scaffold(
           backgroundColor: AppColors.background(type, isDark),
@@ -99,6 +107,10 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
                     ? _buildEmptyState(context, text)
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
+                        scrollCacheExtent: const ScrollCacheExtent.pixels(900),
+                        itemExtent: 112,
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
                         itemCount: questions.length,
                         itemBuilder: (context, index) {
                           final question = questions[index];
@@ -146,6 +158,9 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
                     setState(() {
                       _searchController.clear();
                       _searchQuery = '';
+                      _visibleQuestions = _getFilteredQuestions(
+                        context.read<AppProvider>().selectedLicense,
+                      );
                     });
                   },
                 )
@@ -158,8 +173,15 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
         ),
         style: TextStyle(color: text),
         onChanged: (value) {
-          setState(() {
-            _searchQuery = value;
+          _searchDebounce?.cancel();
+          _searchDebounce = Timer(const Duration(milliseconds: 220), () {
+            if (!mounted) return;
+            setState(() {
+              _searchQuery = value;
+              _visibleQuestions = _getFilteredQuestions(
+                context.read<AppProvider>().selectedLicense,
+              );
+            });
           });
         },
       ),
@@ -186,7 +208,14 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
               label: Text(filter.displayName),
               selected: isSelected,
               avatar: Icon(filter.icon, size: 18),
-              onSelected: (_) => setState(() => _filter = filter),
+              onSelected: (_) {
+                setState(() {
+                  _filter = filter;
+                  _visibleQuestions = _getFilteredQuestions(
+                    context.read<AppProvider>().selectedLicense,
+                  );
+                });
+              },
               selectedColor: primary.withValues(alpha: 0.15),
               checkmarkColor: primary,
             ),
@@ -194,6 +223,12 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
         }).toList(),
       ),
     );
+  }
+
+  void _ensureQuestions(LicenseType type) {
+    if (_cachedType == type && _visibleQuestions.isNotEmpty) return;
+    _cachedType = type;
+    _visibleQuestions = _getFilteredQuestions(type);
   }
 
   List<Question> _getFilteredQuestions(LicenseType type) {
@@ -253,7 +288,9 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
     if (index != -1) questionProvider.jumpToQuestion(index);
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const QuestionScreen()),
+      MaterialPageRoute(
+        builder: (_) => const QuestionScreen(isCatalogLookup: true),
+      ),
     );
   }
 }

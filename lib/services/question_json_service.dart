@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/models.dart';
@@ -34,14 +35,18 @@ class QuestionJsonService {
 
   Future<void> _initializeInternal() async {
     try {
-      await Future.wait(LicenseType.values.map(_loadDataForType));
+      await _loadDataForType(LicenseType.a1);
+      _questions[LicenseType.a2] = _questions[LicenseType.a1]!;
+      _chapters[LicenseType.a2] = _chapters[LicenseType.a1]!;
+      _exams[LicenseType.a2] = _exams[LicenseType.a1]!;
 
       _initialized = true;
       if (kDebugMode) {
         for (var type in LicenseType.values) {
           debugPrint(
-              '[QuestionJsonService] ${type.name}: ${_questions[type]?.length ?? 0} questions, '
-              '${_chapters[type]?.length ?? 0} chapters, ${_exams[type]?.length ?? 0} exams');
+            '[QuestionJsonService] ${type.name}: ${_questions[type]?.length ?? 0} questions, '
+            '${_chapters[type]?.length ?? 0} chapters, ${_exams[type]?.length ?? 0} exams',
+          );
         }
       }
     } finally {
@@ -50,9 +55,7 @@ class QuestionJsonService {
   }
 
   Future<void> _loadDataForType(LicenseType type) async {
-    final fileName = type == LicenseType.a1
-        ? 'assets/questions/questions_a1.json'
-        : 'assets/questions/questions_a2.json';
+    const fileName = 'assets/questions/questions_a1.json';
 
     try {
       if (kDebugMode) {
@@ -67,7 +70,9 @@ class QuestionJsonService {
           .toList();
 
       if (kDebugMode) {
-        debugPrint('[QuestionJsonService] Loaded ${_chapters[type]!.length} chapters');
+        debugPrint(
+          '[QuestionJsonService] Loaded ${_chapters[type]!.length} chapters',
+        );
       }
 
       final questionsJson = data['questions'] as List;
@@ -76,10 +81,15 @@ class QuestionJsonService {
           .toList();
 
       if (kDebugMode) {
-        debugPrint('[QuestionJsonService] Loaded ${_questions[type]!.length} questions');
+        debugPrint(
+          '[QuestionJsonService] Loaded ${_questions[type]!.length} questions',
+        );
       }
 
-      await QuestionStatePersistence().loadAllQuestionStates(type, _questions[type]!);
+      await QuestionStatePersistence().loadAllQuestionStates(
+        type,
+        _questions[type]!,
+      );
 
       final examsJson = data['exams'] as List;
       final licenseStr = type == LicenseType.a1 ? 'A1' : 'A2';
@@ -88,7 +98,9 @@ class QuestionJsonService {
           .toList();
 
       if (kDebugMode) {
-        debugPrint('[QuestionJsonService] Loaded ${_exams[type]!.length} exams');
+        debugPrint(
+          '[QuestionJsonService] Loaded ${_exams[type]!.length} exams',
+        );
       }
     } catch (e, stackTrace) {
       if (kDebugMode) {
@@ -162,6 +174,70 @@ class QuestionJsonService {
     return questions.take(count).toList();
   }
 
+  List<Question> getShuffledExamQuestions(LicenseType type) {
+    final questions = _questions[type] ?? [];
+    if (questions.length < 25) return [];
+
+    final random = Random();
+    final selected = <Question>[];
+    final selectedIds = <int>{};
+
+    final importantQuestions = questions.where((q) => q.isImportant).toList()
+      ..shuffle(random);
+    final importantTarget = importantQuestions.length >= 2
+        ? 1 + random.nextInt(2)
+        : 1;
+
+    for (final question in importantQuestions.take(importantTarget)) {
+      selected.add(question);
+      selectedIds.add(question.id);
+    }
+
+    final chapterQuotas = <_QuestionIdRange>[
+      const _QuestionIdRange(start: 1, end: 100, count: 9),
+      const _QuestionIdRange(start: 101, end: 110, count: 2),
+      const _QuestionIdRange(start: 111, end: 125, count: 3),
+      const _QuestionIdRange(start: 126, end: 215, count: 8),
+      const _QuestionIdRange(start: 216, end: 250, count: 3),
+    ];
+
+    for (final quota in chapterQuotas) {
+      final alreadyInRange = selected.where((q) => quota.contains(q.id)).length;
+      final needed = quota.count - alreadyInRange;
+      if (needed <= 0) continue;
+
+      final candidates =
+          questions
+              .where(
+                (q) =>
+                    quota.contains(q.id) &&
+                    !selectedIds.contains(q.id) &&
+                    !q.isImportant,
+              )
+              .toList()
+            ..shuffle(random);
+      for (final question in candidates.take(needed)) {
+        selected.add(question);
+        selectedIds.add(question.id);
+      }
+    }
+
+    if (selected.length < 25) {
+      final remaining =
+          questions
+              .where((q) => !selectedIds.contains(q.id) && !q.isImportant)
+              .toList()
+            ..shuffle(random);
+      for (final question in remaining.take(25 - selected.length)) {
+        selected.add(question);
+        selectedIds.add(question.id);
+      }
+    }
+
+    selected.shuffle(random);
+    return selected.take(25).toList(growable: false);
+  }
+
   List<Question> getImportantQuestions(LicenseType type) {
     final questions = _questions[type] ?? [];
     return questions.where((q) => q.isImportant).toList();
@@ -184,7 +260,10 @@ class QuestionJsonService {
     );
     if (totalAttempts == 0) return 0.0;
 
-    final totalCorrect = questions.fold<int>(0, (sum, q) => sum + q.correctCount);
+    final totalCorrect = questions.fold<int>(
+      0,
+      (sum, q) => sum + q.correctCount,
+    );
     return totalCorrect / totalAttempts;
   }
 
@@ -214,4 +293,18 @@ class QuestionJsonService {
 
 Map<String, dynamic> _decodeQuestionAsset(String jsonString) {
   return jsonDecode(jsonString) as Map<String, dynamic>;
+}
+
+class _QuestionIdRange {
+  final int start;
+  final int end;
+  final int count;
+
+  const _QuestionIdRange({
+    required this.start,
+    required this.end,
+    required this.count,
+  });
+
+  bool contains(int id) => id >= start && id <= end;
 }

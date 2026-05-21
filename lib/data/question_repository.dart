@@ -58,6 +58,10 @@ class QuestionRepository {
     return _jsonService.getRandomQuestions(type, count: count);
   }
 
+  List<Question> getShuffledExamQuestions(LicenseType type) {
+    return _jsonService.getShuffledExamQuestions(type);
+  }
+
   List<Question> getImportantQuestions(LicenseType type) {
     return _jsonService.getImportantQuestions(type);
   }

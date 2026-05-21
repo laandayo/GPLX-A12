@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/providers.dart';
-import '../models/models.dart';
 import '../widgets/widgets.dart';
 import '../data/data.dart';
 import 'chapter_list_screen.dart';
@@ -11,6 +10,7 @@ import 'statistics_screen.dart';
 import 'exam_list_screen.dart';
 import 'question_catalog_screen.dart';
 import 'settings_screen.dart';
+import 'exam_history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,10 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHomeContent(BuildContext context, AppProvider appProvider) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final type = appProvider.selectedLicense;
-    final primary = AppColors.primary(type, isDark);
-
     return SafeArea(
       child: Column(
         children: [
@@ -58,19 +54,10 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  LicenseTypeToggle(
-                    selectedType: appProvider.selectedLicense,
-                    onTypeChanged: appProvider.switchLicenseType,
+                  _buildStudyProgressCard(
+                    context,
+                    appProvider,
                   ).animate().fadeIn(duration: 400.ms).slideY(),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Đang ôn thi bằng lái ${appProvider.selectedLicense.displayName}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ).animate().fadeIn(delay: 200.ms),
                   const SizedBox(height: 20),
                   _buildMenuGrid(context, appProvider),
                 ],
@@ -136,33 +123,95 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const Spacer(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                'Hôm nay: ${appProvider.questionsStudiedToday} câu',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: text.withValues(alpha: 0.5),
-                ),
-              ),
-              Text(
-                '🔥 Streak: ${appProvider.streakDays} ngày',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: text,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 8),
           IconButton(
             icon: Icon(
               Icons.settings_outlined,
               color: text.withValues(alpha: 0.7),
             ),
             onPressed: () => _showSettings(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStudyProgressCard(
+    BuildContext context,
+    AppProvider appProvider,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final type = appProvider.selectedLicense;
+    final primary = AppColors.primary(type, isDark);
+    final text = AppColors.text(type, isDark);
+    final surface = AppColors.surface(type, isDark);
+    final totalQuestions = QuestionRepository().getTotalQuestions(type);
+    final answeredCount = QuestionRepository().getAnsweredCount(type);
+    final progress = totalQuestions == 0
+        ? 0.0
+        : (answeredCount / totalQuestions).clamp(0.0, 1.0);
+    final percent = (progress * 100).round();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primary.withValues(alpha: 0.15)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.menu_book_rounded, color: primary, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Đang ôn GPLX',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: text,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '$answeredCount/$totalQuestions câu • $percent%',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: text.withValues(alpha: 0.68),
+            ),
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 10,
+              backgroundColor: primary.withValues(alpha: 0.12),
+              valueColor: AlwaysStoppedAnimation<Color>(primary),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Streak ${appProvider.streakDays} ngày',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: primary,
+            ),
           ),
         ],
       ),
@@ -260,6 +309,13 @@ class _HomeScreenState extends State<HomeScreen> {
               color: primary,
               onTap: () => _navigateToCatalog(context),
             ),
+            MenuGridItem(
+              icon: '🕘',
+              title: 'Lịch sử làm bài',
+              subtitle: 'Các bài đã nộp',
+              color: primary,
+              onTap: () => _navigateToExamHistory(context),
+            ),
           ],
         );
       },
@@ -277,6 +333,13 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const QuestionCatalogScreen()),
+    );
+  }
+
+  void _navigateToExamHistory(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ExamHistoryScreen()),
     );
   }
 

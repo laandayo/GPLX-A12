@@ -39,6 +39,8 @@ class SettingsScreen extends StatelessWidget {
                 text,
                 surface,
               ),
+              const SizedBox(height: 8),
+              _buildPaletteOptions(appProvider, isDark, primary, text, surface),
               const Divider(height: 32),
               _buildSectionHeader(context, 'Cài đặt ôn tập', primary, text),
               _buildStudySettings(context, appProvider, isDark, primary, text),
@@ -147,6 +149,88 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildPaletteOptions(
+    AppProvider appProvider,
+    bool isDark,
+    Color primary,
+    Color text,
+    Color surface,
+  ) {
+    return Material(
+      color: surface,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Màu chủ đạo',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: text.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: AppThemePalette.values.map((palette) {
+                final previous = AppColors.activePalette;
+                AppColors.activePalette = palette;
+                final color = AppColors.primary(
+                  appProvider.selectedLicense,
+                  isDark,
+                );
+                AppColors.activePalette = previous;
+                final isSelected = appProvider.themePalette == palette;
+
+                return InkWell(
+                  onTap: () => appProvider.setThemePalette(palette),
+                  borderRadius: BorderRadius.circular(12),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? color.withValues(alpha: 0.14)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? color
+                            : text.withValues(alpha: 0.12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(palette.icon, size: 18, color: color),
+                        const SizedBox(width: 8),
+                        Text(
+                          palette.displayName,
+                          style: TextStyle(
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: isSelected ? color : text,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildStudySettings(
     BuildContext context,
     AppProvider appProvider,
@@ -164,7 +248,7 @@ class SettingsScreen extends StatelessWidget {
           title: const Text('Tự động chuyển câu'),
           subtitle: Text(
             appProvider.autoAdvance
-                ? 'Tự động chuyển câu sau khi trả lời'
+                ? 'Chỉ áp dụng khi không chấm đúng/sai ngay'
                 : 'Chuyển câu thủ công',
             style: TextStyle(fontSize: 12, color: text.withValues(alpha: 0.5)),
           ),
@@ -209,7 +293,7 @@ class SettingsScreen extends StatelessWidget {
                 const Text('Phiên bản'),
                 const Spacer(),
                 Text(
-                  '0.2.6',
+                  '0.3.3',
                   style: TextStyle(color: text.withValues(alpha: 0.7)),
                 ),
               ],

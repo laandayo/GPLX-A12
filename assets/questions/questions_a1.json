@@ -1,6 +1,6 @@
 {
   "licenseType": "A1",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "chapters": [
     {
       "id": 1,
@@ -10,27 +10,27 @@
     },
     {
       "id": 2,
-      "title": "Biển báo hiệu giao thông",
-      "description": "Nhận biết các loại biển báo",
-      "icon": "🚦"
+      "title": "Văn Hóa Giao Thông Và Đạo Đức Người Lái Xe",
+      "description": "Nhận thức về văn hóa và đạo đức giao thông, kỹ năng lái xe an toàn, phòng cháy chữa cháy và cứu hộ cứu nạn",
+      "icon": "👥"
     },
     {
       "id": 3,
-      "title": "Sa hình và kỹ năng lái xe",
-      "description": "Câu hỏi về sa hình và kỹ năng",
+      "title": "Kỹ Thuật Lái Xe",
+      "description": "Câu hỏi về kỹ năng và kỹ thuật khi lái xe",
       "icon": "🚗"
     },
     {
       "id": 4,
-      "title": "Cấu tạo và công dụng",
-      "description": "Cấu tạo xe mô tô, xe gắn máy",
-      "icon": "⚙️"
+      "title": "Biển Báo Đường Bộ",
+      "description": "Các loại biển báo hiệu giao thông và ý nghĩa của chúng",
+      "icon": "🚦"
     },
     {
       "id": 5,
-      "title": "Câu hỏi quan trọng",
-      "description": "Các câu hỏi thường gặp trong kỳ thi",
-      "icon": "⚠️"
+      "title": "Sa Hình Và Tình Huống Giao Thông",
+      "description": "Các tình huống giao thông thực tế và cách xử lý khi tham gia giao thông",
+      "icon": "🖼️"
     }
   ],
   "questions": [

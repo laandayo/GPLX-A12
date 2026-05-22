@@ -7,6 +7,8 @@ import '../utils/app_colors.dart';
 
 enum ThemeModeOption { light, dark, system }
 
+enum AppTextSizeOption { small, medium, large }
+
 extension ThemeModeExtension on ThemeModeOption {
   String get displayName {
     switch (this) {
@@ -31,12 +33,37 @@ extension ThemeModeExtension on ThemeModeOption {
   }
 }
 
+extension AppTextSizeExtension on AppTextSizeOption {
+  String get displayName {
+    switch (this) {
+      case AppTextSizeOption.small:
+        return 'Nhỏ';
+      case AppTextSizeOption.medium:
+        return 'Trung';
+      case AppTextSizeOption.large:
+        return 'To';
+    }
+  }
+
+  double get scale {
+    switch (this) {
+      case AppTextSizeOption.small:
+        return 0.94;
+      case AppTextSizeOption.medium:
+        return 1.0;
+      case AppTextSizeOption.large:
+        return 1.08;
+    }
+  }
+}
+
 class AppProvider with ChangeNotifier {
   LicenseType _selectedLicense = LicenseType.a1;
   int _questionsStudiedToday = 0;
   int _streakDays = 0;
   ThemeModeOption _themeMode = ThemeModeOption.system;
   AppThemePalette _themePalette = AppThemePalette.blue;
+  AppTextSizeOption _textSize = AppTextSizeOption.medium;
   bool _autoAdvance = false;
   bool _showExplanation = true;
   bool _gradeImmediately = true;
@@ -46,6 +73,7 @@ class AppProvider with ChangeNotifier {
   static const _keyLicense = 'license_type';
   static const _keyTheme = 'theme_mode';
   static const _keyThemePalette = 'theme_palette';
+  static const _keyTextSize = 'text_size';
   static const _keyAutoAdvance = 'auto_advance';
   static const _keyShowExplanation = 'show_explanation';
   static const _keyGradeImmediately = 'grade_immediately';
@@ -59,6 +87,8 @@ class AppProvider with ChangeNotifier {
   int get streakDays => _streakDays;
   ThemeModeOption get themeMode => _themeMode;
   AppThemePalette get themePalette => _themePalette;
+  AppTextSizeOption get textSize => _textSize;
+  double get textScale => _textSize.scale;
   bool get autoAdvance => _autoAdvance;
   bool get showExplanation => _showExplanation;
   bool get gradeImmediately => _gradeImmediately;
@@ -129,6 +159,12 @@ class AppProvider with ChangeNotifier {
     );
     AppColors.activePalette = _themePalette;
 
+    final textSizeStr = prefs.getString(_keyTextSize) ?? 'medium';
+    _textSize = AppTextSizeOption.values.firstWhere(
+      (size) => size.name == textSizeStr,
+      orElse: () => AppTextSizeOption.medium,
+    );
+
     _autoAdvance = prefs.getBool(_keyAutoAdvance) ?? false;
     _showExplanation = prefs.getBool(_keyShowExplanation) ?? true;
     _gradeImmediately = prefs.getBool(_keyGradeImmediately) ?? true;
@@ -163,6 +199,7 @@ class AppProvider with ChangeNotifier {
     );
     await prefs.setString(_keyTheme, _themeMode.name.toLowerCase());
     await prefs.setString(_keyThemePalette, _themePalette.name);
+    await prefs.setString(_keyTextSize, _textSize.name);
     await prefs.setBool(_keyAutoAdvance, _autoAdvance);
     await prefs.setBool(_keyShowExplanation, _showExplanation);
     await prefs.setBool(_keyGradeImmediately, _gradeImmediately);
@@ -200,6 +237,12 @@ class AppProvider with ChangeNotifier {
   Future<void> setThemePalette(AppThemePalette palette) async {
     _themePalette = palette;
     AppColors.activePalette = palette;
+    notifyListeners();
+    await _savePrefs();
+  }
+
+  Future<void> setTextSize(AppTextSizeOption size) async {
+    _textSize = size;
     notifyListeners();
     await _savePrefs();
   }
@@ -297,6 +340,7 @@ class AppProvider with ChangeNotifier {
     _streakDays = 0;
     _themeMode = ThemeModeOption.system;
     _themePalette = AppThemePalette.blue;
+    _textSize = AppTextSizeOption.medium;
     AppColors.activePalette = _themePalette;
     _autoAdvance = false;
     _showExplanation = true;
@@ -307,6 +351,7 @@ class AppProvider with ChangeNotifier {
     await prefs.remove(_keyLicense);
     await prefs.remove(_keyTheme);
     await prefs.remove(_keyThemePalette);
+    await prefs.remove(_keyTextSize);
     await prefs.remove(_keyAutoAdvance);
     await prefs.remove(_keyShowExplanation);
     await prefs.remove(_keyGradeImmediately);

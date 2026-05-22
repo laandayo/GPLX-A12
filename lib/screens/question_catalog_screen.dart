@@ -56,6 +56,7 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
   LicenseType? _cachedType;
   List<Question> _visibleQuestions = [];
   String _searchQuery = '';
+  String? _selectedChapter;
 
   @override
   void dispose() {
@@ -88,7 +89,7 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
           body: Column(
             children: [
               _buildSearchBar(context, primary, text, surface, isDark),
-              _buildFilterChips(context, primary, text, isDark),
+              _buildFilterChips(context, primary, text, isDark, type),
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -149,7 +150,7 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'Tìm kiếm trong nội dung câu hỏi...',
+          hintText: 'Tìm theo nội dung hoặc số câu...',
           prefixIcon: Icon(Icons.search, color: text.withValues(alpha: 0.5)),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
@@ -193,34 +194,80 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
     Color primary,
     Color text,
     bool isDark,
+    LicenseType type,
   ) {
+    final chapters = QuestionRepository().getChapters(type);
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: CatalogFilter.values.map((filter) {
-          final isSelected = _filter == filter;
-          return Padding(
+        children: [
+          ...CatalogFilter.values.map((filter) {
+            final isSelected = _filter == filter;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilterChip(
+                label: Text(filter.displayName),
+                selected: isSelected,
+                avatar: Icon(filter.icon, size: 18),
+                onSelected: (_) {
+                  setState(() {
+                    _filter = filter;
+                    _visibleQuestions = _getFilteredQuestions(type);
+                  });
+                },
+                selectedColor: primary.withValues(alpha: 0.15),
+                checkmarkColor: primary,
+              ),
+            );
+          }),
+          Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(filter.displayName),
-              selected: isSelected,
-              avatar: Icon(filter.icon, size: 18),
-              onSelected: (_) {
+            child: PopupMenuButton<String?>(
+              tooltip: 'Lọc theo chương',
+              onSelected: (chapterTitle) {
                 setState(() {
-                  _filter = filter;
-                  _visibleQuestions = _getFilteredQuestions(
-                    context.read<AppProvider>().selectedLicense,
-                  );
+                  _selectedChapter = chapterTitle;
+                  _visibleQuestions = _getFilteredQuestions(type);
                 });
               },
-              selectedColor: primary.withValues(alpha: 0.15),
-              checkmarkColor: primary,
+              itemBuilder: (context) => [
+                const PopupMenuItem<String?>(
+                  value: null,
+                  child: Text('Tất cả chương'),
+                ),
+                ...chapters.map(
+                  (chapter) => PopupMenuItem<String?>(
+                    value: chapter.title,
+                    child: Text(
+                      'Chương ${chapter.id}: ${chapter.title}',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+              child: Chip(
+                avatar: Icon(Icons.menu_book, size: 18, color: primary),
+                label: Text(
+                  _selectedChapter == null
+                      ? 'Chương'
+                      : 'Chương ${chapters.firstWhere((chapter) => chapter.title == _selectedChapter).id}',
+                ),
+                backgroundColor: _selectedChapter == null
+                    ? null
+                    : primary.withValues(alpha: 0.15),
+                side: BorderSide(
+                  color: _selectedChapter == null
+                      ? text.withValues(alpha: 0.16)
+                      : primary.withValues(alpha: 0.45),
+                ),
+              ),
             ),
-          );
-        }).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -250,10 +297,19 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
         questions = QuestionRepository().getImportantQuestions(type);
         break;
     }
+    if (_selectedChapter != null) {
+      questions = questions
+          .where((q) => q.chapter == _selectedChapter)
+          .toList(growable: false);
+    }
     if (_searchQuery.trim().isNotEmpty) {
       final lowerQuery = _searchQuery.toLowerCase().trim();
       questions = questions
-          .where((q) => q.content.toLowerCase().contains(lowerQuery))
+          .where(
+            (q) =>
+                q.id.toString().contains(lowerQuery) ||
+                q.content.toLowerCase().contains(lowerQuery),
+          )
           .toList();
     }
     return questions;

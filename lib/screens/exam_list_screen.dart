@@ -39,13 +39,13 @@ class ExamListScreen extends StatelessWidget {
             ),
             itemCount: exams.length + 2,
             itemBuilder: (context, index) {
-              if (index == exams.length) {
-                return _RandomExamCard(color: primary);
-              }
-              if (index == exams.length + 1) {
+              if (index == 0) {
                 return _ShuffledExamCard(color: primary);
               }
-              final exam = exams[index];
+              if (index == 1) {
+                return _RandomExamCard(color: primary);
+              }
+              final exam = exams[index - 2];
               final attemptCount = ExamPersistenceService().getAttemptCount(
                 appProvider.selectedLicense,
                 exam.id,

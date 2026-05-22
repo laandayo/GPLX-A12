@@ -270,62 +270,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   color: primary,
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildStatusChip(
-                    icon: Icons.check_circle,
-                    count: questionProvider.correctCount,
-                    color: AppColors.correctColor(isDark),
-                  ),
-                  _buildStatusChip(
-                    icon: Icons.cancel,
-                    count: questionProvider.wrongCount,
-                    color: AppColors.wrongColor(isDark),
-                  ),
-                  _buildStatusChip(
-                    icon: Icons.bookmark,
-                    count: questionProvider.currentQuestions
-                        .where((q) => q.isMarked)
-                        .length,
-                    color: AppColors.bookmarkColor(isDark),
-                  ),
-                ],
-              ),
             ],
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildStatusChip({
-    required IconData icon,
-    required int count,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 4),
-          Text(
-            '$count',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -501,12 +448,6 @@ class _QuestionScreenState extends State<QuestionScreen> {
           if (shouldShowExplanation) ...[
             const SizedBox(height: 20),
             _buildExplanation(context, appProvider, question, primary, isDark),
-          ],
-          if (questionProvider.isExamMode &&
-              questionProvider.currentIndex ==
-                  questionProvider.totalQuestions - 1) ...[
-            const SizedBox(height: 20),
-            _buildSubmitExamButton(context, questionProvider, appProvider),
           ],
         ],
       ),
@@ -769,37 +710,6 @@ class _QuestionScreenState extends State<QuestionScreen> {
     );
   }
 
-  Widget _buildSubmitExamButton(
-    BuildContext context,
-    QuestionProvider questionProvider,
-    AppProvider appProvider,
-  ) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: questionProvider.hasSubmittedSession
-            ? null
-            : () => _showSubmitConfirmation(
-                context,
-                questionProvider,
-                appProvider,
-              ),
-        icon: const Icon(Icons.check_circle),
-        label: const Text('NỘP BÀI'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.correctColor(
-            Theme.of(context).brightness == Brightness.dark,
-          ),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildBottomNavigation(
     BuildContext context,
     AppProvider appProvider,
@@ -846,16 +756,33 @@ class _QuestionScreenState extends State<QuestionScreen> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: ElevatedButton.icon(
-                onPressed: questionProvider.hasNext
-                    ? questionProvider.nextQuestion
-                    : null,
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text('Sau'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
+              child: questionProvider.isExamMode && !questionProvider.hasNext
+                  ? ElevatedButton.icon(
+                      onPressed: questionProvider.hasSubmittedSession
+                          ? null
+                          : () => _showSubmitConfirmation(
+                              context,
+                              questionProvider,
+                              appProvider,
+                            ),
+                      icon: const Icon(Icons.check_circle),
+                      label: const Text('Nộp bài'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.correctColor(isDark),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    )
+                  : ElevatedButton.icon(
+                      onPressed: questionProvider.hasNext
+                          ? questionProvider.nextQuestion
+                          : null,
+                      icon: const Icon(Icons.arrow_forward),
+                      label: const Text('Sau'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
             ),
           ],
         ),

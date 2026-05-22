@@ -46,6 +46,15 @@ class _GplxAppContent extends StatelessWidget {
           themeMode: appProvider.flutterThemeMode,
           home: const AppStartupScreen(),
           routes: {'/question_screen': (context) => const QuestionScreen()},
+          builder: (context, child) {
+            final mediaQuery = MediaQuery.of(context);
+            return MediaQuery(
+              data: mediaQuery.copyWith(
+                textScaler: TextScaler.linear(appProvider.textScale),
+              ),
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
         );
       },
     );

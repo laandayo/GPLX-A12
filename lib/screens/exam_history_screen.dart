@@ -51,6 +51,7 @@ class ExamHistoryScreen extends StatelessWidget {
     final appProvider = context.read<AppProvider>();
     final type = appProvider.selectedLicense;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = AppColors.primary(type, isDark);
     final text = AppColors.text(type, isDark);
 
     showModalBottomSheet(
@@ -77,8 +78,38 @@ class ExamHistoryScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${_formatDateTime(attempt.completedAt ?? attempt.date)} • ${_formatDuration(attempt.durationSeconds)}',
+                    '${_formatDateTime(attempt.completedAt ?? attempt.date)} • Hoàn thành trong ${_formatDuration(attempt.durationSeconds)}',
                     style: TextStyle(color: text.withValues(alpha: 0.6)),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _SummaryPill(
+                        label: 'Điểm',
+                        value: '${attempt.score}/${attempt.totalQuestions}',
+                        color: primary,
+                      ),
+                      const SizedBox(width: 8),
+                      _SummaryPill(
+                        label: 'Đúng',
+                        value: '${attempt.correctAnswers}',
+                        color: AppColors.correctColor(isDark),
+                      ),
+                      const SizedBox(width: 8),
+                      _SummaryPill(
+                        label: 'Sai',
+                        value: '${attempt.wrongAnswers}',
+                        color: AppColors.wrongColor(isDark),
+                      ),
+                      if (attempt.unansweredQuestions > 0) ...[
+                        const SizedBox(width: 8),
+                        _SummaryPill(
+                          label: 'Trống',
+                          value: '${attempt.unansweredQuestions}',
+                          color: text.withValues(alpha: 0.55),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
@@ -160,6 +191,42 @@ class ExamHistoryScreen extends StatelessWidget {
   }
 }
 
+class _SummaryPill extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _SummaryPill({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.22)),
+        ),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: TextStyle(fontWeight: FontWeight.w900, color: color),
+            ),
+            const SizedBox(height: 2),
+            Text(label, style: TextStyle(fontSize: 11, color: color)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _HistoryCard extends StatelessWidget {
   final ExamAttemptRecord attempt;
   final Color primary;
@@ -219,7 +286,7 @@ class _HistoryCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _formatDateTime(attempt.completedAt ?? attempt.date),
+                        'Làm vào ${_formatDateTime(attempt.completedAt ?? attempt.date)}',
                         style: TextStyle(
                           fontSize: 12,
                           color: text.withValues(alpha: 0.55),
@@ -227,7 +294,7 @@ class _HistoryCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Đúng ${attempt.correctAnswers} • Sai ${attempt.wrongAnswers} • ${_formatDuration(attempt.durationSeconds)}',
+                        'Đúng ${attempt.correctAnswers} • Sai ${attempt.wrongAnswers} • Hoàn thành trong ${_formatDuration(attempt.durationSeconds)}',
                         style: TextStyle(
                           fontSize: 12,
                           color: text.withValues(alpha: 0.7),

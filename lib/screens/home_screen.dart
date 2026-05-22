@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'App Ôn Luyện',
+                    'Ôn Luyện GPLX A1 & A',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -244,18 +244,18 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisCount: 3,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.85,
+          childAspectRatio: 0.78,
           children: [
             MenuGridItem(
               icon: '📝',
               title: 'Thi thử',
-              subtitle: 'Chọn đề thi',
+              subtitle: 'Thi theo đề',
               color: primary,
               onTap: () => _navigateToExamList(context),
             ),
             MenuGridItem(
               icon: '📚',
-              title: 'Ôn tập',
+              title: 'Ôn tập theo chương',
               subtitle: '$answeredCount/$totalQuestions câu',
               color: primary,
               onTap: () => _navigateToChapters(context, StudyMode.all),
@@ -276,17 +276,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             MenuGridItem(
               icon: '⚠️',
-              title: 'Liệt',
+              title: 'Câu điểm liệt',
               subtitle: '$importantCount câu',
               color: primary,
               onTap: () => _navigateToQuestions(context, StudyMode.important),
-            ),
-            MenuGridItem(
-              icon: '🎲',
-              title: 'Ngẫu nhiên',
-              subtitle: '',
-              color: primary,
-              onTap: () => _navigateToQuestions(context, StudyMode.random),
             ),
             MenuGridItem(
               icon: '✅',

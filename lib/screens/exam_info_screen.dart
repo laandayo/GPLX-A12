@@ -29,6 +29,7 @@ class ExamInfoScreen extends StatelessWidget {
           exam.id,
         );
         final bestScore = ExamPersistenceService().getBestScore(type, exam.id);
+        final isShuffledExam = exam.id == -1;
 
         return Scaffold(
           backgroundColor: AppColors.background(type, isDark),
@@ -47,8 +48,15 @@ class ExamInfoScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildHeader(context, exam, type, primary, text, isDark),
-                      const SizedBox(height: 32),
+                      if (isShuffledExam) ...[
+                        _buildShuffledExamExplanation(
+                          context,
+                          primary,
+                          text,
+                          isDark,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
                       _buildExamDetails(
                         context,
                         totalQuestions,
@@ -84,35 +92,49 @@ class ExamInfoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(
+  Widget _buildShuffledExamExplanation(
     BuildContext context,
-    Exam exam,
-    LicenseType type,
     Color primary,
     Color text,
     bool isDark,
   ) {
+    final type = context.read<AppProvider>().selectedLicense;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.surface(type, isDark),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: primary.withValues(alpha: 0.22)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Icon(Icons.shuffle_rounded, color: primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Đề câu hỏi xáo trộn hoạt động như thế nào?',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: text,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Text(
-            exam.name,
+            'Mỗi lần tạo đề, hệ thống chọn ngẫu nhiên 25 câu theo tỷ lệ chương: Chương I 9 câu, Chương II 2 câu, Chương III 3 câu, Chương IV 8 câu, Chương V 3 câu. Ngoài ra, Đề sẽ có 1-2 câu điểm liệt',
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+              height: 1.45,
+              fontWeight: FontWeight.w600,
               color: primary,
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Giấy phép lái xe A1/ A',
-            style: TextStyle(fontSize: 16, color: text.withValues(alpha: 0.7)),
           ),
         ],
       ),

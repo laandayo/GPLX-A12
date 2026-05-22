@@ -41,6 +41,8 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               _buildPaletteOptions(appProvider, isDark, primary, text, surface),
+              const SizedBox(height: 8),
+              _buildTextSizeOptions(appProvider, primary, text, surface),
               const Divider(height: 32),
               _buildSectionHeader(context, 'Cài đặt ôn tập', primary, text),
               _buildStudySettings(context, appProvider, isDark, primary, text),
@@ -166,7 +168,7 @@ class SettingsScreen extends StatelessWidget {
             Text(
               'Màu chủ đạo',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: text.withValues(alpha: 0.7),
               ),
@@ -224,6 +226,54 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 );
               }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextSizeOptions(
+    AppProvider appProvider,
+    Color primary,
+    Color text,
+    Color surface,
+  ) {
+    return Material(
+      color: surface,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Kích cỡ chữ',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: text.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SegmentedButton<AppTextSizeOption>(
+              segments: AppTextSizeOption.values
+                  .map(
+                    (size) => ButtonSegment<AppTextSizeOption>(
+                      value: size,
+                      label: Text(size.displayName),
+                    ),
+                  )
+                  .toList(growable: false),
+              selected: {appProvider.textSize},
+              style: ButtonStyle(
+                foregroundColor: WidgetStateProperty.resolveWith(
+                  (states) =>
+                      states.contains(WidgetState.selected) ? primary : text,
+                ),
+              ),
+              onSelectionChanged: (selection) {
+                appProvider.setTextSize(selection.first);
+              },
             ),
           ],
         ),
@@ -302,21 +352,141 @@ class SettingsScreen extends StatelessWidget {
         ),
         Material(
           color: surface,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                const Icon(Icons.description),
-                const SizedBox(width: 16),
-                const Text('GPLX - Ôn thi bằng lái'),
-                const Spacer(),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: text.withValues(alpha: 0.5),
-                ),
-              ],
+          child: InkWell(
+            onTap: () => _showAppExplanationDialog(context, text, primary),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.help_outline),
+                  const SizedBox(width: 16),
+                  const Text('Về ứng dụng'),
+                  const Spacer(),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: text.withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
             ),
+          ),
+        ),
+        Material(
+          color: surface,
+          child: InkWell(
+            onTap: () => _showCreditsDialog(context, text, primary),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.description),
+                  const SizedBox(width: 16),
+                  const Text('GPLX - Ôn thi bằng lái'),
+                  const Spacer(),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: text.withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showAppExplanationDialog(
+    BuildContext context,
+    Color text,
+    Color primary,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Về ứng dụng'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Giải thích về cách tính của những mục ở Trang thống kê:',
+                style: TextStyle(color: text),
+              ),
+              const SizedBox(height: 12),
+              _buildInfoBullet('Tỉ lệ chính xác',
+                  'Là tỷ lệ phần trăm của tổng số lần trả lời đúng trên tổng số lần trả lời.'),
+              const SizedBox(height: 10),
+              _buildInfoBullet('Tỉ lệ đậu',
+                  'Tỉ lệ đậu hiện tại được tính theo Độ chính xác x 0.9, tức là 90% của chỉ số “Chính xác”.'),
+              const SizedBox(height: 10),
+              _buildInfoBullet('Hoạt động ôn tập (30 ngày)',
+                  'Hoạt động ôn tập (30 ngày) hiển thị mức độ hoạt động theo 30 ngày vừa qua dựa trên số lần học/ngày, được quy về 4 mức cường độ.'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('Đóng', style: TextStyle(color: primary)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCreditsDialog(
+    BuildContext context,
+    Color text,
+    Color primary,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Credits'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Những người góp tay làm ứng dụng:',
+                style: TextStyle(color: text),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '• Phan Trần Khánh Lân',
+                style: TextStyle(color: text),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('Đóng', style: TextStyle(color: primary)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoBullet(String title, String subtitle) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('• ', style: TextStyle(fontSize: 16)),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 2),
+              Text(subtitle, style: const TextStyle(fontSize: 13)),
+            ],
           ),
         ),
       ],

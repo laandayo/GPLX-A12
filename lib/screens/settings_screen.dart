@@ -453,13 +453,22 @@ class SettingsScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Những người góp tay làm ứng dụng:',
+                'Làm bằng cả trái tim đến từ đội ngũ thuộc ',
                 style: TextStyle(color: text),
               ),
               const SizedBox(height: 12),
               Text(
-                '• Phan Trần Khánh Lân',
+                'Trường Cao Đẳng Kỹ Thuật Công - Nông nghiệp Quảng Trị',
                 style: TextStyle(color: text),
+              ),
+              const SizedBox(height: 18),
+              Center(
+                child: Image.asset(
+                  'assets/logo1.png',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.contain,
+                ),
               ),
             ],
           ),

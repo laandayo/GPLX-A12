@@ -264,7 +264,7 @@
       "content": "Hành vi đua xe trái phép bị xử lý như thế nào?",
       "answers": [
         "Chỉ bị nhắc nhở.",
-        "Tùy theo mức độ của hành vi vi phạm có thể bị xử lý hành chính hoặc xử lýhình sự."
+        "Tùy theo mức độ của hành vi vi phạm có thể bị xử lý hành chính hoặc xử lý hình sự."
       ],
       "correctAnswer": 1,
       "explanation": "Đua xe trái phép sẽ bị phạt nặng tùy mức độ vi phạm ⚖️ có thể xử lý hành chính hoặc hình sự nếu gây nguy hiểm cho xã hội và vi phạm pháp luật nghiêm trọng.",
@@ -278,9 +278,9 @@
       "answers": [
         "Bị nghiêm cấm.",
         "Không bị nghiêm cấm.",
-        "Không bị nghiêm cấm, nếu nồng độ cồn trong máu ở mức nhẹ, có thể điều khiểnphương tiện tham gia giao thông."
+        "Không bị nghiêm cấm, nếu nồng độ cồn trong máu ở mức nhẹ, có thể điều khiển phương tiện tham gia giao thông."
       ],
-      "correctAnswer": 1,
+      "correctAnswer": 0,
       "explanation": "Bị nghiêm cấm tuyệt đối khi trong người có nồng độ cồn 🍷 vì làm giảm khả năng phản xạ, gây nguy hiểm cho bản thân và người khác khi lái xe.",
       "isImportant": true,
       "image": null
@@ -434,12 +434,12 @@
         "Người tham gia giao thông đường bộ ở các hướng phải dừng lại.",
         "Người tham gia giao thông đường bộ ở các hướng được đi theo chiều gậy chỉcủa Cảnh sát giao thông.",
         "Người tham gia giao thông đường bộ ở phía trước và phía sau người điều khiểnđược đi tất cả các hướng; người tham gia giao thông đường bộ ở phía bên phải và phía bên trái người điều khiển phải dừng lại.",
-        "Người tham gia giao thông đường bộ ở phía trước và phía sau người điều khiểnphải dừng lại; người tham gia giao thông đường bộ ở phía bên phải và phía bên trái người điều khiển được đi tất cả các hướng."
+        "Người tham gia giao thông đường bộ ở phía trước và phía sau người điều khiển phải dừng lại; người tham gia giao thông đường bộ ở phía bên phải và phía bên trái người điều khiển được đi tất cả các hướng."
       ],
       "correctAnswer": 3,
       "explanation": "📢 Khi Cảnh sát giao thông giơ 2 tay ngang, người ở trước và sau phải dừng, vì đây là tín hiệu cấm đi. Còn người bên trái và phải được phép đi vì không bị cản trở.",
       "isImportant": false,
-      "image": null
+      "image": "assets/images/q29.png"
     },
     {
       "id": 30,
@@ -454,7 +454,7 @@
       "correctAnswer": 2,
       "explanation": "Người tham gia giao thông đường bộ ở tất cả các hướng phải dừng lại, trừ các xe đã ở trong khu vực giao nhau.",
       "isImportant": false,
-      "image": null
+      "image": "assets/images/q30.png"
     },
     {
       "id": 31,

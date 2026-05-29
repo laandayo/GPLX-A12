@@ -177,13 +177,17 @@ class QuestionProvider with ChangeNotifier {
     );
   }
 
-  void selectAnswer(
+  bool selectAnswer(
     int answerIndex,
     LicenseType type, {
     required bool gradeImmediately,
   }) {
     final question = currentQuestion;
-    if (question == null || question.isAnswered) return;
+    if (question == null || _hasSubmittedSession) return false;
+    if (gradeImmediately && question.isAnswered) return false;
+    if (!gradeImmediately && question.selectedAnswerIndex == answerIndex) {
+      return false;
+    }
 
     question.isAnswered = true;
     question.selectedAnswerIndex = answerIndex;
@@ -193,6 +197,7 @@ class QuestionProvider with ChangeNotifier {
     }
 
     notifyListeners();
+    return true;
   }
 
   void toggleMark(LicenseType type) {

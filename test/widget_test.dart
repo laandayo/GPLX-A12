@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gplx_app/models/models.dart';
 import 'package:gplx_app/data/data.dart';
+import 'package:gplx_app/providers/providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -45,4 +46,41 @@ void main() {
     expect(questions.where((q) => q.id >= 216 && q.id <= 250).length, 3);
     expect(importantCount, inInclusiveRange(1, 2));
   });
+
+  test(
+    'Exam answers can be changed before submission only in deferred scoring',
+    () async {
+      await QuestionRepository().initializeAsync();
+
+      final provider = QuestionProvider()..loadShuffledExam(LicenseType.a1);
+
+      expect(
+        provider.selectAnswer(0, LicenseType.a1, gradeImmediately: false),
+        isTrue,
+      );
+      expect(provider.currentQuestion!.selectedAnswerIndex, 0);
+      expect(provider.currentQuestion!.isEvaluated, isFalse);
+
+      expect(
+        provider.selectAnswer(1, LicenseType.a1, gradeImmediately: false),
+        isTrue,
+      );
+      expect(provider.currentQuestion!.selectedAnswerIndex, 1);
+
+      provider.resetCurrentExam();
+
+      expect(
+        provider.selectAnswer(0, LicenseType.a1, gradeImmediately: true),
+        isTrue,
+      );
+      expect(provider.currentQuestion!.selectedAnswerIndex, 0);
+      expect(provider.currentQuestion!.isEvaluated, isTrue);
+
+      expect(
+        provider.selectAnswer(1, LicenseType.a1, gradeImmediately: true),
+        isFalse,
+      );
+      expect(provider.currentQuestion!.selectedAnswerIndex, 0);
+    },
+  );
 }

@@ -551,6 +551,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
     final answer = question.answers[index];
     final isSelected = question.selectedAnswerIndex == index;
     final hasAnswered = question.isAnswered;
+    final canSelectAnswer =
+        !questionProvider.hasSubmittedSession &&
+        (!hasAnswered || !isGradeImmediately);
     final showFeedback =
         question.isEvaluated &&
         (isGradeImmediately || questionProvider.hasSubmittedSession);
@@ -594,14 +597,14 @@ class _QuestionScreenState extends State<QuestionScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: hasAnswered
-              ? null
-              : () => _handleAnswer(
+          onTap: canSelectAnswer
+              ? () => _handleAnswer(
                   questionProvider,
                   answerIndex: index,
                   appProvider: appProvider,
                   gradeImmediately: isGradeImmediately,
-                ),
+                )
+              : null,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -797,12 +800,16 @@ class _QuestionScreenState extends State<QuestionScreen> {
     required bool gradeImmediately,
   }) {
     final answeredIndex = questionProvider.currentIndex;
-    questionProvider.selectAnswer(
+    final wasAnswered = questionProvider.currentQuestion?.isAnswered ?? false;
+    final didSelect = questionProvider.selectAnswer(
       answerIndex,
       appProvider.selectedLicense,
       gradeImmediately: gradeImmediately,
     );
-    appProvider.incrementQuestionsStudied();
+    if (!didSelect) return;
+    if (!wasAnswered) {
+      appProvider.incrementQuestionsStudied();
+    }
 
     if (!appProvider.autoAdvance ||
         gradeImmediately ||

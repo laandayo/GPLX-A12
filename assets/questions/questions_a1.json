@@ -2121,7 +2121,7 @@
         "Tốc độ tối thiểu các xe cơ giới được phép chạy."
       ],
       "correctAnswer": 0,
-      "explanation": "Biển 1: R.306 “Tốc độ tối thiểu cho phép”.",
+      "explanation": "Ghi tốc độ tối đa cho phép của biển P.127 “Tốc độ tối đa cho phép”.",
       "isImportant": false,
       "image": "assets/images/q154.png"
     },
@@ -2134,7 +2134,7 @@
         "Báo hiệu tốc độ tối thiểu cho phép các xe cơ giới chạy."
       ],
       "correctAnswer": 1,
-      "explanation": "Biển 1: W.224 “Đường người đi bộ cắt ngang”; Biển 2: P.112 “Cấm người đi bộ”; Biển 3: R.305 “Đường dành cho người đi bộ”. Biển 1 báo ưu tiên cho người đi bộ nên phải nhường đường.",
+      "explanation": "Biển 1: R.306 “Tốc độ tối thiểu cho phép”.",
       "isImportant": false,
       "image": "assets/images/q155.png"
     },
@@ -2144,7 +2144,7 @@
       "content": "Gặp biển nào người lái xe phải nhường đường cho người đi bộ?",
       "answers": ["Biển 1.", "Biển 2.", "Biển 3."],
       "correctAnswer": 0,
-      "explanation": "Biển 1: W.224 “Đường người đi bộ cắt ngang”; Biển 2: P.112 “Cấm người đi bộ”; Biển 3: R.305 “Đường dành cho người đi bộ”. Biển 3 cấm các loại xe đi vào đường dành cho người đi bộ.",
+      "explanation": "Biển 1: W.224 “Đường người đi bộ cắt ngang”; Biển 2: P.112 “Cấm người đi bộ”; Biển 3: R.305 “Đường dành cho người đi bộ”. Biển 1 báo ưu tiên cho người đi bộ nên phải nhường đường.",
       "isImportant": false,
       "image": "assets/images/q156.png"
     },
@@ -2154,7 +2154,7 @@
       "content": "Biển nào chỉ đường dành cho người đi bộ, các loại xe không được đi vào khi gặp biển này?",
       "answers": ["Biển 1.", "Biển 1 và biển 3", "Biển 3.", "Cả ba biển."],
       "correctAnswer": 2,
-      "explanation": "Biển 1: R. 304 “Đường dành cho xe thô sơ”; Biển 2: P.110a “Cấm xe đạp”; Biển 3: W.226 “Đường người đi xe đạp cắt ngang”.",
+      "explanation": "Biển 1: W.224 “Đường người đi bộ cắt ngang”; Biển 2: P.112 “Cấm người đi bộ”; Biển 3: R.305 “Đường dành cho người đi bộ”. Biển 3 cấm các loại xe đi vào đường dành cho người đi bộ.",
       "isImportant": false,
       "image": "assets/images/q157.png"
     },
@@ -2164,7 +2164,7 @@
       "content": "Biển nào báo hiệu \"Đường dành cho xe thô sơ\"?",
       "answers": ["Biển 1.", "Biển 2.", "Biển 3."],
       "correctAnswer": 0,
-      "explanation": "Biển 1: W.210 “Giao nhau với đường sắt có rào chắn”; Biển 2: W.208 “Giao nhau với đường ưu tiên”; Biển 3: W.209 “Giao nhau có tín hiệu đèn”.",
+      "explanation": "Biển 1: R. 304 “Đường dành cho xe thô sơ”; Biển 2: P.110a “Cấm xe đạp”; Biển 3: W.226 “Đường người đi xe đạp cắt ngang”.",
       "isImportant": false,
       "image": "assets/images/q158.png"
     },
@@ -2214,7 +2214,7 @@
         "Cả ba biển."
       ],
       "correctAnswer": 1,
-      "explanation": "Biển 1: W.210 “Giao nhau với đường sắt có rào chắn”; Biển 2: W.211a “Giao nhau với đường sắt không có rào chắn”; Biển 3: W.242a “Nơi đường sắt giao vuông góc với đường bộ” bổ sung cho biển W.211a. Nên cả 2 biển 2 và 3 đều đúng.",
+      "explanation": "Biển 1: W.210 “Giao nhau với đường sắt có rào chắn”; Biển 2: W.234 “Giao nhau với đường hai chiều”; Biển 3: W.242a “Nơi đường sắt giao vuông góc với đường bộ”",
       "isImportant": false,
       "image": "assets/images/q162.png"
     },
@@ -2229,7 +2229,7 @@
         "Cả ba biển."
       ],
       "correctAnswer": 2,
-      "explanation": "Biển 1: Biển 211a Giao nhau với đường sắt không có rào chắn. Biển 2: Biển 208 Giao nhau với đường ưu tiên. Biển 3: Biển 211b Giao nhau với tàu điện.",
+      "explanation": "Biển 1: W.210 “Giao nhau với đường sắt có rào chắn”; Biển 2: W.211a “Giao nhau với đường sắt không có rào chắn”; Biển 3: W.242a “Nơi đường sắt giao vuông góc với đường bộ” bổ sung cho biển W.211a. Nên cả 2 biển 2 và 3 đều đúng.",
       "isImportant": false,
       "image": "assets/images/q163.png"
     },
@@ -2239,7 +2239,7 @@
       "content": "Biển nào báo hiệu sắp đến chỗ giao nhau giữa đường bộ và đường sắt?",
       "answers": ["Biển 1.", "Biển 2.", "Biển 3.", "Biển 1 và biển 3."],
       "correctAnswer": 0,
-      "explanation": "Biển 1: W.237 “Cầu vồng”; Biển 2: W.218 “Cửa chui”; Biển 3: W.240 “Đường hầm”. Đáp án đúng là đáp án 2.",
+      "explanation": "Biển 1: Biển 211a Giao nhau với đường sắt không có rào chắn. Biển 2: Biển 208 Giao nhau với đường ưu tiên. Biển 3: Biển 211b Giao nhau với tàu điện.",
       "isImportant": false,
       "image": "assets/images/q164.png"
     },
@@ -2249,7 +2249,7 @@
       "content": "Biển nào báo hiệu \"Cửa chui\"?",
       "answers": ["Biển 1.", "Biển 2.", "Biển 3."],
       "correctAnswer": 1,
-      "explanation": "Hai biển này là 242a và 242b “Nơi đường sắt giao nhau vuông góc với đường bộ” bổ sung cho biển 211 “Giao nhau với đường sắt không có rào chắn”. Do đó câu trả lời 1 đúng.",
+      "explanation": "Biển 1: W.237 “Cầu vồng”; Biển 2: W.218 “Cửa chui”; Biển 3: W.240 “Đường hầm”. Đáp án đúng là đáp án 2.",
       "isImportant": false,
       "image": "assets/images/q165.png"
     },

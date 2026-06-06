@@ -343,7 +343,7 @@ class SettingsScreen extends StatelessWidget {
                 const Text('Phiên bản'),
                 const Spacer(),
                 Text(
-                  '0.7 Beta',
+                  'v1.0.0 Release',
                   style: TextStyle(color: text.withValues(alpha: 0.7)),
                 ),
               ],

@@ -1,3 +1,13 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -6,9 +16,18 @@ plugins {
 }
 
 android {
-    namespace = "com.example.gplx_app"
+    namespace = "com.gplx.xemay"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -20,9 +39,7 @@ android {
     }
 
     defaultConfig {
-
-        applicationId = "com.example.gplx_app"
-
+        applicationId = "com.gplx.xemay"
 
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
@@ -32,9 +49,7 @@ android {
 
     buildTypes {
         release {
-
-
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
@@ -42,3 +57,5 @@ android {
 flutter {
     source = "../.."
 }
+
+

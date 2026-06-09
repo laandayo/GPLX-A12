@@ -1,4 +1,4 @@
-package com.example.gplx_app
+package com.gplx.xemay
 
 import android.os.Build
 import android.view.Display

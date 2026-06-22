@@ -57,6 +57,7 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
   List<Question> _visibleQuestions = [];
   String _searchQuery = '';
   String? _selectedChapter;
+  static const String _allChaptersValue = '__ALL_CHAPTERS__';
 
   @override
   void dispose() {
@@ -229,13 +230,15 @@ class _QuestionCatalogScreenState extends State<QuestionCatalogScreen> {
               tooltip: 'Lọc theo chương',
               onSelected: (chapterTitle) {
                 setState(() {
-                  _selectedChapter = chapterTitle;
+                  _selectedChapter = chapterTitle == _allChaptersValue
+                      ? null
+                      : chapterTitle;
                   _visibleQuestions = _getFilteredQuestions(type);
                 });
               },
               itemBuilder: (context) => [
                 const PopupMenuItem<String?>(
-                  value: null,
+                  value: _allChaptersValue,
                   child: Text('Tất cả chương'),
                 ),
                 ...chapters.map(

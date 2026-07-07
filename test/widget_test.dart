@@ -1,7 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gplx_app/models/models.dart';
 import 'package:gplx_app/data/data.dart';
 import 'package:gplx_app/providers/providers.dart';
+import 'package:gplx_app/screens/question_screen.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -83,4 +86,31 @@ void main() {
       expect(provider.currentQuestion!.selectedAnswerIndex, 0);
     },
   );
+
+  testWidgets('Catalog lookup shows all answer options', (tester) async {
+    await QuestionRepository().initializeAsync();
+
+    final appProvider = AppProvider();
+    final questionProvider = QuestionProvider();
+    questionProvider.loadAllQuestionsForCatalog(LicenseType.a1);
+    questionProvider.jumpToQuestion(0);
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<AppProvider>.value(value: appProvider),
+          ChangeNotifierProvider<QuestionProvider>.value(
+            value: questionProvider,
+          ),
+        ],
+        child: const MaterialApp(home: QuestionScreen(isCatalogLookup: true)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final question = questionProvider.currentQuestion!;
+    for (final answer in question.answers) {
+      expect(find.text(answer), findsOneWidget);
+    }
+  });
 }

@@ -521,7 +521,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
               border: Border.all(color: correctColor.withValues(alpha: 0.4)),
             ),
             child: Text(
-              'Đáp án: ${String.fromCharCode(65 + question.correctAnswer)}. ${question.answers[question.correctAnswer]}',
+              'Đáp án đúng: ${String.fromCharCode(65 + question.correctAnswer)}. ${question.answers[question.correctAnswer]}',
               style: TextStyle(
                 fontSize: 15,
                 height: 1.45,
@@ -530,6 +530,65 @@ class _QuestionScreenState extends State<QuestionScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 12),
+          ...List.generate(question.answers.length, (index) {
+            final isCorrect = index == question.correctAnswer;
+            final answerColor = isCorrect ? correctColor : AppColors.wrongColor(isDark);
+            final answerBg = isCorrect
+                ? correctColor.withValues(alpha: 0.1)
+                : AppColors.wrongColor(isDark).withValues(alpha: 0.08);
+            final answerBorder = isCorrect
+                ? correctColor.withValues(alpha: 0.6)
+                : AppColors.wrongColor(isDark).withValues(alpha: 0.6);
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: answerBg,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: answerBorder, width: 1.5),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isCorrect
+                          ? correctColor
+                          : AppColors.wrongColor(isDark),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        String.fromCharCode(65 + index),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      question.answers[index],
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: answerColor,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    isCorrect ? Icons.check_circle : Icons.cancel,
+                    color: answerColor,
+                  ),
+                ],
+              ),
+            );
+          }),
           const SizedBox(height: 12),
           _buildExplanation(context, appProvider, question, primary, isDark),
         ],

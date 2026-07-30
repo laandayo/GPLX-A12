@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/providers.dart';
@@ -29,16 +30,32 @@ class _HomeScreenState extends State<HomeScreen> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final type = appProvider.selectedLicense;
 
+        final isWideLayout = MediaQuery.sizeOf(context).width >= 840;
+        final content = _navIndex == 0
+            ? _buildHomeContent(context, appProvider)
+            : const StatisticsScreen();
+
         return Scaffold(
           backgroundColor: AppColors.background(type, isDark),
-          body: _navIndex == 0
-              ? _buildHomeContent(context, appProvider)
-              : const StatisticsScreen(),
-          bottomNavigationBar: CustomBottomNavBar(
-            currentIndex: _navIndex,
-            onTap: (index) => setState(() => _navIndex = index),
-            activeColor: AppColors.primary(type, isDark),
-          ),
+          body: isWideLayout
+              ? Row(
+                  children: [
+                    CustomNavigationRail(
+                      currentIndex: _navIndex,
+                      onTap: (index) => setState(() => _navIndex = index),
+                      activeColor: AppColors.primary(type, isDark),
+                    ),
+                    Expanded(child: content),
+                  ],
+                )
+              : content,
+          bottomNavigationBar: isWideLayout
+              ? null
+              : CustomBottomNavBar(
+                  currentIndex: _navIndex,
+                  onTap: (index) => setState(() => _navIndex = index),
+                  activeColor: AppColors.primary(type, isDark),
+                ),
         );
       },
     );
@@ -52,15 +69,24 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildStudyProgressCard(
-                    context,
-                    appProvider,
-                  ).animate().fadeIn(duration: 400.ms).slideY(),
-                  const SizedBox(height: 20),
-                  _buildMenuGrid(context, appProvider),
-                ],
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 960),
+                  child: Column(
+                    children: [
+                      _buildStudyProgressCard(
+                        context,
+                        appProvider,
+                      ).animate().fadeIn(duration: 400.ms).slideY(),
+                      if (kIsWeb) ...[
+                        const SizedBox(height: 16),
+                        _buildPwaInstallHint(context, appProvider),
+                      ],
+                      const SizedBox(height: 20),
+                      _buildMenuGrid(context, appProvider),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -218,6 +244,56 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildPwaInstallHint(
+    BuildContext context,
+    AppProvider appProvider,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final type = appProvider.selectedLicense;
+    final primary = AppColors.primary(type, isDark);
+    final text = AppColors.text(type, isDark);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: primary.withValues(alpha: isDark ? 0.16 : 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: primary.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.add_to_home_screen_outlined, color: primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Cài đặt trên iPhone hoặc iPad',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: text,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Mở bằng Safari, chạm Chia sẻ rồi chọn “Thêm vào Màn hình chính” để dùng như ứng dụng.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.35,
+                    color: text.withValues(alpha: 0.75),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMenuGrid(BuildContext context, AppProvider appProvider) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final type = appProvider.selectedLicense;
@@ -238,13 +314,16 @@ class _HomeScreenState extends State<HomeScreen> {
             .getImportantQuestions(type)
             .length;
 
+        final width = MediaQuery.sizeOf(context).width;
+        final crossAxisCount = width >= 840 ? 4 : width >= 600 ? 3 : 2;
+
         return GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 3,
+          crossAxisCount: crossAxisCount,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.78,
+          childAspectRatio: width >= 600 ? 1.0 : 0.9,
           children: [
             MenuGridItem(
               icon: '📝',

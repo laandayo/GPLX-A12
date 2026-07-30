@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../ads/ads.dart';
 import '../providers/providers.dart';
 import '../models/models.dart';
+import '../widgets/responsive_content.dart';
 
 class QuestionScreen extends StatefulWidget {
   final bool isCatalogLookup;
@@ -307,7 +308,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
     return SingleChildScrollView(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
-      child: Column(
+      child: ResponsiveContent(
+        maxWidth: 800,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (questionProvider.isExamMode && question.isImportant) ...[
@@ -450,6 +453,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
             _buildExplanation(context, appProvider, question, primary, isDark),
           ],
         ],
+        ),
       ),
     );
   }
@@ -470,7 +474,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
     return SingleChildScrollView(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
-      child: Column(
+      child: ResponsiveContent(
+        maxWidth: 800,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (question.image != null && question.image!.isNotEmpty) ...[
@@ -592,6 +598,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
           const SizedBox(height: 12),
           _buildExplanation(context, appProvider, question, primary, isDark),
         ],
+        ),
       ),
     );
   }

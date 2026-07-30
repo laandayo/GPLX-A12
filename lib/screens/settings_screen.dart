@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../data/data.dart';
 import '../providers/providers.dart';
@@ -49,6 +50,7 @@ class SettingsScreen extends StatelessWidget {
               const Divider(height: 32),
               _buildSectionHeader(context, 'Dữ liệu', primary, text),
               _buildDataActions(context, appProvider, surface, text),
+              if (kIsWeb) _buildWebStorageNotice(surface, text),
               const Divider(height: 32),
               _buildSectionHeader(context, 'Thông tin', primary, text),
               _buildAbout(context, isDark, primary, text, surface),
@@ -83,6 +85,32 @@ class SettingsScreen extends StatelessWidget {
           color: text.withValues(alpha: 0.5),
         ),
         onTap: () => _confirmResetData(context, appProvider),
+      ),
+    );
+  }
+
+  Widget _buildWebStorageNotice(Color surface, Color text) {
+    return Material(
+      color: surface,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.devices_outlined, color: text.withValues(alpha: 0.65)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'Dữ liệu ôn tập được lưu trên thiết bị và trình duyệt này. Dữ liệu có thể mất khi bạn xóa dữ liệu trang web hoặc gỡ ứng dụng khỏi Màn hình chính.',
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 1.35,
+                  color: text.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

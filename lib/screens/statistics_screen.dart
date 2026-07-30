@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/providers.dart';
 import '../models/models.dart';
 import '../data/data.dart';
+import '../widgets/responsive_content.dart';
 
 class StatisticsScreen extends StatelessWidget {
   final VoidCallback? onBack;
@@ -39,21 +40,23 @@ class StatisticsScreen extends StatelessWidget {
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildOverviewCards(context, primary, text, surface, accuracy, answered, total, passProb),
-                const SizedBox(height: 24),
-                Text('Tiến độ theo chương',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: text)),
-                const SizedBox(height: 12),
-                _buildChapterProgress(context, statsProvider, type, primary, text, surface, isDark),
-                const SizedBox(height: 24),
-                Text('Hoạt động ôn tập (30 ngày)',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: text)),
-                const SizedBox(height: 12),
-                _buildStudyHeatmap(context, heatmap, surface, isDark),
-              ],
+            child: ResponsiveContent(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildOverviewCards(context, primary, text, surface, accuracy, answered, total, passProb),
+                  const SizedBox(height: 24),
+                  Text('Tiến độ theo chương',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: text)),
+                  const SizedBox(height: 12),
+                  _buildChapterProgress(context, statsProvider, type, primary, text, surface, isDark),
+                  const SizedBox(height: 24),
+                  Text('Hoạt động ôn tập (30 ngày)',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: text)),
+                  const SizedBox(height: 12),
+                  _buildStudyHeatmap(context, heatmap, surface, isDark),
+                ],
+              ),
             ),
           ),
         );
@@ -63,9 +66,10 @@ class StatisticsScreen extends StatelessWidget {
 
   Widget _buildOverviewCards(BuildContext context, Color primary, Color text, Color surface,
       double accuracy, int answered, int total, double passProb) {
+    final crossAxisCount = MediaQuery.sizeOf(context).width >= 840 ? 4 : 2;
     return GridView.count(
       shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 1.3,
+      crossAxisCount: crossAxisCount, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 1.3,
       children: [
         _StatCard(icon: Icons.check_circle, title: 'Chính xác',
           value: '${(accuracy * 100).toStringAsFixed(1)}%', color: AppColors.correctColor(Theme.of(context).brightness == Brightness.dark)),

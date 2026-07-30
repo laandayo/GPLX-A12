@@ -29,16 +29,23 @@ class ExamListScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          body: GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 0.85,
-            ),
-            itemCount: exams.length + 2,
-            itemBuilder: (context, index) {
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final crossAxisCount = constraints.maxWidth >= 840
+                  ? 4
+                  : constraints.maxWidth >= 600
+                      ? 3
+                      : 2;
+              return GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: constraints.maxWidth >= 600 ? 1.0 : 0.85,
+                ),
+                itemCount: exams.length + 2,
+                itemBuilder: (context, index) {
               if (index == 0) {
                 return _ShuffledExamCard(color: primary);
               }
@@ -61,6 +68,8 @@ class ExamListScreen extends StatelessWidget {
                 bestScore: bestScore,
                 color: primary,
                 onTap: () => _navigateToExamInfo(context, exam),
+              );
+                },
               );
             },
           ),

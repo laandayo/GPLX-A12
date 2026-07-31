@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/providers.dart';
 import '../models/models.dart';
 import '../services/exam_persistence_service.dart';
@@ -14,7 +13,9 @@ class ExamListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppProvider>(
       builder: (context, appProvider, child) {
-        final exams = QuestionRepository().getExams(appProvider.selectedLicense);
+        final exams = QuestionRepository().getExams(
+          appProvider.selectedLicense,
+        );
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final type = appProvider.selectedLicense;
         final primary = AppColors.primary(type, isDark);
@@ -28,27 +29,48 @@ class ExamListScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          body: GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3, mainAxisSpacing: 12, crossAxisSpacing: 12,
-              childAspectRatio: 0.85,
-            ),
-            itemCount: exams.length + 1,
-            itemBuilder: (context, index) {
-              if (index == exams.length) {
-                return _RandomExamCard(color: primary).animate().fadeIn(delay: (100 * index).ms);
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final crossAxisCount = constraints.maxWidth >= 840
+                  ? 4
+                  : constraints.maxWidth >= 600
+                      ? 3
+                      : 2;
+              return GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: constraints.maxWidth >= 600 ? 1.0 : 0.85,
+                ),
+                itemCount: exams.length + 2,
+                itemBuilder: (context, index) {
+              if (index == 0) {
+                return _ShuffledExamCard(color: primary);
               }
-              final exam = exams[index];
-              final attemptCount = ExamPersistenceService()
-                  .getAttemptCount(appProvider.selectedLicense, exam.id);
-              final bestScore = ExamPersistenceService()
-                  .getBestScore(appProvider.selectedLicense, exam.id);
+              if (index == 1) {
+                return _RandomExamCard(color: primary);
+              }
+              final exam = exams[index - 2];
+              final attemptCount = ExamPersistenceService().getAttemptCount(
+                appProvider.selectedLicense,
+                exam.id,
+              );
+              final bestScore = ExamPersistenceService().getBestScore(
+                appProvider.selectedLicense,
+                exam.id,
+              );
 
               return _ExamCard(
-                exam: exam, attemptCount: attemptCount, bestScore: bestScore,
-                color: primary, onTap: () => _navigateToExamInfo(context, exam),
-              ).animate().fadeIn(delay: (100 * index).ms);
+                exam: exam,
+                attemptCount: attemptCount,
+                bestScore: bestScore,
+                color: primary,
+                onTap: () => _navigateToExamInfo(context, exam),
+              );
+                },
+              );
             },
           ),
         );
@@ -57,7 +79,74 @@ class ExamListScreen extends StatelessWidget {
   }
 
   void _navigateToExamInfo(BuildContext context, Exam exam) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => ExamInfoScreen(exam: exam)));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ExamInfoScreen(exam: exam)),
+    );
+  }
+}
+
+class _ShuffledExamCard extends StatelessWidget {
+  final Color color;
+  const _ShuffledExamCard({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final type = context.read<AppProvider>().selectedLicense;
+
+    return Material(
+      color: AppColors.surface(type, isDark),
+      borderRadius: BorderRadius.circular(16),
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+      child: InkWell(
+        onTap: () => _openShuffledExamInfo(context),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.shuffle_rounded, color: color, size: 32),
+              const SizedBox(height: 8),
+              Text(
+                'Đề câu hỏi xáo trộn',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openShuffledExamInfo(BuildContext context) {
+    final appProvider = context.read<AppProvider>();
+    final questionProvider = context.read<QuestionProvider>();
+    questionProvider.loadShuffledExam(appProvider.selectedLicense);
+
+    final shuffledExam = questionProvider.currentExam;
+    if (questionProvider.currentQuestions.isEmpty || shuffledExam == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không thể tạo đề xáo trộn')),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            ExamInfoScreen(exam: shuffledExam, useCurrentSession: true),
+      ),
+    );
   }
 }
 
@@ -69,8 +158,11 @@ class _ExamCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _ExamCard({
-    required this.exam, required this.attemptCount,
-    required this.bestScore, required this.color, required this.onTap,
+    required this.exam,
+    required this.attemptCount,
+    required this.bestScore,
+    required this.color,
+    required this.onTap,
   });
 
   @override
@@ -93,36 +185,72 @@ class _ExamCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 40, height: 40,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: hasAttempted ? color.withValues(alpha: 0.15) : AppColors.dividerColor(isDark),
+                  color: hasAttempted
+                      ? color.withValues(alpha: 0.15)
+                      : AppColors.dividerColor(isDark),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child: Text('${exam.id}',
+                  child: Text(
+                    '${exam.id}',
                     style: TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold,
-                      color: hasAttempted ? color : AppColors.text(type, isDark).withValues(alpha: 0.7))),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: hasAttempted
+                          ? color
+                          : AppColors.text(type, isDark).withValues(alpha: 0.7),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
-              Text(exam.name, textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color),
-                maxLines: 2, overflow: TextOverflow.ellipsis),
+              Text(
+                exam.name,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
               const SizedBox(height: 4),
               if (hasAttempted) ...[
-                Text('Lần: $attemptCount', textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 10, color: AppColors.text(type, isDark).withValues(alpha: 0.5))),
+                Text(
+                  'Lần: $attemptCount',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: AppColors.text(type, isDark).withValues(alpha: 0.5),
+                  ),
+                ),
                 if (bestScore != null) ...[
                   const SizedBox(height: 2),
-                  Text('Tốt nhất: $bestScore', textAlign: TextAlign.center,
+                  Text(
+                    'Tốt nhất: $bestScore',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 10, fontWeight: FontWeight.w600,
-                      color: bestScore! >= 23 ? AppColors.correctColor(isDark) : AppColors.wrongColor(isDark))),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: bestScore! >= 23
+                          ? AppColors.correctColor(isDark)
+                          : AppColors.wrongColor(isDark),
+                    ),
+                  ),
                 ],
               ] else ...[
-                Text('Chưa thi', textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 10, color: AppColors.text(type, isDark).withValues(alpha: 0.5))),
+                Text(
+                  'Chưa thi',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: AppColors.text(type, isDark).withValues(alpha: 0.5),
+                  ),
+                ),
               ],
             ],
           ),
@@ -147,7 +275,7 @@ class _RandomExamCard extends StatelessWidget {
       elevation: 2,
       shadowColor: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
       child: InkWell(
-        onTap: () => _startRandomExam(context),
+        onTap: () => _openRandomExamInfo(context),
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(12),
@@ -156,9 +284,17 @@ class _RandomExamCard extends StatelessWidget {
             children: [
               const Text('🎲', style: TextStyle(fontSize: 32)),
               const SizedBox(height: 8),
-              Text('Đề ngẫu nhiên', textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color),
-                maxLines: 2, overflow: TextOverflow.ellipsis),
+              Text(
+                'Đề ngẫu nhiên',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),
@@ -166,15 +302,21 @@ class _RandomExamCard extends StatelessWidget {
     );
   }
 
-  void _startRandomExam(BuildContext context) {
+  void _openRandomExamInfo(BuildContext context) {
     final appProvider = context.read<AppProvider>();
     final questionProvider = context.read<QuestionProvider>();
     questionProvider.loadRandomExam(appProvider.selectedLicense);
 
-    if (questionProvider.currentQuestions.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Không có đề thi nào')));
+    final randomExam = questionProvider.currentExam;
+    if (questionProvider.currentQuestions.isEmpty || randomExam == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Không có đề thi nào')));
       return;
     }
-    Navigator.pushReplacementNamed(context, '/question_screen');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ExamInfoScreen(exam: randomExam)),
+    );
   }
 }

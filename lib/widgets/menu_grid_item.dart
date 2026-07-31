@@ -21,7 +21,9 @@ class MenuGridItem extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
-      color: Theme.of(context).cardTheme.color ?? (isDark ? const Color(0xFF121A26) : Colors.white),
+      color:
+          Theme.of(context).cardTheme.color ??
+          (isDark ? const Color(0xFF121A26) : Colors.white),
       borderRadius: BorderRadius.circular(16),
       elevation: 2,
       shadowColor: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
@@ -29,28 +31,31 @@ class MenuGridItem extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 icon,
-                style: const TextStyle(fontSize: 32),
+                textScaler: TextScaler.noScaling,
+                style: const TextStyle(fontSize: 30),
               ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: color,
+              const SizedBox(height: 6),
+              Flexible(
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
               if (subtitle != null && subtitle!.isNotEmpty) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   subtitle!,
                   textAlign: TextAlign.center,

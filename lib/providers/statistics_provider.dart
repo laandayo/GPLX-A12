@@ -28,7 +28,6 @@ class StatisticsProvider with ChangeNotifier {
   double getPassProbability(LicenseType type) {
     final accuracy = getOverallAccuracy(type);
     if (accuracy == 0) return 0.0;
-    // Simple calculation - can be improved with more data
     return accuracy * 0.9;
   }
 
@@ -54,8 +53,33 @@ class StatisticsProvider with ChangeNotifier {
     return progress;
   }
 
-  List<int> getStudyHeatmap() {
-    // Return last 30 days activity (placeholder)
-    return List.generate(30, (index) => index % 5);
+  List<int> getStudyHeatmap(Map<String, int> activity, {int days = 30}) {
+    final now = DateTime.now();
+    final end = DateTime(now.year, now.month, now.day);
+    final counts = List<int>.generate(days, (index) {
+      final day = end.subtract(Duration(days: days - index - 1));
+      final key = _dateKey(day);
+      return activity[key] ?? 0;
+    });
+    final maxCount = counts.fold<int>(0, (max, count) => count > max ? count : max);
+
+    return counts.map((count) {
+      if (count == 0) return 0;
+      if (maxCount <= 4) return count.clamp(1, 4);
+      final normalized = ((count / maxCount) * 4).ceil();
+      return normalized.clamp(1, 4);
+    }).toList(growable: false);
+  }
+
+  void clearHistory() {
+    _testAttempts.clear();
+    notifyListeners();
+  }
+
+  String _dateKey(DateTime date) {
+    final year = date.year.toString().padLeft(4, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
   }
 }

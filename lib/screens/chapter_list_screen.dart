@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/providers.dart';
 import '../models/models.dart';
 import '../data/data.dart';
-import 'question_screen.dart';
+import 'chapter_info_screen.dart';
+import 'study_mode_info_screen.dart';
 
 class ChapterListScreen extends StatelessWidget {
   final StudyMode studyMode;
@@ -37,7 +37,7 @@ class ChapterListScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final chapter = chapters[index];
                     return _ChapterCard(chapter: chapter, primary: primary,
-                      isDark: isDark, onTap: () => _navigateToChapter(context, chapter)).animate().fadeIn(delay: (100 * index).ms).slideX();
+                      isDark: isDark, onTap: () => _navigateToChapter(context, chapter));
                   },
                 ),
               ),
@@ -61,24 +61,24 @@ class ChapterListScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(child: _StudyModeButton(icon: Icons.book, label: 'Ôn tất cả',
-                onTap: () => questionProvider.setStudyMode(StudyMode.all),
-                isSelected: questionProvider.studyMode == StudyMode.all, color: primary, isDark: isDark)),
+                onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.all),
+                color: primary, isDark: isDark)),
               const SizedBox(width: 8),
               Expanded(child: _StudyModeButton(icon: Icons.help_outline, label: 'Chưa trả lời',
-                onTap: () => questionProvider.setStudyMode(StudyMode.unanswered),
-                isSelected: questionProvider.studyMode == StudyMode.unanswered, color: primary, isDark: isDark)),
+                onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.unanswered),
+                color: primary, isDark: isDark)),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: _StudyModeButton(icon: Icons.error_outline, label: 'Câu sai',
-                onTap: () => questionProvider.setStudyMode(StudyMode.wrong),
-                isSelected: questionProvider.studyMode == StudyMode.wrong, color: primary, isDark: isDark)),
+              Expanded(child: _StudyModeButton(icon: Icons.error_outline, label: 'Câu hay sai',
+                onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.wrong),
+                color: primary, isDark: isDark)),
               const SizedBox(width: 8),
               Expanded(child: _StudyModeButton(icon: Icons.bookmark_outline, label: 'Đánh dấu',
-                onTap: () => questionProvider.setStudyMode(StudyMode.marked),
-                isSelected: questionProvider.studyMode == StudyMode.marked, color: primary, isDark: isDark)),
+                onTap: () => _openStudyModeInfo(context, questionProvider, StudyMode.marked),
+                color: primary, isDark: isDark)),
             ],
           ),
         ],
@@ -87,14 +87,22 @@ class ChapterListScreen extends StatelessWidget {
   }
 
   void _navigateToChapter(BuildContext context, Chapter chapter) {
-    final appProvider = context.read<AppProvider>();
-    final questionProvider = context.read<QuestionProvider>();
-    questionProvider.loadQuestionsByChapter(appProvider.selectedLicense, chapter.title);
-    if (questionProvider.currentQuestions.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Không có câu hỏi trong chương này')));
-      return;
-    }
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const QuestionScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ChapterInfoScreen(chapter: chapter)),
+    );
+  }
+
+  void _openStudyModeInfo(
+    BuildContext context,
+    QuestionProvider questionProvider,
+    StudyMode mode,
+  ) {
+    questionProvider.setStudyMode(mode);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => StudyModeInfoScreen(studyMode: mode)),
+    );
   }
 }
 
@@ -154,21 +162,19 @@ class _StudyModeButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool isSelected;
   final Color color;
   final bool isDark;
 
   const _StudyModeButton({required this.icon, required this.label, required this.onTap,
-    required this.isSelected, required this.color, required this.isDark});
+    required this.color, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+    return Container(
       decoration: BoxDecoration(
-        color: isSelected ? color : Theme.of(context).cardColor,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isSelected ? color : AppColors.dividerColor(isDark), width: 2),
+        border: Border.all(color: AppColors.dividerColor(isDark), width: 2),
       ),
       child: Material(
         color: Colors.transparent,
@@ -177,10 +183,10 @@ class _StudyModeButton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(
               children: [
-                Icon(icon, color: isSelected ? Colors.white : color, size: 24),
+                Icon(icon, color: color, size: 24),
                 const SizedBox(height: 4),
                 Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white : color)),
+                  color: color)),
               ],
             ),
           ),

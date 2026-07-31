@@ -1,7 +1,8 @@
 # PHỤ LỤC KỸ THUẬT — ỨNG DỤNG DI ĐỘNG GPLX
+
 ## "XÂY DỰNG ỨNG DỤNG DI ĐỘNG HỖ TRỢ ÔN TẬP LÝ THUYẾT SÁT HẠCH GPLX HẠNG A1 & A2"
 
-*(Bổ sung kỹ thuật thay thế cho Chương 3 của đề tài chính — các phần khác giữ nguyên)*
+_(Bổ sung kỹ thuật thay thế cho Chương 3 của đề tài chính — các phần khác giữ nguyên)_
 
 ---
 
@@ -9,20 +10,21 @@
 
 ### 1.1. Khác biệt so với phần mềm Desktop
 
-| Tiêu chí | Phần mềm Desktop (Cũ) | Ứng dụng di động GPLX (Mới) |
-|---|---|---|
-| **Nền tảng** | Windows 7+, Desktop | Android, iOS (Mobile) |
-| **Ngôn ngữ** | C# (.NET Framework) | Dart + Flutter Framework |
-| **Dữ liệu** | Lớp tĩnh (static class) — cứng trong code | JSON files trong assets — tách rời code |
-| **Quản lý trạng thái** | Không có | Provider (ChangeNotifier) |
-| **Giao diện** | Windows Forms | Material 3, responsive |
-| **Theme** | Không hỗ trợ | Light / Dark / System |
-| **Lưu trữ** | Không lưu | SharedPreferences (bộ nhớ cục bộ) |
-| **Hạng bằng** | Ô tô (B1, B2, C, D...) | Mô tô (A1, A2) |
-| **Bộ câu hỏi** | 600 câu | 250 câu (A1) / ~400 câu (A2) |
-| **Cấu trúc đề thi** | 25 câu | 30 câu, điểm đạt 23 |
+| Tiêu chí               | Phần mềm Desktop (Cũ)                     | Ứng dụng di động GPLX (Mới)             |
+| ---------------------- | ----------------------------------------- | --------------------------------------- |
+| **Nền tảng**           | Windows 7+, Desktop                       | Android, iOS (Mobile)                   |
+| **Ngôn ngữ**           | C# (.NET Framework)                       | Dart + Flutter Framework                |
+| **Dữ liệu**            | Lớp tĩnh (static class) — cứng trong code | JSON files trong assets — tách rời code |
+| **Quản lý trạng thái** | Không có                                  | Provider (ChangeNotifier)               |
+| **Giao diện**          | Windows Forms                             | Material 3, responsive                  |
+| **Theme**              | Không hỗ trợ                              | Light / Dark / System                   |
+| **Lưu trữ**            | Không lưu                                 | SharedPreferences (bộ nhớ cục bộ)       |
+| **Hạng bằng**          | Ô tô (B1, B2, C, D...)                    | Mô tô (A1, A2)                          |
+| **Bộ câu hỏi**         | 600 câu                                   | 250 câu (A1) / ~400 câu (A2)            |
+| **Cấu trúc đề thi**    | 25 câu                                    | 30 câu, điểm đạt 23                     |
 
 ### 1.2. Mục tiêu của ứng dụng
+
 - Hỗ trợ học viên ôn tập **trên điện thoại di động**, học mọi lúc mọi nơi
 - Dữ liệu câu hỏi **tách rời khỏi mã nguồn** (JSON), dễ cập nhật không cần build lại app
 - Hỗ trợ **hai chế độ giao diện** (Sáng/Tối) theo hệ thống
@@ -31,31 +33,34 @@
 - Hai chế độ chấm điểm: **ngay lập tức** (ôn tập) và **sau khi nộp bài** (thi)
 
 ### 1.3. Đối tượng sử dụng
+
 - **Học viên** học bằng lái xe mô tô hạng A1 (dưới 175 cm³) và A2 (trên 175 cm³)
 - **Giảng viên** sử dụng làm công cụ hỗ trợ giảng dạy
 
 ### 1.4. Yêu cầu chức năng
-| Chức năng | Mô tả |
-|---|---|
-| Ôn tập theo câu hỏi | Duyệt tuần tự từng câu, xem giải thích ngay |
-| Ôn tập theo chương | Lọc câu hỏi theo 5 chương kiến thức |
-| Lọc câu hỏi | Theo: Đã đánh dấu, Câu sai, Chưa trả lời, Quan trọng |
-| Thi thử | Chọn từ danh sách đề có sẵn hoặc ngẫu nhiên |
-| Danh mục câu hỏi | Xem tất cả câu hỏi, tìm kiếm theo nội dung, lọc |
-| Thống kê | Tiến độ theo chương, tỉ lệ chính xác, streak |
-| Cài đặt | Chuyển theme, chế độ chấm điểm, tự động chuyển câu |
-| Tra cứu nhanh | Tìm kiếm text trong nội dung câu hỏi |
+
+| Chức năng           | Mô tả                                                |
+| ------------------- | ---------------------------------------------------- |
+| Ôn tập theo câu hỏi | Duyệt tuần tự từng câu, xem giải thích ngay          |
+| Ôn tập theo chương  | Lọc câu hỏi theo 5 chương kiến thức                  |
+| Lọc câu hỏi         | Theo: Đã đánh dấu, Câu sai, Chưa trả lời, Quan trọng |
+| Thi thử             | Chọn từ danh sách đề có sẵn hoặc ngẫu nhiên          |
+| Danh mục câu hỏi    | Xem tất cả câu hỏi, tìm kiếm theo nội dung, lọc      |
+| Thống kê            | Tiến độ theo chương, tỉ lệ chính xác, streak         |
+| Cài đặt             | Chuyển theme, chế độ chấm điểm, tự động chuyển câu   |
+| Tra cứu nhanh       | Tìm kiếm text trong nội dung câu hỏi                 |
 
 ### 1.5. Yêu cầu phi chức năng
-| Yêu cầu | Mô tả |
-|---|---|
-| **Tốc độ** | Tải câu hỏi < 1 giây (dữ liệu local) |
-| **Offline** | Hoạt động hoàn toàn không cần Internet |
-| **Dung lượng** | Ứng dụng gọn nhẹ (< 50 MB sau khi cài đặt) |
-| **Giao diện** | Material 3, responsive, hỗ trợ Dark Mode |
-| **Tương thích** | Android 5.0+ (API 21+), iOS 12.0+ |
-| **Dễ bảo trì** | Thêm/sửa câu hỏi chỉ cần chỉnh file JSON |
-| **Bảo mật** | Không thu thập dữ liệu người dùng |
+
+| Yêu cầu         | Mô tả                                      |
+| --------------- | ------------------------------------------ |
+| **Tốc độ**      | Tải câu hỏi < 1 giây (dữ liệu local)       |
+| **Offline**     | Hoạt động hoàn toàn không cần Internet     |
+| **Dung lượng**  | Ứng dụng gọn nhẹ (< 50 MB sau khi cài đặt) |
+| **Giao diện**   | Material 3, responsive, hỗ trợ Dark Mode   |
+| **Tương thích** | Android 5.0+ (API 21+), iOS 12.0+          |
+| **Dễ bảo trì**  | Thêm/sửa câu hỏi chỉ cần chỉnh file JSON   |
+| **Bảo mật**     | Không thu thập dữ liệu người dùng          |
 
 ---
 
@@ -192,14 +197,14 @@ gplx_app/
 
 ### 3.1. Công nghệ sử dụng
 
-| Thành phần | Công nghệ | Lý do |
-|---|---|---|
-| **Framework** | Flutter 3.x (Dart) | Cross-platform (Android + iOS từ 1 codebase), hot reload, hiệu năng native |
-| **State Management** | Provider (ChangeNotifier) | Đơn giản, phù hợp quy mô app, không cần boilerplate như Riverpod/Bloc |
-| **Local Storage** | SharedPreferences | Nhẹ, phù hợp lưu settings & tiến độ đơn giản |
-| **UI Toolkit** | Material 3 | Giao diện hiện đại, hỗ trợ sẵn dark mode, animation mượt |
-| **Dữ liệu** | JSON files trong assets | Tách rời code, dễ cập nhật câu hỏi không cần rebuild app |
-| **IDE** | VS Code / Android Studio | Hỗ trợ tốt Flutter, Dart DevTools để debug |
+| Thành phần           | Công nghệ                 | Lý do                                                                      |
+| -------------------- | ------------------------- | -------------------------------------------------------------------------- |
+| **Framework**        | Flutter 3.x (Dart)        | Cross-platform (Android + iOS từ 1 codebase), hot reload, hiệu năng native |
+| **State Management** | Provider (ChangeNotifier) | Đơn giản, phù hợp quy mô app, không cần boilerplate như Riverpod/Bloc      |
+| **Local Storage**    | SharedPreferences         | Nhẹ, phù hợp lưu settings & tiến độ đơn giản                               |
+| **UI Toolkit**       | Material 3                | Giao diện hiện đại, hỗ trợ sẵn dark mode, animation mượt                   |
+| **Dữ liệu**          | JSON files trong assets   | Tách rời code, dễ cập nhật câu hỏi không cần rebuild app                   |
+| **IDE**              | VS Code / Android Studio  | Hỗ trợ tốt Flutter, Dart DevTools để debug                                 |
 
 ### 3.2. Môi trường phát triển
 
@@ -208,9 +213,9 @@ gplx_app/
 dependencies:
   flutter:
     sdk: flutter
-  provider: ^6.1.2             # State management
-  shared_preferences: ^2.3.3   # Local persistence
-  flutter_animate: ^4.5.0      # Animations
+  provider: ^6.1.2 # State management
+  shared_preferences: ^2.3.3 # Local persistence
+  flutter_animate: ^4.5.0 # Animations
 
 environment:
   sdk: ^3.10.4
@@ -222,14 +227,14 @@ environment:
 
 ### 3.3. Khác biệt kiến trúc so với phần mềm Desktop
 
-| Khía cạnh | Desktop (C#) | Mobile (Flutter) |
-|---|---|---|
-| **Dữ liệu câu hỏi** | Hardcoded trong `static class DsCauhoiLT` | File JSON riêng biệt (`questions_a1.json`) |
-| **Cập nhật câu hỏi** | Phải sửa code → rebuild → redistribute | Chỉ cần thay file JSON → build lại |
-| **Quản lý trạng thái** | Biến instance trong Form | Provider (reactive, notifyListeners) |
-| **Persistence** | Không có (mất dữ liệu khi đóng app) | SharedPreferences (giữ tiến độ giữa các lần mở) |
-| **Giao diện** | Windows Forms (cứng nhắc) | Flutter widgets (responsive, animated) |
-| **Theme** | Single theme | Light/Dark/System, đổi realtime |
+| Khía cạnh              | Desktop (C#)                              | Mobile (Flutter)                                |
+| ---------------------- | ----------------------------------------- | ----------------------------------------------- |
+| **Dữ liệu câu hỏi**    | Hardcoded trong `static class DsCauhoiLT` | File JSON riêng biệt (`questions_a1.json`)      |
+| **Cập nhật câu hỏi**   | Phải sửa code → rebuild → redistribute    | Chỉ cần thay file JSON → build lại              |
+| **Quản lý trạng thái** | Biến instance trong Form                  | Provider (reactive, notifyListeners)            |
+| **Persistence**        | Không có (mất dữ liệu khi đóng app)       | SharedPreferences (giữ tiến độ giữa các lần mở) |
+| **Giao diện**          | Windows Forms (cứng nhắc)                 | Flutter widgets (responsive, animated)          |
+| **Theme**              | Single theme                              | Light/Dark/System, đổi realtime                 |
 
 ---
 
@@ -241,7 +246,7 @@ Khác với lớp `CauhoiLT` của phần mềm Desktop, Question trong app mobi
 
 ```dart
 class Question {
-  // Dữ liệu tĩnh (từ JSON)
+
   final int id;                    // Số thứ tự câu hỏi
   final String chapter;            // Tên chương (vd: "Khái niệm và quy tắc giao thông")
   final String content;            // Nội dung câu hỏi
@@ -251,7 +256,7 @@ class Question {
   final String? image;             // Tên file ảnh (nullable) — vd: "bien_bao_cam.png"
   final bool isImportant;          // Có phải câu quan trọng không
 
-  // Trạng thái runtime (thay đổi khi người dùng tương tác)
+
   bool isAnswered;                 // Đã trả lời chưa
   int selectedAnswerIndex;         // Đáp án đã chọn (-1 = chưa chọn)
   int wrongCount;                  // Số lần trả lời sai
@@ -259,7 +264,7 @@ class Question {
   bool isMarked;                   // Có được đánh dấu không
   DateTime? lastAnsweredAt;        // Thời điểm trả lời gần nhất
 
-  // Computed
+
   bool get isCorrect;              // Trả lời đúng hay sai
   QuestionStatus get status;       // unanswered | correct | wrong
 }
@@ -269,16 +274,16 @@ enum QuestionStatus { unanswered, correct, wrong }
 
 **So sánh với CauhoiLT (Desktop):**
 
-| Thuộc tính | Desktop (CauhoiLT) | Mobile (Question) |
-|---|---|---|
-| ID | `int SttCauhoi` | `int id` |
-| Nội dung | Không có field riêng | `String content` |
-| Ảnh | `public Image Anh` (object) | `String? image` (tên file) |
-| Phương án | `int SoPATraloi` + array ngầm | `List<String> answers` |
-| Đáp án đúng | `int PaTraloiDung` | `int correctAnswer` (index) |
-| Ghi chú | `String Ghichu` | `String explanation` |
-| Điểm liệt | `bool CauDiemliet` | `bool isImportant` |
-| Trạng thái | Không lưu | `isAnswered`, `selectedAnswerIndex`, `wrongCount`, `isMarked` |
+| Thuộc tính  | Desktop (CauhoiLT)            | Mobile (Question)                                             |
+| ----------- | ----------------------------- | ------------------------------------------------------------- |
+| ID          | `int SttCauhoi`               | `int id`                                                      |
+| Nội dung    | Không có field riêng          | `String content`                                              |
+| Ảnh         | `public Image Anh` (object)   | `String? image` (tên file)                                    |
+| Phương án   | `int SoPATraloi` + array ngầm | `List<String> answers`                                        |
+| Đáp án đúng | `int PaTraloiDung`            | `int correctAnswer` (index)                                   |
+| Ghi chú     | `String Ghichu`               | `String explanation`                                          |
+| Điểm liệt   | `bool CauDiemliet`            | `bool isImportant`                                            |
+| Trạng thái  | Không lưu                     | `isAnswered`, `selectedAnswerIndex`, `wrongCount`, `isMarked` |
 
 ### 4.2. Mô hình Chapter
 
@@ -364,12 +369,12 @@ Desktop không lưu lịch sử thi. Mobile lưu mỗi lần thi vào SharedPref
 
 Khác hoàn toàn với Desktop (dùng màu mặc định của Windows Forms), app mobile có hệ thống màu tập trung theo 2 chế độ × 2 loại bằng:
 
-| Palette | Primary | Accent | Background | Surface | Text |
-|---|---|---|---|---|---|
-| **A1 Light** | `#1E88E5` | `#42A5F5` | `#F5F9FF` | `#FFFFFF` | `#0D1B2A` |
-| **A1 Dark** | `#1565C0` | `#64B5F6` | `#0B111A` | `#121A26` | `#E3F2FD` |
-| **A2 Light** | `#2E7D32` | `#66BB6A` | `#F4FBF6` | `#FFFFFF` | `#102A13` |
-| **A2 Dark** | `#1B5E20` | `#81C784` | `#0E1512` | `#16201A` | `#E8F5E9` |
+| Palette      | Primary   | Accent    | Background | Surface   | Text      |
+| ------------ | --------- | --------- | ---------- | --------- | --------- |
+| **A1 Light** | `#1E88E5` | `#42A5F5` | `#F5F9FF`  | `#FFFFFF` | `#0D1B2A` |
+| **A1 Dark**  | `#1565C0` | `#64B5F6` | `#0B111A`  | `#121A26` | `#E3F2FD` |
+| **A2 Light** | `#2E7D32` | `#66BB6A` | `#F4FBF6`  | `#FFFFFF` | `#102A13` |
+| **A2 Dark**  | `#1B5E20` | `#81C784` | `#0E1512`  | `#16201A` | `#E8F5E9` |
 
 Tất cả màu sắc được khai báo trong `AppColors` — không hardcode trong widget. Khi người dùng chuyển A1↔A2 hoặc Sáng↚Tối, toàn bộ giao diện tự đổi palette tương ứng.
 
@@ -377,11 +382,11 @@ Tất cả màu sắc được khai báo trong `AppColors` — không hardcode t
 
 App lưu 3 loại dữ liệu vào SharedPreferences:
 
-| Dữ liệu | Key pattern | Mục đích |
-|---|---|---|
-| **Settings** | `license_type`, `theme_mode`, `auto_advance`, ... | Nhớ tùy chọn người dùng |
-| **Question state** | `question_state_A1_42` | Nhớ câu nào đã trả lời, đúng/sai, đánh dấu |
-| **Exam attempts** | `attempts_A1_3` | Lưu lịch sử thi, tính best score |
+| Dữ liệu            | Key pattern                                       | Mục đích                                   |
+| ------------------ | ------------------------------------------------- | ------------------------------------------ |
+| **Settings**       | `license_type`, `theme_mode`, `auto_advance`, ... | Nhớ tùy chọn người dùng                    |
+| **Question state** | `question_state_A1_42`                            | Nhớ câu nào đã trả lời, đúng/sai, đánh dấu |
+| **Exam attempts**  | `attempts_A1_3`                                   | Lưu lịch sử thi, tính best score           |
 
 ---
 
@@ -392,11 +397,14 @@ App lưu 3 loại dữ liệu vào SharedPreferences:
 Khác với Desktop dùng thuật toán trộn (Fisher-Yates) trên static list, app mobile có 2 cách tạo đề:
 
 **Cách 1: Chọn đề có sẵn từ JSON**
+
 - Mỗi đề thi đã được soạn trước với cấu trúc đúng quy định
 - Người dùng chọn đề → load đúng danh sách `questionIds` từ JSON
 
 **Cách 2: Đề ngẫu nhiên**
+
 - Random chọn 1 đề từ danh sách đề trong JSON
+
 ```dart
 void loadRandomExam(LicenseType type) {
   final exams = _repository.getExams(type);
@@ -408,16 +416,16 @@ void loadRandomExam(LicenseType type) {
 
 ### 5.2. Cấu trúc đề thi A1/A2
 
-| Thành phần | Số lượng |
-|---|---|
-| Quy định chung & quy tắc giao thông | 8 câu |
-| Tình huống mất an toàn GT nghiêm trọng | 1 câu |
-| Văn hóa giao thông, đạo đức người lái xe | 1 câu |
-| Kỹ thuật lái xe hoặc cấu tạo sửa chữa | 1 câu |
-| Báo hiệu đường bộ | 8 câu |
-| Giải thế sa hình & xử lý tình huống | 6 câu |
-| **Tổng** | **30 câu** |
-| **Điểm đạt** | **23/30** |
+| Thành phần                               | Số lượng   |
+| ---------------------------------------- | ---------- |
+| Quy định chung & quy tắc giao thông      | 8 câu      |
+| Tình huống mất an toàn GT nghiêm trọng   | 1 câu      |
+| Văn hóa giao thông, đạo đức người lái xe | 1 câu      |
+| Kỹ thuật lái xe hoặc cấu tạo sửa chữa    | 1 câu      |
+| Báo hiệu đường bộ                        | 8 câu      |
+| Giải thế sa hình & xử lý tình huống      | 6 câu      |
+| **Tổng**                                 | **30 câu** |
+| **Điểm đạt**                             | **23/30**  |
 
 ### 5.3. Tính điểm và xét kết quả
 
@@ -434,6 +442,7 @@ class ExamResult {
 ```
 
 **Quy trình:**
+
 1. Người dùng trả lời xong → nhấn "Nộp bài"
 2. Hệ thống duyệt từng câu: đúng → `correct++`, sai → `wrong++`, chưa trả lời → `unanswered++`
 3. So sánh `correctAnswers >= 23` → `passed = true/false`
@@ -457,10 +466,10 @@ List<Question> searchQuestions(LicenseType type, String query) {
 
 ### 5.5. Cơ chế chấm điểm — 2 chế độ
 
-| Chế độ | Mô tả |
-|---|---|
-| **Chấm ngay sau mỗi câu** | Chọn đáp án → hiện đúng/sai + giải thích ngay. Dùng để ôn tập. |
-| **Chấm sau khi nộp bài** | Không hiện kết quả từng câu. Chỉ chấm khi nộp bài cuối cùng. Dùng để thi thử. |
+| Chế độ                    | Mô tả                                                                         |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| **Chấm ngay sau mỗi câu** | Chọn đáp án → hiện đúng/sai + giải thích ngay. Dùng để ôn tập.                |
+| **Chấm sau khi nộp bài**  | Không hiện kết quả từng câu. Chỉ chấm khi nộp bài cuối cùng. Dùng để thi thử. |
 
 Người dùng chọn chế độ tại màn Exam Info trước khi bắt đầu.
 
@@ -519,20 +528,20 @@ main()
 
 ### 6.1. Kịch bản kiểm thử
 
-| STT | Tên kịch bản | Các bước | Kết quả mong đợi |
-|---|---|---|---|
-| 1 | **Nạp câu hỏi từ JSON** | Mở app → vào "Danh sách câu hỏi" | Hiển thị đủ 30 câu A1, không lỗi |
-| 2 | **Nạp đề thi từ JSON** | Mở app → "Thi thử" → "Chọn đề thi" | Hiển thị 5 đề thi + "Đề ngẫu nhiên" |
-| 3 | **Tìm kiếm text** | Gõ "giấy phép" vào ô tìm kiếm | Lọc các câu có chữ "giấy phép" trong nội dung |
-| 4 | **Chuyển A1↔A2** | Chuyển license type | Màu đổi xanh↔xanh lá, dữ liệu reload |
-| 5 | **Dark mode** | Đổi theme → Dark | Toàn bộ giao diện dùng palette dark |
-| 6 | **Lưu tiến độ** | Trả lời 3 câu → đóng app → mở lại | 3 câu vẫn trạng thái đã trả lời |
-| 7 | **Lưu kết quả thi** | Làm đề thi → nộp bài → vào lại đề đó | Hiển thị "Số lần thi: 1" + "Tốt nhất: X" |
-| 8 | **Chấm ngay** | Chế độ "Chấm ngay" → chọn đáp án | Hiện đúng/sai + giải thích ngay |
-| 9 | **Chấm sau nộp** | Chế độ "Chấm sau" → chọn đáp án | Không hiện kết quả → nộp bài mới chấm |
-| 10 | **Image loading** | Mở câu có `"image": "abc.png"` | Hiện ảnh hoặc placeholder "Image not found" |
-| 11 | **Điểm đạt** | Làm đúng 23/30 câu → nộp bài | Kết quả: "Chúc mừng! Đạt" |
-| 12 | **Không đạt** | Làm đúng 20/30 câu → nộp bài | Kết quả: "Chưa đạt — Cần 23/30" |
+| STT | Tên kịch bản            | Các bước                             | Kết quả mong đợi                              |
+| --- | ----------------------- | ------------------------------------ | --------------------------------------------- |
+| 1   | **Nạp câu hỏi từ JSON** | Mở app → vào "Danh sách câu hỏi"     | Hiển thị đủ 30 câu A1, không lỗi              |
+| 2   | **Nạp đề thi từ JSON**  | Mở app → "Thi thử" → "Chọn đề thi"   | Hiển thị 5 đề thi + "Đề ngẫu nhiên"           |
+| 3   | **Tìm kiếm text**       | Gõ "giấy phép" vào ô tìm kiếm        | Lọc các câu có chữ "giấy phép" trong nội dung |
+| 4   | **Chuyển A1↔A2**        | Chuyển license type                  | Màu đổi xanh↔xanh lá, dữ liệu reload          |
+| 5   | **Dark mode**           | Đổi theme → Dark                     | Toàn bộ giao diện dùng palette dark           |
+| 6   | **Lưu tiến độ**         | Trả lời 3 câu → đóng app → mở lại    | 3 câu vẫn trạng thái đã trả lời               |
+| 7   | **Lưu kết quả thi**     | Làm đề thi → nộp bài → vào lại đề đó | Hiển thị "Số lần thi: 1" + "Tốt nhất: X"      |
+| 8   | **Chấm ngay**           | Chế độ "Chấm ngay" → chọn đáp án     | Hiện đúng/sai + giải thích ngay               |
+| 9   | **Chấm sau nộp**        | Chế độ "Chấm sau" → chọn đáp án      | Không hiện kết quả → nộp bài mới chấm         |
+| 10  | **Image loading**       | Mở câu có `"image": "abc.png"`       | Hiện ảnh hoặc placeholder "Image not found"   |
+| 11  | **Điểm đạt**            | Làm đúng 23/30 câu → nộp bài         | Kết quả: "Chúc mừng! Đạt"                     |
+| 12  | **Không đạt**           | Làm đúng 20/30 câu → nộp bài         | Kết quả: "Chưa đạt — Cần 23/30"               |
 
 ---
 
@@ -540,24 +549,24 @@ main()
 
 ### 7.1. Ưu điểm (so với Desktop)
 
-| Ưu điểm | Giải thích |
-|---|---|
-| **Dữ liệu tách rời code** | Thêm/sửa câu hỏi chỉ cần chỉnh JSON, không động vào Dart |
-| **Chạy trên điện thoại** | Học viên ôn tập mọi lúc, không cần máy tính |
-| **Dark Mode** | Bảo vệ mắt khi học ban đêm, tiết kiệm pin AMOLED |
-| **Lưu tiến độ** | Không mất dữ liệu khi đóng app, khác hoàn toàn Desktop |
-| **Tìm kiếm text** | Desktop không có — mobile cho phép tìm nhanh trong 30+ câu |
-| **UI hiện đại** | Material 3, animation mượt, responsive |
-| **Cross-platform** | 1 codebase → Android + iOS, không cần viết lại |
+| Ưu điểm                   | Giải thích                                                 |
+| ------------------------- | ---------------------------------------------------------- |
+| **Dữ liệu tách rời code** | Thêm/sửa câu hỏi chỉ cần chỉnh JSON, không động vào Dart   |
+| **Chạy trên điện thoại**  | Học viên ôn tập mọi lúc, không cần máy tính                |
+| **Dark Mode**             | Bảo vệ mắt khi học ban đêm, tiết kiệm pin AMOLED           |
+| **Lưu tiến độ**           | Không mất dữ liệu khi đóng app, khác hoàn toàn Desktop     |
+| **Tìm kiếm text**         | Desktop không có — mobile cho phép tìm nhanh trong 30+ câu |
+| **UI hiện đại**           | Material 3, animation mượt, responsive                     |
+| **Cross-platform**        | 1 codebase → Android + iOS, không cần viết lại             |
 
 ### 7.2. Nhược điểm & Hướng cải thiện
 
-| Nhược điểm | Hướng cải thiện |
-|---|---|
-| **Chưa có đồng bộ cloud** | Tích hợp Firebase để lưu tiến độ online, học trên nhiều thiết bị |
-| **Chưa có âm thanh** | Thêm Text-to-Speech đọc câu hỏi cho người khiếm thị |
-| **Chưa có tính giờ thi** | Thêm countdown timer như phần mềm Desktop (hiện tại không giới hạn thời gian) |
-| **Chưa có câu điểm liệt** | Bổ sung logic "sai câu điểm liệt = không đạt" |
-| **Dữ liệu mẫu ít** | Hiện tại 30 câu mẫu — cần nhập đủ 250 câu A1 theo quy định |
-| **Chưa có đăng nhập** | Thêm màn đăng nhập để phân biệt học viên, như phần mềm Desktop |
-| **Chưa có export kết quả** | Cho phép xuất báo cáo học tập ra PDF |
+| Nhược điểm                 | Hướng cải thiện                                                               |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| **Chưa có đồng bộ cloud**  | Tích hợp Firebase để lưu tiến độ online, học trên nhiều thiết bị              |
+| **Chưa có âm thanh**       | Thêm Text-to-Speech đọc câu hỏi cho người khiếm thị                           |
+| **Chưa có tính giờ thi**   | Thêm countdown timer như phần mềm Desktop (hiện tại không giới hạn thời gian) |
+| **Chưa có câu điểm liệt**  | Bổ sung logic "sai câu điểm liệt = không đạt"                                 |
+| **Dữ liệu mẫu ít**         | Hiện tại 30 câu mẫu — cần nhập đủ 250 câu A1 theo quy định                    |
+| **Chưa có đăng nhập**      | Thêm màn đăng nhập để phân biệt học viên, như phần mềm Desktop                |
+| **Chưa có export kết quả** | Cho phép xuất báo cáo học tập ra PDF                                          |

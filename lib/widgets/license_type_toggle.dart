@@ -85,15 +85,14 @@ class _LicenseButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  type.icon,
-                  style: const TextStyle(fontSize: 20),
-                ),
+                Text(type.icon, style: const TextStyle(fontSize: 20)),
                 const SizedBox(width: 8),
                 Text(
                   type.displayName,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : text.withValues(alpha: 0.7),
+                    color: isSelected
+                        ? Colors.white
+                        : text.withValues(alpha: 0.7),
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),

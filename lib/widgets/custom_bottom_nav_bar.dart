@@ -41,3 +41,41 @@ class CustomBottomNavBar extends StatelessWidget {
     );
   }
 }
+
+class CustomNavigationRail extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+  final Color activeColor;
+
+  const CustomNavigationRail({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+    required this.activeColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return NavigationRail(
+      selectedIndex: currentIndex,
+      onDestinationSelected: onTap,
+      labelType: NavigationRailLabelType.all,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      indicatorColor: activeColor.withValues(alpha: 0.14),
+      selectedIconTheme: IconThemeData(color: activeColor),
+      selectedLabelTextStyle: TextStyle(color: activeColor),
+      destinations: const [
+        NavigationRailDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: Text('Trang chủ'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.bar_chart_outlined),
+          selectedIcon: Icon(Icons.bar_chart),
+          label: Text('Thống kê'),
+        ),
+      ],
+    );
+  }
+}

@@ -1,12 +1,11 @@
 {
-    "name": "gplx_app",
-    "short_name": "gplx_app",
+    "name": "Ôn thi GPLX",
+    "short_name": "Ôn thi GPLX",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#FFFFFF",
+    "theme_color": "#1565C0",
+    "description": "Ôn luyện câu hỏi và thi thử GPLX A1, A.",
     "prefer_related_applications": false,
     "icons": [
         {

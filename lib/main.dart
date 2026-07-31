@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'providers/providers.dart';
-import 'data/data.dart';
 import 'screens/screens.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set preferred orientations
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
-  // Initialize the question repository (async for JSON loading)
-  await QuestionRepository().initializeAsync();
+  if (!kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS)) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
 
   runApp(const GplxApp());
 }
@@ -30,12 +30,8 @@ class GplxApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => AppProvider()..initialize(context),
         ),
-        ChangeNotifierProvider(
-          create: (_) => QuestionProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => StatisticsProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => QuestionProvider()),
+        ChangeNotifierProvider(create: (_) => StatisticsProvider()),
       ],
       child: _GplxAppContent(),
     );
@@ -53,9 +49,16 @@ class _GplxAppContent extends StatelessWidget {
           theme: appProvider.lightTheme,
           darkTheme: appProvider.darkTheme,
           themeMode: appProvider.flutterThemeMode,
-          home: const HomeScreen(),
-          routes: {
-            '/question_screen': (context) => const QuestionScreen(),
+          home: const AppStartupScreen(),
+          routes: {'/question_screen': (context) => const QuestionScreen()},
+          builder: (context, child) {
+            final mediaQuery = MediaQuery.of(context);
+            return MediaQuery(
+              data: mediaQuery.copyWith(
+                textScaler: TextScaler.linear(appProvider.textScale),
+              ),
+              child: child ?? const SizedBox.shrink(),
+            );
           },
         );
       },

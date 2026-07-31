@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../utils/theme_config.dart';
 import '../utils/app_colors.dart';
 
-enum ThemeModeOption {
-  light,
-  dark,
-  system,
-}
+enum ThemeModeOption { light, dark, system }
+
+enum AppTextSizeOption { small, medium, large }
 
 extension ThemeModeExtension on ThemeModeOption {
   String get displayName {
@@ -34,39 +33,70 @@ extension ThemeModeExtension on ThemeModeOption {
   }
 }
 
+extension AppTextSizeExtension on AppTextSizeOption {
+  String get displayName {
+    switch (this) {
+      case AppTextSizeOption.small:
+        return 'Nhỏ';
+      case AppTextSizeOption.medium:
+        return 'Trung';
+      case AppTextSizeOption.large:
+        return 'To';
+    }
+  }
+
+  double get scale {
+    switch (this) {
+      case AppTextSizeOption.small:
+        return 0.94;
+      case AppTextSizeOption.medium:
+        return 1.0;
+      case AppTextSizeOption.large:
+        return 1.08;
+    }
+  }
+}
+
 class AppProvider with ChangeNotifier {
   LicenseType _selectedLicense = LicenseType.a1;
   int _questionsStudiedToday = 0;
   int _streakDays = 0;
   ThemeModeOption _themeMode = ThemeModeOption.system;
+  AppThemePalette _themePalette = AppThemePalette.blue;
+  AppTextSizeOption _textSize = AppTextSizeOption.medium;
   bool _autoAdvance = false;
   bool _showExplanation = true;
   bool _gradeImmediately = true;
   bool _isDark = false;
+  final Map<String, int> _studyActivity = {};
 
-  // SharedPreferences keys
   static const _keyLicense = 'license_type';
   static const _keyTheme = 'theme_mode';
+  static const _keyThemePalette = 'theme_palette';
+  static const _keyTextSize = 'text_size';
   static const _keyAutoAdvance = 'auto_advance';
   static const _keyShowExplanation = 'show_explanation';
   static const _keyGradeImmediately = 'grade_immediately';
   static const _keyQuestionsToday = 'questions_today';
   static const _keyStreakDays = 'streak_days';
   static const _keyLastStudyDate = 'last_study_date';
+  static const _keyStudyActivity = 'study_activity';
 
   LicenseType get selectedLicense => _selectedLicense;
   int get questionsStudiedToday => _questionsStudiedToday;
   int get streakDays => _streakDays;
   ThemeModeOption get themeMode => _themeMode;
+  AppThemePalette get themePalette => _themePalette;
+  AppTextSizeOption get textSize => _textSize;
+  double get textScale => _textSize.scale;
   bool get autoAdvance => _autoAdvance;
   bool get showExplanation => _showExplanation;
   bool get gradeImmediately => _gradeImmediately;
   bool get isDark => _isDark;
+  Map<String, int> get studyActivity => Map.unmodifiable(_studyActivity);
 
-  /// Convenience: primary color for the selected license type (light variant).
   Color get primaryColor => AppColors.primary(_selectedLicense, false);
 
-  /// Convenience: accent color for the selected license type (light variant).
   Color get accentColor => AppColors.accent(_selectedLicense, false);
 
   ThemeMode get flutterThemeMode {
@@ -80,36 +110,36 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  /// Generate the current light theme based on license type.
-  ThemeData get lightTheme => ThemeConfig.lightTheme(_selectedLicense);
+  ThemeData get lightTheme {
+    AppColors.activePalette = _themePalette;
+    return ThemeConfig.lightTheme(_selectedLicense);
+  }
 
-  /// Generate the current dark theme based on license type.
-  ThemeData get darkTheme => ThemeConfig.darkTheme(_selectedLicense);
+  ThemeData get darkTheme {
+    AppColors.activePalette = _themePalette;
+    return ThemeConfig.darkTheme(_selectedLicense);
+  }
 
-  /// Resolve the actual brightness from system/theme settings.
   Brightness resolveBrightness(BuildContext context) {
     if (_themeMode == ThemeModeOption.system) {
       return MediaQuery.platformBrightnessOf(context);
     }
-    return _themeMode == ThemeModeOption.dark ? Brightness.dark : Brightness.light;
+    return _themeMode == ThemeModeOption.dark
+        ? Brightness.dark
+        : Brightness.light;
   }
 
-  /// Whether the current display is dark mode.
   bool isDarkMode(BuildContext context) {
     return resolveBrightness(context) == Brightness.dark;
   }
 
   Future<void> initialize(BuildContext context) async {
-    // Capture brightness before async operations
     final initialBrightness = resolveBrightness(context);
 
     final prefs = await SharedPreferences.getInstance();
 
-    // Load license type
-    final licenseStr = prefs.getString(_keyLicense) ?? 'A1';
-    _selectedLicense = licenseStr == 'A2' ? LicenseType.a2 : LicenseType.a1;
+    _selectedLicense = LicenseType.a1;
 
-    // Load theme mode
     final themeStr = prefs.getString(_keyTheme) ?? 'system';
     switch (themeStr) {
       case 'light':
@@ -122,16 +152,27 @@ class AppProvider with ChangeNotifier {
         _themeMode = ThemeModeOption.system;
     }
 
-    // Load settings
+    final paletteStr = prefs.getString(_keyThemePalette) ?? 'blue';
+    _themePalette = AppThemePalette.values.firstWhere(
+      (palette) => palette.name == paletteStr,
+      orElse: () => AppThemePalette.blue,
+    );
+    AppColors.activePalette = _themePalette;
+
+    final textSizeStr = prefs.getString(_keyTextSize) ?? 'medium';
+    _textSize = AppTextSizeOption.values.firstWhere(
+      (size) => size.name == textSizeStr,
+      orElse: () => AppTextSizeOption.medium,
+    );
+
     _autoAdvance = prefs.getBool(_keyAutoAdvance) ?? false;
     _showExplanation = prefs.getBool(_keyShowExplanation) ?? true;
     _gradeImmediately = prefs.getBool(_keyGradeImmediately) ?? true;
 
-    // Load study stats
-    _questionsStudiedToday = prefs.getInt(_keyQuestionsToday) ?? 0;
+    _loadStudyActivity(prefs);
+    _questionsStudiedToday = _studyActivity[_dateKey(DateTime.now())] ?? 0;
     _streakDays = prefs.getInt(_keyStreakDays) ?? 0;
 
-    // Check if we need to reset daily count
     final lastStudyDate = prefs.getString(_keyLastStudyDate);
     final today = DateTime.now();
     if (lastStudyDate != null) {
@@ -145,23 +186,32 @@ class AppProvider with ChangeNotifier {
       }
     }
 
-    // Resolve current dark state
     _isDark = initialBrightness == Brightness.dark;
 
     notifyListeners();
   }
 
-  Future<void> _savePrefs() async {
+  Future<void> _savePrefs({bool persistStudyTimestamp = false}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-        _keyLicense, _selectedLicense == LicenseType.a2 ? 'A2' : 'A1');
+      _keyLicense,
+      _selectedLicense == LicenseType.a2 ? 'A2' : 'A1',
+    );
     await prefs.setString(_keyTheme, _themeMode.name.toLowerCase());
+    await prefs.setString(_keyThemePalette, _themePalette.name);
+    await prefs.setString(_keyTextSize, _textSize.name);
     await prefs.setBool(_keyAutoAdvance, _autoAdvance);
     await prefs.setBool(_keyShowExplanation, _showExplanation);
     await prefs.setBool(_keyGradeImmediately, _gradeImmediately);
     await prefs.setInt(_keyQuestionsToday, _questionsStudiedToday);
     await prefs.setInt(_keyStreakDays, _streakDays);
-    await prefs.setString(_keyLastStudyDate, DateTime.now().toIso8601String());
+    await prefs.setString(_keyStudyActivity, jsonEncode(_studyActivity));
+    if (persistStudyTimestamp) {
+      await prefs.setString(
+        _keyLastStudyDate,
+        DateTime.now().toIso8601String(),
+      );
+    }
   }
 
   void updateDarkModeState(BuildContext context) {
@@ -174,37 +224,71 @@ class AppProvider with ChangeNotifier {
 
   Future<void> switchLicenseType(LicenseType type) async {
     _selectedLicense = type;
-    await _savePrefs();
     notifyListeners();
+    await _savePrefs();
   }
 
   Future<void> setThemeMode(ThemeModeOption mode) async {
     _themeMode = mode;
-    await _savePrefs();
     notifyListeners();
+    await _savePrefs();
+  }
+
+  Future<void> setThemePalette(AppThemePalette palette) async {
+    _themePalette = palette;
+    AppColors.activePalette = palette;
+    notifyListeners();
+    await _savePrefs();
+  }
+
+  Future<void> setTextSize(AppTextSizeOption size) async {
+    _textSize = size;
+    notifyListeners();
+    await _savePrefs();
   }
 
   Future<void> toggleAutoAdvance() async {
     _autoAdvance = !_autoAdvance;
-    await _savePrefs();
     notifyListeners();
+    await _savePrefs();
   }
 
   Future<void> setShowExplanation(bool value) async {
     _showExplanation = value;
-    await _savePrefs();
     notifyListeners();
+    await _savePrefs();
   }
 
   Future<void> setGradeImmediately(bool value) async {
     _gradeImmediately = value;
-    await _savePrefs();
     notifyListeners();
+    await _savePrefs();
   }
 
   Future<void> incrementQuestionsStudied() async {
-    _questionsStudiedToday++;
-    await _savePrefs();
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    final todayKey = _dateKey(now);
+    final lastStudyDate = prefs.getString(_keyLastStudyDate);
+
+    if (lastStudyDate == null) {
+      _streakDays = 1;
+    } else {
+      final diff = _dateOnly(
+        now,
+      ).difference(_dateOnly(DateTime.parse(lastStudyDate))).inDays;
+      if (diff == 1) {
+        _streakDays++;
+      } else if (diff > 1) {
+        _streakDays = 1;
+      } else if (_streakDays == 0) {
+        _streakDays = 1;
+      }
+    }
+
+    _studyActivity[todayKey] = (_studyActivity[todayKey] ?? 0) + 1;
+    _questionsStudiedToday = _studyActivity[todayKey]!;
+    await _savePrefs(persistStudyTimestamp: true);
     notifyListeners();
   }
 
@@ -225,7 +309,86 @@ class AppProvider with ChangeNotifier {
       _streakDays = 1;
     }
 
-    await _savePrefs();
+    await _savePrefs(persistStudyTimestamp: true);
     notifyListeners();
   }
+
+  List<int> getStudyHeatmap({int days = 30}) {
+    final now = _dateOnly(DateTime.now());
+    final counts = List<int>.generate(days, (index) {
+      final day = now.subtract(Duration(days: days - index - 1));
+      return _studyActivity[_dateKey(day)] ?? 0;
+    });
+    final maxCount = counts.fold<int>(
+      0,
+      (max, count) => count > max ? count : max,
+    );
+
+    return counts
+        .map((count) {
+          if (count == 0) return 0;
+          if (maxCount <= 4) return count.clamp(1, 4);
+          final normalized = ((count / maxCount) * 4).ceil();
+          return normalized.clamp(1, 4);
+        })
+        .toList(growable: false);
+  }
+
+  Future<void> resetAppData() async {
+    _selectedLicense = LicenseType.a1;
+    _questionsStudiedToday = 0;
+    _streakDays = 0;
+    _themeMode = ThemeModeOption.system;
+    _themePalette = AppThemePalette.blue;
+    _textSize = AppTextSizeOption.medium;
+    AppColors.activePalette = _themePalette;
+    _autoAdvance = false;
+    _showExplanation = true;
+    _gradeImmediately = true;
+    _studyActivity.clear();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyLicense);
+    await prefs.remove(_keyTheme);
+    await prefs.remove(_keyThemePalette);
+    await prefs.remove(_keyTextSize);
+    await prefs.remove(_keyAutoAdvance);
+    await prefs.remove(_keyShowExplanation);
+    await prefs.remove(_keyGradeImmediately);
+    await prefs.remove(_keyQuestionsToday);
+    await prefs.remove(_keyStreakDays);
+    await prefs.remove(_keyLastStudyDate);
+    await prefs.remove(_keyStudyActivity);
+
+    notifyListeners();
+  }
+
+  void _loadStudyActivity(SharedPreferences prefs) {
+    _studyActivity.clear();
+    final raw = prefs.getString(_keyStudyActivity);
+    if (raw == null || raw.isEmpty) {
+      return;
+    }
+
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      for (final entry in decoded.entries) {
+        final value = entry.value;
+        if (value is int) {
+          _studyActivity[entry.key] = value;
+        }
+      }
+    } catch (_) {}
+  }
+
+  String _dateKey(DateTime date) {
+    final normalized = _dateOnly(date);
+    final year = normalized.year.toString().padLeft(4, '0');
+    final month = normalized.month.toString().padLeft(2, '0');
+    final day = normalized.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
+  }
+
+  DateTime _dateOnly(DateTime date) =>
+      DateTime(date.year, date.month, date.day);
 }

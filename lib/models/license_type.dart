@@ -1,7 +1,4 @@
-enum LicenseType {
-  a1,
-  a2,
-}
+enum LicenseType { a1, a2 }
 
 extension LicenseTypeExtension on LicenseType {
   String get displayName {
@@ -9,7 +6,7 @@ extension LicenseTypeExtension on LicenseType {
       case LicenseType.a1:
         return 'A1';
       case LicenseType.a2:
-        return 'A2';
+        return 'A';
     }
   }
 

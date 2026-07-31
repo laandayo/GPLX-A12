@@ -8,9 +8,7 @@ class QuestionRepository {
 
   final QuestionJsonService _jsonService = QuestionJsonService();
 
-  void initialize() {
-    // Initialize is async, handled in main.dart
-  }
+  void initialize() {}
 
   Future<void> initializeAsync() async {
     await _jsonService.initialize();
@@ -60,6 +58,10 @@ class QuestionRepository {
     return _jsonService.getRandomQuestions(type, count: count);
   }
 
+  List<Question> getShuffledExamQuestions(LicenseType type) {
+    return _jsonService.getShuffledExamQuestions(type);
+  }
+
   List<Question> getImportantQuestions(LicenseType type) {
     return _jsonService.getImportantQuestions(type);
   }
@@ -76,8 +78,11 @@ class QuestionRepository {
     return _jsonService.getAccuracyRate(type);
   }
 
-  /// Search questions by text content.
   List<Question> searchQuestions(LicenseType type, String query) {
     return _jsonService.searchQuestions(type, query);
+  }
+
+  void resetAllProgress() {
+    _jsonService.resetAllProgress();
   }
 }

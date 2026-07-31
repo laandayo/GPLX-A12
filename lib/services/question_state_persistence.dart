@@ -29,8 +29,10 @@ class QuestionStatePersistence {
 
   Future<void> loadQuestionState(LicenseType type, Question question) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = _key(type, question.id);
-    final dataStr = prefs.getString(key);
+    _applyStoredState(prefs.getString(_key(type, question.id)), question);
+  }
+
+  void _applyStoredState(String? dataStr, Question question) {
     if (dataStr != null) {
       try {
         final data = jsonDecode(dataStr) as Map<String, dynamic>;
@@ -43,14 +45,15 @@ class QuestionStatePersistence {
           question.lastAnsweredAt = DateTime.parse(data['lastAnsweredAt'] as String);
         }
       } catch (e) {
-        // Ignore parsing errors
+        return;
       }
     }
   }
 
   Future<void> loadAllQuestionStates(LicenseType type, List<Question> questions) async {
-    for (var q in questions) {
-      await loadQuestionState(type, q);
+    final prefs = await SharedPreferences.getInstance();
+    for (final question in questions) {
+      _applyStoredState(prefs.getString(_key(type, question.id)), question);
     }
   }
 
@@ -58,6 +61,14 @@ class QuestionStatePersistence {
     final prefs = await SharedPreferences.getInstance();
     final keys = prefs.getKeys().where((k) => k.startsWith(_keyPrefix) && k.contains(type.name));
     for (var key in keys) {
+      await prefs.remove(key);
+    }
+  }
+
+  Future<void> clearAllStatesForAllLicenses() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys().where((k) => k.startsWith(_keyPrefix)).toList();
+    for (final key in keys) {
       await prefs.remove(key);
     }
   }

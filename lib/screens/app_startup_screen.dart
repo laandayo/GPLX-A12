@@ -65,7 +65,7 @@ class _StartupLoadingView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/logo1.png', width: 96, height: 96),
+            Image.asset('assets/logo2.png', width: 96, height: 96),
             const SizedBox(height: 20),
             SizedBox(
               width: 28,

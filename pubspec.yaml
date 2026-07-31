@@ -74,6 +74,7 @@ flutter:
     - assets/questions/
     - assets/images/
     - assets/logo1.png
+    - assets/logo2.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -112,3 +113,12 @@ flutter_launcher_icons:
   android: true
   ios: true
   remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/logo2.png"
+    background_color: "#FFFFFF"
+    theme_color: "#1565C0"
+  windows:
+    generate: true
+    image_path: "assets/logo2.png"
+    icon_size: 256

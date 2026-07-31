@@ -21,7 +21,7 @@
 - [x] Create a platform-safe ad abstraction: Android may use Google Mobile Ads; the PWA uses a no-op implementation. Avoid unguarded `dart:io` / `Platform.is...` imports in code compiled for the web.
 - [x] Change orientation handling so mobile native can remain portrait if desired, while web/PWA can resize and support iPad landscape.
 - [x] Ensure every exam completion path proceeds directly when ads are absent.
-- [x] Run `flutter build web` after each platform-boundary change.
+- [x] Run `flutter build web --wasm` after each platform-boundary change.
 
 ### 2. Deliver a responsive iPhone and iPad experience
 
@@ -39,7 +39,15 @@
 - [ ] Deploy only over HTTPS (required for production service-worker/PWA behavior) with the correct base path and SPA rewrite/fallback for direct routes.
 - [ ] Test first visit, repeat visit, Home Screen launch, update after a new deployment, and clearing website data. Document these user-visible behaviors.
 
-### 4. Storage, privacy, and release checks
+### 4. Automate Cloudflare production deployments
+
+- [x] Connect the Cloudflare static-assets Worker to the GitHub repository and use `main` as its production branch.
+- [x] Configure Cloudflare Workers Builds to fetch Flutter 3.38.1, build `build/web` with WebAssembly, then run `npx wrangler deploy`.
+- [x] Add `wrangler.jsonc` so Wrangler deploys `build/web` as the `cnnqt-gplx` static-assets Worker, including SPA fallback routing.
+- [ ] Push these changes to `main`, confirm the first Cloudflare build succeeds, then verify the production URL displays the new version.
+- [ ] Do not also enable a GitHub Actions Cloudflare deployment workflow; Workers Builds is the single production deployment path.
+
+### 5. Storage, privacy, and release checks
 
 - [ ] Verify `shared_preferences` persistence for settings, question state, and exam history in Safari and after Home Screen installation.
 - [x] Add a short in-app or landing-page note: data is stored on this device/browser only and may disappear when website data is cleared or the app is deleted.

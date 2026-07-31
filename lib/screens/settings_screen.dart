@@ -492,7 +492,7 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 18),
               Center(
                 child: Image.asset(
-                  'assets/logo1.png',
+                  'assets/logo2.png',
                   width: 120,
                   height: 120,
                   fit: BoxFit.contain,

@@ -19,6 +19,10 @@ class ExamPersistenceService {
 
   Future<void> initialize(LicenseType type) async {
     final prefs = await SharedPreferences.getInstance();
+    _initializeWithPreferences(type, prefs);
+  }
+
+  void _initializeWithPreferences(LicenseType type, SharedPreferences prefs) {
 
     for (var examId = 1; examId <= 100; examId++) {
       final key = _attemptsKey(type, examId);
@@ -40,10 +44,10 @@ class ExamPersistenceService {
 
   Future<void> initializeAll() async {
     _allAttempts.clear();
-    for (final type in LicenseType.values) {
-      await initialize(type);
-    }
     final prefs = await SharedPreferences.getInstance();
+    for (final type in LicenseType.values) {
+      _initializeWithPreferences(type, prefs);
+    }
     final attemptsStr = prefs.getString(_allAttemptsKey);
     if (attemptsStr == null) return;
 

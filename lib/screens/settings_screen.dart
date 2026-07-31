@@ -6,6 +6,7 @@ import '../providers/providers.dart';
 import '../screens/screens.dart';
 import '../services/exam_persistence_service.dart';
 import '../services/question_state_persistence.dart';
+import '../services/windows_update_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -73,6 +74,7 @@ class SettingsScreen extends StatelessWidget {
                       defaultTargetPlatform == TargetPlatform.windows) ...[
                     const Divider(height: 32),
                     _buildSectionHeader(context, 'Windows', primary, text),
+                    _buildWindowsUpdate(context, surface, text),
                     _buildWindowsKeyboardHelp(context, surface, text),
                   ],
                   const Divider(height: 32),
@@ -112,6 +114,105 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildWindowsUpdate(BuildContext context, Color surface, Color text) {
+    return Material(
+      color: surface,
+      child: ListTile(
+        leading: const Icon(Icons.system_update_outlined),
+        title: const Text('Kiểm tra cập nhật'),
+        subtitle: Text(
+          'Tìm bản mới và cài đặt lại ứng dụng tự động',
+          style: TextStyle(fontSize: 12, color: text.withValues(alpha: 0.6)),
+        ),
+        trailing: Icon(
+          Icons.refresh,
+          size: 20,
+          color: text.withValues(alpha: 0.5),
+        ),
+        onTap: () => _checkForWindowsUpdate(context),
+      ),
+    );
+  }
+
+  Future<void> _checkForWindowsUpdate(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        content: Row(
+          children: [
+            SizedBox(width: 22, height: 22, child: CircularProgressIndicator()),
+            SizedBox(width: 16),
+            Expanded(child: Text('Đang kiểm tra cập nhật...')),
+          ],
+        ),
+      ),
+    );
+
+    final service = WindowsUpdateService();
+    final update = await service.checkForUpdate();
+    if (!context.mounted) return;
+    navigator.pop();
+
+    if (!update.isUpdateAvailable) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(update.message ?? 'Bạn đang dùng phiên bản mới nhất.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final shouldInstall = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Có bản cập nhật mới'),
+        content: Text(
+          'Phiên bản ${update.latestVersion} đã sẵn sàng. Ứng dụng sẽ tải, cài bản mới và tự mở lại.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => navigator.pop(false),
+            child: const Text('Để sau'),
+          ),
+          ElevatedButton(
+            onPressed: () => navigator.pop(true),
+            child: const Text('Cập nhật'),
+          ),
+        ],
+      ),
+    );
+    if (shouldInstall != true || !context.mounted) return;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        content: Row(
+          children: [
+            SizedBox(width: 22, height: 22, child: CircularProgressIndicator()),
+            SizedBox(width: 16),
+            Expanded(child: Text('Đang tải bản cập nhật...')),
+          ],
+        ),
+      ),
+    );
+    try {
+      await service.downloadAndInstall();
+    } catch (_) {
+      if (!context.mounted) return;
+      navigator.pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể tải bản cập nhật. Hãy thử lại sau.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Widget _buildDataActions(

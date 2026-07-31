@@ -3,10 +3,11 @@ name: Build Windows release
 on:
   push:
     branches: [main]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: windows-release-${{ github.ref }}
@@ -40,6 +41,16 @@ jobs:
       - name: Build Windows release
         run: flutter build windows --release
 
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress --yes
+
+      - name: Create Windows installer
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path pubspec.yaml -Pattern '^version:\s*([0-9]+\.[0-9]+\.[0-9]+)' | Select-Object -First 1).Matches.Groups[1].Value
+          & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' "/DMyAppVersion=$version" installer\gplx.iss
+
       - name: Package release folder
         shell: pwsh
         run: |
@@ -52,3 +63,26 @@ jobs:
           path: GPLX-Windows-x64.zip
           if-no-files-found: error
           retention-days: 30
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: GPLX-Windows-x64-Setup
+          path: build\windows-installer\GPLX-Windows-x64-Setup.exe
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish GitHub Release for tagged version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $files = @('build\windows-installer\GPLX-Windows-x64-Setup.exe', 'GPLX-Windows-x64.zip')
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $files --clobber
+          } else {
+            gh release create $tag $files --generate-notes --title "GPLX Windows $tag"
+          }

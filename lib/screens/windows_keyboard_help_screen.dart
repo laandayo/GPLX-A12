@@ -37,17 +37,6 @@ class WindowsKeyboardHelpScreen extends StatelessWidget {
               ('Esc', 'Quay lại / rời bài thi'),
             ],
           ),
-          const SizedBox(height: 12),
-          _ShortcutCard(
-            title: 'Ở các màn hình khác',
-            primary: primary,
-            shortcuts: const [
-              ('← / ↑ / A / W', 'Chuyển đến nút hoặc mục trước'),
-              ('→ / ↓ / D / S', 'Chuyển đến nút hoặc mục sau'),
-              ('Enter', 'Kích hoạt nút hoặc mục đang chọn'),
-              ('Esc', 'Quay lại'),
-            ],
-          ),
         ],
       ),
     );

@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'providers/providers.dart';
 import 'screens/screens.dart';
-import 'widgets/windows_keyboard_navigation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,9 +57,7 @@ class _GplxAppContent extends StatelessWidget {
               data: mediaQuery.copyWith(
                 textScaler: TextScaler.linear(appProvider.textScale),
               ),
-              child: WindowsKeyboardNavigation(
-                child: child ?? const SizedBox.shrink(),
-              ),
+              child: child ?? const SizedBox.shrink(),
             );
           },
         );

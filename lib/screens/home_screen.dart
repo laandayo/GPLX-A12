@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -244,10 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPwaInstallHint(
-    BuildContext context,
-    AppProvider appProvider,
-  ) {
+  Widget _buildPwaInstallHint(BuildContext context, AppProvider appProvider) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final type = appProvider.selectedLicense;
     final primary = AppColors.primary(type, isDark);
@@ -272,14 +270,30 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   'Cài đặt trên iPhone hoặc iPad',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: text,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w700, color: text),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  'Mở bằng Safari, chạm Chia sẻ rồi chọn “Thêm vào Màn hình chính” để dùng như ứng dụng.',
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      const TextSpan(text: 'Mở bằng Safari, chạm '),
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                          child: Icon(
+                            CupertinoIcons.share,
+                            size: 17,
+                            color: text.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ),
+                      const TextSpan(
+                        text:
+                            ' rồi chọn “Thêm vào Màn hình chính” để dùng như ứng dụng.',
+                      ),
+                    ],
+                  ),
                   style: TextStyle(
                     fontSize: 13,
                     height: 1.35,
@@ -315,7 +329,11 @@ class _HomeScreenState extends State<HomeScreen> {
             .length;
 
         final width = MediaQuery.sizeOf(context).width;
-        final crossAxisCount = width >= 840 ? 4 : width >= 600 ? 3 : 2;
+        final crossAxisCount = width >= 840
+            ? 4
+            : width >= 600
+            ? 3
+            : 2;
 
         return GridView.count(
           shrinkWrap: true,

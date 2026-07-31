@@ -31,8 +31,9 @@ class SettingsScreen extends StatelessWidget {
           ),
           body: LayoutBuilder(
             builder: (context, constraints) {
-              final sidePadding =
-                  ((constraints.maxWidth - 840) / 2).clamp(0, double.infinity).toDouble();
+              final sidePadding = ((constraints.maxWidth - 840) / 2)
+                  .clamp(0, double.infinity)
+                  .toDouble();
               return ListView(
                 padding: EdgeInsets.symmetric(horizontal: sidePadding),
                 children: [
@@ -46,16 +47,34 @@ class SettingsScreen extends StatelessWidget {
                     surface,
                   ),
                   const SizedBox(height: 8),
-                  _buildPaletteOptions(appProvider, isDark, primary, text, surface),
+                  _buildPaletteOptions(
+                    appProvider,
+                    isDark,
+                    primary,
+                    text,
+                    surface,
+                  ),
                   const SizedBox(height: 8),
                   _buildTextSizeOptions(appProvider, primary, text, surface),
                   const Divider(height: 32),
                   _buildSectionHeader(context, 'Cài đặt ôn tập', primary, text),
-                  _buildStudySettings(context, appProvider, isDark, primary, text),
+                  _buildStudySettings(
+                    context,
+                    appProvider,
+                    isDark,
+                    primary,
+                    text,
+                  ),
                   const Divider(height: 32),
                   _buildSectionHeader(context, 'Dữ liệu', primary, text),
                   _buildDataActions(context, appProvider, surface, text),
                   if (kIsWeb) _buildWebStorageNotice(surface, text),
+                  if (!kIsWeb &&
+                      defaultTargetPlatform == TargetPlatform.windows) ...[
+                    const Divider(height: 32),
+                    _buildSectionHeader(context, 'Windows', primary, text),
+                    _buildWindowsKeyboardHelp(context, surface, text),
+                  ],
                   const Divider(height: 32),
                   _buildSectionHeader(context, 'Thông tin', primary, text),
                   _buildAbout(context, isDark, primary, text, surface),
@@ -65,6 +84,33 @@ class SettingsScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildWindowsKeyboardHelp(
+    BuildContext context,
+    Color surface,
+    Color text,
+  ) {
+    return Material(
+      color: surface,
+      child: ListTile(
+        leading: const Icon(Icons.keyboard_outlined),
+        title: const Text('Phím tắt bàn phím'),
+        subtitle: Text(
+          'Xem cách điều khiển ứng dụng bằng bàn phím',
+          style: TextStyle(fontSize: 12, color: text.withValues(alpha: 0.6)),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: text.withValues(alpha: 0.5),
+        ),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const WindowsKeyboardHelpScreen()),
+        ),
+      ),
     );
   }
 
@@ -452,14 +498,20 @@ class SettingsScreen extends StatelessWidget {
                 style: TextStyle(color: text),
               ),
               const SizedBox(height: 12),
-              _buildInfoBullet('Tỉ lệ chính xác',
-                  'Là tỷ lệ phần trăm của tổng số lần trả lời đúng trên tổng số lần trả lời.'),
+              _buildInfoBullet(
+                'Tỉ lệ chính xác',
+                'Là tỷ lệ phần trăm của tổng số lần trả lời đúng trên tổng số lần trả lời.',
+              ),
               const SizedBox(height: 10),
-              _buildInfoBullet('Tỉ lệ đậu',
-                  'Tỉ lệ đậu hiện tại được tính theo Độ chính xác x 0.9, tức là 90% của chỉ số “Chính xác”.'),
+              _buildInfoBullet(
+                'Tỉ lệ đậu',
+                'Tỉ lệ đậu hiện tại được tính theo Độ chính xác x 0.9, tức là 90% của chỉ số “Chính xác”.',
+              ),
               const SizedBox(height: 10),
-              _buildInfoBullet('Hoạt động ôn tập (30 ngày)',
-                  'Hoạt động ôn tập (30 ngày) hiển thị mức độ hoạt động theo 30 ngày vừa qua dựa trên số lần học/ngày, được quy về 4 mức cường độ.'),
+              _buildInfoBullet(
+                'Hoạt động ôn tập (30 ngày)',
+                'Hoạt động ôn tập (30 ngày) hiển thị mức độ hoạt động theo 30 ngày vừa qua dựa trên số lần học/ngày, được quy về 4 mức cường độ.',
+              ),
             ],
           ),
         ),
@@ -473,11 +525,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showCreditsDialog(
-    BuildContext context,
-    Color text,
-    Color primary,
-  ) {
+  void _showCreditsDialog(BuildContext context, Color text, Color primary) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -499,7 +547,7 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 18),
               Center(
                 child: Image.asset(
-                  'assets/logo2.png',
+                  'assets/logo1.png',
                   width: 120,
                   height: 120,
                   fit: BoxFit.contain,

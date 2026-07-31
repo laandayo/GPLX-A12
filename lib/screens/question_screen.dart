@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../ads/ads.dart';
 import '../providers/providers.dart';
@@ -26,6 +28,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
   Timer? _examTimer;
   bool _fiveMinuteWarningShown = false;
   bool _oneMinuteWarningShown = false;
+  bool _thirtySecondWarningShown = false;
+  bool _isQuestionListOpen = false;
 
   @override
   void dispose() {
@@ -56,7 +60,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
             !questionProvider.isExamMode ||
             questionProvider.scoringMode == ScoringMode.gradeImmediately;
 
-        return PopScope(
+        final page = PopScope(
           canPop:
               !questionProvider.isExamMode ||
               questionProvider.hasSubmittedSession,
@@ -104,6 +108,21 @@ class _QuestionScreenState extends State<QuestionScreen> {
             ),
           ),
         );
+
+        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
+          return Focus(
+            autofocus: true,
+            onKeyEvent: (node, event) => _handleWindowsKeyEvent(
+              event,
+              context,
+              appProvider,
+              questionProvider,
+              isGradeImmediately,
+            ),
+            child: page,
+          );
+        }
+        return page;
       },
     );
   }
@@ -150,6 +169,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
       } else if (nextValue == 60 && !_oneMinuteWarningShown) {
         _oneMinuteWarningShown = true;
         _showTimeWarning('Còn 1 phút, bài thi sẽ được nộp tự động.');
+      } else if (nextValue == 30 && !_thirtySecondWarningShown) {
+        _thirtySecondWarningShown = true;
+        _showTimeWarning('Còn 30 giây, hãy hoàn thành bài thi.');
       } else if (nextValue <= 0) {
         _remainingSecondsNotifier.value = 0;
         _stopTimer();
@@ -167,6 +189,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
     _remainingSecondsNotifier.value = _examDurationSeconds;
     _fiveMinuteWarningShown = false;
     _oneMinuteWarningShown = false;
+    _thirtySecondWarningShown = false;
   }
 
   Widget _buildHeader(
@@ -311,148 +334,157 @@ class _QuestionScreenState extends State<QuestionScreen> {
       child: ResponsiveContent(
         maxWidth: 800,
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (questionProvider.isExamMode && question.isImportant) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.wrongColor(isDark).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.wrongColor(isDark).withValues(alpha: 0.35),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.warning_amber_rounded,
-                    color: AppColors.wrongColor(isDark),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (questionProvider.isExamMode && question.isImportant) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.wrongColor(isDark).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.wrongColor(isDark).withValues(alpha: 0.35),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Câu điểm liệt: trả lời sai câu này sẽ không đạt bài thi.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.wrongColor(isDark),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: AppColors.wrongColor(isDark),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Câu điểm liệt: trả lời sai câu này sẽ không đạt bài thi.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.wrongColor(isDark),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          if (questionProvider.studyMode == StudyMode.wrong) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.wrongColor(isDark).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                'Đã sai ${question.wrongCount} lần',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.wrongColor(isDark),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          if (question.image != null && question.image!.isNotEmpty) ...[
-            Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(maxHeight: 300),
-              decoration: BoxDecoration(
-                color: AppColors.dividerColor(isDark),
-                borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+            ],
+            if (questionProvider.studyMode == StudyMode.wrong) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.wrongColor(isDark).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'Đã sai ${question.wrongCount} lần',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.wrongColor(isDark),
+                  ),
+                ),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  question.image!,
-                  fit: BoxFit.contain,
-                  errorBuilder: (ctx, err, trace) => Container(
-                    padding: const EdgeInsets.all(32),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.image_not_supported,
-                            size: 48,
-                            color: AppColors.text(
-                              type,
-                              isDark,
-                            ).withValues(alpha: 0.3),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Image not found: ${question.image}',
-                            style: TextStyle(
-                              fontSize: 12,
+              const SizedBox(height: 16),
+            ],
+            if (question.image != null && question.image!.isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxHeight: 300),
+                decoration: BoxDecoration(
+                  color: AppColors.dividerColor(isDark),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    question.image!,
+                    fit: BoxFit.contain,
+                    errorBuilder: (ctx, err, trace) => Container(
+                      padding: const EdgeInsets.all(32),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.image_not_supported,
+                              size: 48,
                               color: AppColors.text(
                                 type,
                                 isDark,
-                              ).withValues(alpha: 0.5),
+                              ).withValues(alpha: 0.3),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              'Image not found: ${question.image}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.text(
+                                  type,
+                                  isDark,
+                                ).withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: surface,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+              const SizedBox(height: 16),
+            ],
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: surface,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                question.content,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.text(type, isDark),
                 ),
-              ],
-            ),
-            child: Text(
-              question.content,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.text(type, isDark),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          ...List.generate(
-            question.answers.length,
-            (index) => _buildAnswerOption(
-              context,
-              appProvider,
-              questionProvider,
-              question,
-              index,
-              primary,
-              isDark,
-              isGradeImmediately,
-            ),
-          ),
-          if (shouldShowExplanation) ...[
             const SizedBox(height: 20),
-            _buildExplanation(context, appProvider, question, primary, isDark),
+            ...List.generate(
+              question.answers.length,
+              (index) => _buildAnswerOption(
+                context,
+                appProvider,
+                questionProvider,
+                question,
+                index,
+                primary,
+                isDark,
+                isGradeImmediately,
+              ),
+            ),
+            if (shouldShowExplanation) ...[
+              const SizedBox(height: 20),
+              _buildExplanation(
+                context,
+                appProvider,
+                question,
+                primary,
+                isDark,
+              ),
+            ],
           ],
-        ],
         ),
       ),
     );
@@ -477,127 +509,129 @@ class _QuestionScreenState extends State<QuestionScreen> {
       child: ResponsiveContent(
         maxWidth: 800,
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (question.image != null && question.image!.isNotEmpty) ...[
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (question.image != null && question.image!.isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxHeight: 300),
+                decoration: BoxDecoration(
+                  color: AppColors.dividerColor(isDark),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(question.image!, fit: BoxFit.contain),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             Container(
               width: double.infinity,
-              constraints: const BoxConstraints(maxHeight: 300),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.dividerColor(isDark),
+                color: surface,
                 borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(question.image!, fit: BoxFit.contain),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: surface,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Text(
-              question.content,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: text,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: correctColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: correctColor.withValues(alpha: 0.4)),
-            ),
-            child: Text(
-              'Đáp án đúng: ${String.fromCharCode(65 + question.correctAnswer)}. ${question.answers[question.correctAnswer]}',
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.45,
-                fontWeight: FontWeight.w800,
-                color: correctColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...List.generate(question.answers.length, (index) {
-            final isCorrect = index == question.correctAnswer;
-            final answerColor = isCorrect ? correctColor : AppColors.wrongColor(isDark);
-            final answerBg = isCorrect
-                ? correctColor.withValues(alpha: 0.1)
-                : AppColors.wrongColor(isDark).withValues(alpha: 0.08);
-            final answerBorder = isCorrect
-                ? correctColor.withValues(alpha: 0.6)
-                : AppColors.wrongColor(isDark).withValues(alpha: 0.6);
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: answerBg,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: answerBorder, width: 1.5),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: isCorrect
-                          ? correctColor
-                          : AppColors.wrongColor(isDark),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        String.fromCharCode(65 + index),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      question.answers[index],
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: answerColor,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    isCorrect ? Icons.check_circle : Icons.cancel,
-                    color: answerColor,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
-            );
-          }),
-          const SizedBox(height: 12),
-          _buildExplanation(context, appProvider, question, primary, isDark),
-        ],
+              child: Text(
+                question.content,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: text,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: correctColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: correctColor.withValues(alpha: 0.4)),
+              ),
+              child: Text(
+                'Đáp án đúng: ${String.fromCharCode(65 + question.correctAnswer)}. ${question.answers[question.correctAnswer]}',
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.45,
+                  fontWeight: FontWeight.w800,
+                  color: correctColor,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...List.generate(question.answers.length, (index) {
+              final isCorrect = index == question.correctAnswer;
+              final answerColor = isCorrect
+                  ? correctColor
+                  : AppColors.wrongColor(isDark);
+              final answerBg = isCorrect
+                  ? correctColor.withValues(alpha: 0.1)
+                  : AppColors.wrongColor(isDark).withValues(alpha: 0.08);
+              final answerBorder = isCorrect
+                  ? correctColor.withValues(alpha: 0.6)
+                  : AppColors.wrongColor(isDark).withValues(alpha: 0.6);
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: answerBg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: answerBorder, width: 1.5),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: isCorrect
+                            ? correctColor
+                            : AppColors.wrongColor(isDark),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          String.fromCharCode(65 + index),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        question.answers[index],
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: answerColor,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      isCorrect ? Icons.check_circle : Icons.cancel,
+                      color: answerColor,
+                    ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 12),
+            _buildExplanation(context, appProvider, question, primary, isDark),
+          ],
         ),
       ),
     );
@@ -1025,86 +1059,107 @@ class _QuestionScreenState extends State<QuestionScreen> {
     Color primary,
     bool isDark,
   ) {
-    showModalBottomSheet(
+    if (_isQuestionListOpen) return;
+    setState(() => _isQuestionListOpen = true);
+    showModalBottomSheet<void>(
       context: context,
       builder: (bottomSheetContext) {
         final type = context.read<AppProvider>().selectedLicense;
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.7,
-          color: AppColors.surface(type, isDark),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Text(
-                'Danh sách câu hỏi',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.text(type, isDark),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 6,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
+        return Focus(
+          autofocus: true,
+          onKeyEvent: (node, event) {
+            final key = event.logicalKey;
+            if (event is KeyDownEvent &&
+                (key == LogicalKeyboardKey.arrowUp ||
+                    key == LogicalKeyboardKey.arrowDown ||
+                    key == LogicalKeyboardKey.keyW ||
+                    key == LogicalKeyboardKey.keyS ||
+                    key == LogicalKeyboardKey.escape)) {
+              Navigator.pop(bottomSheetContext);
+              return KeyEventResult.handled;
+            }
+            return KeyEventResult.ignored;
+          },
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.7,
+            color: AppColors.surface(type, isDark),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Text(
+                  'Danh sách câu hỏi',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.text(type, isDark),
                   ),
-                  itemCount: questionProvider.totalQuestions,
-                  itemBuilder: (context, index) {
-                    final question = questionProvider.currentQuestions[index];
-                    final isCurrent = index == questionProvider.currentIndex;
-                    final isPending =
-                        question.isAnswered && !question.isEvaluated;
-                    Color color;
-                    if (isCurrent) {
-                      color = primary;
-                    } else if (question.isEvaluated && question.isCorrect) {
-                      color = AppColors.correctColor(isDark);
-                    } else if (question.isEvaluated) {
-                      color = AppColors.wrongColor(isDark);
-                    } else if (isPending) {
-                      color = primary.withValues(alpha: 0.65);
-                    } else if (question.isMarked) {
-                      color = AppColors.bookmarkColor(isDark);
-                    } else {
-                      color = AppColors.dividerColor(isDark);
-                    }
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 6,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: 8,
+                        ),
+                    itemCount: questionProvider.totalQuestions,
+                    itemBuilder: (context, index) {
+                      final question = questionProvider.currentQuestions[index];
+                      final isCurrent = index == questionProvider.currentIndex;
+                      final isPending =
+                          question.isAnswered && !question.isEvaluated;
+                      Color color;
+                      if (isCurrent) {
+                        color = primary;
+                      } else if (question.isEvaluated && question.isCorrect) {
+                        color = AppColors.correctColor(isDark);
+                      } else if (question.isEvaluated) {
+                        color = AppColors.wrongColor(isDark);
+                      } else if (isPending) {
+                        color = primary.withValues(alpha: 0.65);
+                      } else if (question.isMarked) {
+                        color = AppColors.bookmarkColor(isDark);
+                      } else {
+                        color = AppColors.dividerColor(isDark);
+                      }
 
-                    return Material(
-                      color: color,
-                      borderRadius: BorderRadius.circular(8),
-                      child: InkWell(
-                        onTap: () {
-                          questionProvider.jumpToQuestion(index);
-                          Navigator.pop(bottomSheetContext);
-                        },
+                      return Material(
+                        color: color,
                         borderRadius: BorderRadius.circular(8),
-                        child: Center(
-                          child: Text(
-                            '${index + 1}',
-                            style: TextStyle(
-                              color:
-                                  (question.isAnswered ||
-                                      isCurrent ||
-                                      isPending)
-                                  ? Colors.white
-                                  : AppColors.text(type, isDark),
-                              fontWeight: FontWeight.bold,
+                        child: InkWell(
+                          onTap: () {
+                            questionProvider.jumpToQuestion(index);
+                            Navigator.pop(bottomSheetContext);
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Center(
+                            child: Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                color:
+                                    (question.isAnswered ||
+                                        isCurrent ||
+                                        isPending)
+                                    ? Colors.white
+                                    : AppColors.text(type, isDark),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
-    );
+    ).whenComplete(() {
+      if (mounted) setState(() => _isQuestionListOpen = false);
+    });
   }
 
   void _showTimeWarning(String message) {
@@ -1118,6 +1173,77 @@ class _QuestionScreenState extends State<QuestionScreen> {
           duration: const Duration(seconds: 3),
         ),
       );
+    unawaited(SystemSound.play(SystemSoundType.alert));
+  }
+
+  KeyEventResult _handleWindowsKeyEvent(
+    KeyEvent event,
+    BuildContext context,
+    AppProvider appProvider,
+    QuestionProvider questionProvider,
+    bool isGradeImmediately,
+  ) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.keyA) {
+      questionProvider.previousQuestion();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowRight ||
+        key == LogicalKeyboardKey.keyD) {
+      questionProvider.nextQuestion();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowUp ||
+        key == LogicalKeyboardKey.arrowDown ||
+        key == LogicalKeyboardKey.keyW ||
+        key == LogicalKeyboardKey.keyS) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      _showQuestionList(
+        context,
+        questionProvider,
+        AppColors.primary(appProvider.selectedLicense, isDark),
+        isDark,
+      );
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.escape) {
+      final navigator = Navigator.of(context);
+      _handleExitAttempt(context, questionProvider).then((shouldPop) {
+        if (shouldPop && mounted) navigator.pop();
+      });
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.numpadEnter) {
+      if (questionProvider.hasNext) {
+        questionProvider.nextQuestion();
+      } else if (questionProvider.isExamMode &&
+          !questionProvider.hasSubmittedSession) {
+        _showSubmitConfirmation(context, questionProvider, appProvider);
+      }
+      return KeyEventResult.handled;
+    }
+
+    final answerIndex = switch (key) {
+      LogicalKeyboardKey.digit1 || LogicalKeyboardKey.numpad1 => 0,
+      LogicalKeyboardKey.digit2 || LogicalKeyboardKey.numpad2 => 1,
+      LogicalKeyboardKey.digit3 || LogicalKeyboardKey.numpad3 => 2,
+      LogicalKeyboardKey.digit4 || LogicalKeyboardKey.numpad4 => 3,
+      _ => null,
+    };
+    if (answerIndex != null &&
+        !widget.isCatalogLookup &&
+        answerIndex < (questionProvider.currentQuestion?.answers.length ?? 0)) {
+      _handleAnswer(
+        questionProvider,
+        answerIndex: answerIndex,
+        appProvider: appProvider,
+        gradeImmediately: isGradeImmediately,
+      );
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   void _handleTimeUp() {
@@ -1150,36 +1276,103 @@ class _ExamTimerChip extends StatelessWidget {
         final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
         final remainingSeconds = (seconds % 60).toString().padLeft(2, '0');
 
-        return Container(
+        return _TimerChipContent(
+          secondsLabel: '$minutes:$remainingSeconds',
+          isWarning: _isWarningWindow(seconds),
+        );
+      },
+    );
+  }
+
+  bool _isWarningWindow(int seconds) {
+    for (final marker in const [300, 60, 30]) {
+      if (seconds <= marker && seconds > marker - 8) return true;
+    }
+    return false;
+  }
+}
+
+class _TimerChipContent extends StatefulWidget {
+  final String secondsLabel;
+  final bool isWarning;
+
+  const _TimerChipContent({
+    required this.secondsLabel,
+    required this.isWarning,
+  });
+
+  @override
+  State<_TimerChipContent> createState() => _TimerChipContentState();
+}
+
+class _TimerChipContentState extends State<_TimerChipContent>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 550),
+    );
+    if (widget.isWarning) _controller.repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(covariant _TimerChipContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isWarning && !oldWidget.isWarning) {
+      _controller.repeat(reverse: true);
+    } else if (!widget.isWarning && oldWidget.isWarning) {
+      _controller
+        ..stop()
+        ..value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const normalColor = Color(0xFFFFA000);
+    const warningColor = Color(0xFFE53935);
+    final color = widget.isWarning ? warningColor : normalColor;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) => Transform.scale(
+        scale: widget.isWarning ? 1 + (_controller.value * 0.12) : 1,
+        child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFA000).withValues(alpha: 0.12),
+            color: color.withValues(alpha: widget.isWarning ? 0.2 : 0.12),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: const Color(0xFFFFA000).withValues(alpha: 0.4),
+              color: color.withValues(alpha: widget.isWarning ? 0.8 : 0.4),
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.timer_outlined,
-                color: Color(0xFFFFA000),
-                size: 18,
-              ),
+              Icon(Icons.timer_outlined, color: color, size: 18),
               const SizedBox(width: 8),
               Text(
-                '$minutes:$remainingSeconds',
-                style: const TextStyle(
+                widget.secondsLabel,
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFFFA000),
+                  color: color,
                 ),
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

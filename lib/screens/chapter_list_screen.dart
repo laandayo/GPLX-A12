@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/providers.dart';
 import '../models/models.dart';
 import '../data/data.dart';
+import '../widgets/responsive_content.dart';
 import 'chapter_info_screen.dart';
 import 'study_mode_info_screen.dart';
 
@@ -29,15 +30,29 @@ class ChapterListScreen extends StatelessWidget {
           body: Column(
             children: [
               if (studyMode == StudyMode.all)
-                _buildStudyModeOptions(context, appProvider, questionProvider, primary, isDark),
+                ResponsiveContent(
+                  child: _buildStudyModeOptions(
+                    context,
+                    appProvider,
+                    questionProvider,
+                    primary,
+                    isDark,
+                  ),
+                ),
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: chapters.length,
                   itemBuilder: (context, index) {
                     final chapter = chapters[index];
-                    return _ChapterCard(chapter: chapter, primary: primary,
-                      isDark: isDark, onTap: () => _navigateToChapter(context, chapter));
+                    return ResponsiveContent(
+                      child: _ChapterCard(
+                        chapter: chapter,
+                        primary: primary,
+                        isDark: isDark,
+                        onTap: () => _navigateToChapter(context, chapter),
+                      ),
+                    );
                   },
                 ),
               ),

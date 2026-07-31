@@ -25,16 +25,16 @@
 
 ### 2. Make shared startup and ads platform-safe
 
-- [ ] Replace the unconditional orientation lock with a mobile-only implementation; never import `dart:io` directly from code that also compiles for web.
-- [ ] Put ad operations behind a small interface with a no-op Windows implementation. The Windows build must show the exam-result flow immediately where an Android ad would otherwise appear.
-- [ ] Verify the app launches and completes an exam when there is no ad implementation.
+- [x] Replace the unconditional orientation lock with a mobile-only implementation; never import `dart:io` directly from code that also compiles for web.
+- [x] Put ad operations behind a small interface with a no-op Windows implementation. The Windows build must show the exam-result flow immediately where an Android ad would otherwise appear.
+- [ ] Verify the app launches and completes an exam when there is no ad implementation on a Windows 10/11 device.
 
 ### 3. Add desktop-responsive UI
 
-- [ ] Define breakpoints (for example: compact below 600 logical pixels, desktop at 900 and above) in one shared layout utility.
-- [ ] Constrain reading content to a comfortable maximum width; do not stretch question text and answer choices across an ultrawide window.
-- [ ] On desktop, replace or supplement the bottom navigation with a left navigation rail or persistent side navigation. Keep the compact layout unchanged for phone-sized windows.
-- [ ] Adapt the header, menu grid, cards, dialogs, question/exam screens, and settings/history screens for wide and narrow desktop windows.
+- [x] Define compact, tablet, and desktop breakpoints for the shared layouts.
+- [x] Constrain reading content to a comfortable maximum width; do not stretch question text and answer choices across an ultrawide window.
+- [x] On desktop, replace or supplement the bottom navigation with a left navigation rail or persistent side navigation. Keep the compact layout unchanged for phone-sized windows.
+- [x] Adapt the header, menu grid, cards, dialogs, question/exam screens, settings, chapter selection, and history screens for wide and narrow desktop windows.
 - [ ] Ensure mouse and keyboard use are pleasant: visible focus states, sensible tab order, Enter/Space activation, Escape to dismiss dialogs, and enough hit area for touchscreens.
 - [ ] Test with Windows scaling at 100%, 125%, and 150%, plus both light and dark themes.
 
@@ -52,6 +52,32 @@
 - [ ] Window resizing, common display scaling, keyboard navigation, and large text do not hide or overlap controls.
 - [ ] Local progress survives restart on the same computer; no account or network connection is required.
 - [ ] A documented, reproducible release command and distribution format exist.
+
+## Windows release handoff
+
+Run these commands from a Windows 10 or Windows 11 machine after installing the Visual Studio **Desktop development with C++** workload:
+
+```powershell
+flutter doctor
+flutter pub get
+flutter analyze
+flutter run -d windows
+flutter build windows
+```
+
+Distribute the entire release directory, not only the executable:
+
+```text
+build\windows\x64\runner\Release\
+```
+
+For the initial school release, package this folder as a ZIP. It avoids installer complexity for an app students will use only briefly. The Windows window title, executable metadata, and generated icon use the GPLX branding.
+
+## Automated Windows builds
+
+The repository includes `.github/workflows/build-windows.yml`. GitHub runs it on a hosted Windows machine after each push to `main` (or when started manually from the Actions tab). It runs analysis and tests, builds the x64 release, and uploads `GPLX-Windows-x64.zip` as a workflow artifact.
+
+To download it, open GitHub **Actions** → **Build Windows release** → select the successful run → download the `GPLX-Windows-x64` artifact. Extract the ZIP before running the application; do not run the executable from inside the ZIP.
 
 ## Handoff reminder
 

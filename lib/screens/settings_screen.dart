@@ -29,32 +29,39 @@ class SettingsScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          body: ListView(
-            children: [
-              _buildSectionHeader(context, 'Giao diện', primary, text),
-              _buildThemeOptions(
-                context,
-                appProvider,
-                isDark,
-                primary,
-                text,
-                surface,
-              ),
-              const SizedBox(height: 8),
-              _buildPaletteOptions(appProvider, isDark, primary, text, surface),
-              const SizedBox(height: 8),
-              _buildTextSizeOptions(appProvider, primary, text, surface),
-              const Divider(height: 32),
-              _buildSectionHeader(context, 'Cài đặt ôn tập', primary, text),
-              _buildStudySettings(context, appProvider, isDark, primary, text),
-              const Divider(height: 32),
-              _buildSectionHeader(context, 'Dữ liệu', primary, text),
-              _buildDataActions(context, appProvider, surface, text),
-              if (kIsWeb) _buildWebStorageNotice(surface, text),
-              const Divider(height: 32),
-              _buildSectionHeader(context, 'Thông tin', primary, text),
-              _buildAbout(context, isDark, primary, text, surface),
-            ],
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final sidePadding =
+                  ((constraints.maxWidth - 840) / 2).clamp(0, double.infinity).toDouble();
+              return ListView(
+                padding: EdgeInsets.symmetric(horizontal: sidePadding),
+                children: [
+                  _buildSectionHeader(context, 'Giao diện', primary, text),
+                  _buildThemeOptions(
+                    context,
+                    appProvider,
+                    isDark,
+                    primary,
+                    text,
+                    surface,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildPaletteOptions(appProvider, isDark, primary, text, surface),
+                  const SizedBox(height: 8),
+                  _buildTextSizeOptions(appProvider, primary, text, surface),
+                  const Divider(height: 32),
+                  _buildSectionHeader(context, 'Cài đặt ôn tập', primary, text),
+                  _buildStudySettings(context, appProvider, isDark, primary, text),
+                  const Divider(height: 32),
+                  _buildSectionHeader(context, 'Dữ liệu', primary, text),
+                  _buildDataActions(context, appProvider, surface, text),
+                  if (kIsWeb) _buildWebStorageNotice(surface, text),
+                  const Divider(height: 32),
+                  _buildSectionHeader(context, 'Thông tin', primary, text),
+                  _buildAbout(context, isDark, primary, text, surface),
+                ],
+              );
+            },
           ),
         );
       },

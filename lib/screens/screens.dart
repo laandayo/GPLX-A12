@@ -10,3 +10,4 @@ export 'exam_info_screen.dart';
 export 'study_mode_info_screen.dart';
 export 'question_catalog_screen.dart';
 export 'settings_screen.dart';
+export 'windows_keyboard_help_screen.dart';

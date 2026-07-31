@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/providers.dart';
 import '../services/exam_persistence_service.dart';
+import '../widgets/responsive_content.dart';
 
 class ExamHistoryScreen extends StatelessWidget {
   const ExamHistoryScreen({super.key});
@@ -36,11 +37,13 @@ class ExamHistoryScreen extends StatelessWidget {
               itemCount: attempts.length,
               itemBuilder: (context, index) {
                 final attempt = attempts[index];
-                return _HistoryCard(
-                  attempt: attempt,
-                  primary: primary,
-                  isDark: isDark,
-                  onTap: () => _showAttemptDetails(context, attempt),
+                return ResponsiveContent(
+                  child: _HistoryCard(
+                    attempt: attempt,
+                    primary: primary,
+                    isDark: isDark,
+                    onTap: () => _showAttemptDetails(context, attempt),
+                  ),
                 );
               },
             ),
@@ -57,10 +60,14 @@ class ExamHistoryScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (sheetContext) => Container(
-        height: MediaQuery.of(context).size.height * 0.82,
-        color: AppColors.surface(type, isDark),
-        child: Column(
+      builder: (sheetContext) => Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 840),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.82,
+            color: AppColors.surface(type, isDark),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
@@ -185,6 +192,8 @@ class ExamHistoryScreen extends StatelessWidget {
               ),
             ),
           ],
+            ),
+          ),
         ),
       ),
     );

@@ -42,7 +42,7 @@
 ### 4. Automate Cloudflare production deployments
 
 - [x] Connect the Cloudflare static-assets Worker to the GitHub repository and use `main` as its production branch.
-- [x] Configure Cloudflare Workers Builds to fetch Flutter 3.38.1, build `build/web` with WebAssembly, then run `npx wrangler deploy`.
+- [x] Configure Cloudflare Workers Builds to fetch Flutter 3.44.8, build `build/web` with WebAssembly, then run `npx wrangler deploy`.
 - [x] Add `wrangler.jsonc` so Wrangler deploys `build/web` as the `cnnqt-gplx` static-assets Worker, including SPA fallback routing.
 - [ ] Push these changes to `main`, confirm the first Cloudflare build succeeds, then verify the production URL displays the new version.
 - [ ] Do not also enable a GitHub Actions Cloudflare deployment workflow; Workers Builds is the single production deployment path.

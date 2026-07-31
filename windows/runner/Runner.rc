@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "gplx_app" "\0"
+            VALUE "CompanyName", "Trường Cao đẳng Kỹ thuật Công - Nông nghiệp Quảng Trị" "\0"
+            VALUE "FileDescription", "GPLX - Ôn thi bằng lái" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "gplx_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Trường Cao đẳng Kỹ thuật Công - Nông nghiệp Quảng Trị. All rights reserved." "\0"
             VALUE "OriginalFilename", "gplx_app.exe" "\0"
-            VALUE "ProductName", "gplx_app" "\0"
+            VALUE "ProductName", "GPLX - Ôn thi bằng lái" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

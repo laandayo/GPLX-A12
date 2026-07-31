@@ -54,7 +54,7 @@ class WindowsUpdateService {
         return WindowsUpdateInfo(
           isUpdateAvailable: false,
           currentVersion: currentVersion,
-          message: 'Chưa có bản phát hành Windows trên GitHub Releases.',
+          message: 'Hiện tại không có cập nhật mới nào.',
         );
       }
       if (response.statusCode != 200) {

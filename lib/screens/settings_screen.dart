@@ -525,7 +525,7 @@ class SettingsScreen extends StatelessWidget {
                 const Text('Phiên bản'),
                 const Spacer(),
                 Text(
-                  'v1.0.0 Release',
+                  'v1.0.4',
                   style: TextStyle(color: text.withValues(alpha: 0.7)),
                 ),
               ],

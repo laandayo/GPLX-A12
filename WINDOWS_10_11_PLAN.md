@@ -75,9 +75,16 @@ For the initial school release, package this folder as a ZIP. It avoids installe
 
 ## Automated Windows builds
 
-The repository includes `.github/workflows/build-windows.yml`. GitHub runs it on a hosted Windows machine after each push to `main` (or when started manually from the Actions tab). It runs analysis and tests, builds the x64 release, and uploads `GPLX-Windows-x64.zip` as a workflow artifact.
+The repository includes `.github/workflows/build-windows.yml`. GitHub runs it on a hosted Windows machine after each push to `main` (or when started manually from the Actions tab). It runs analysis and tests, builds the x64 release, a `GPLX-Windows-x64-Setup.exe` installer, and uploads both as workflow artifacts.
 
-To download it, open GitHub **Actions** → **Build Windows release** → select the successful run → download the `GPLX-Windows-x64` artifact. Extract the ZIP before running the application; do not run the executable from inside the ZIP.
+To download it, open GitHub **Actions** → **Build Windows release** → select the successful run → download the `GPLX-Windows-x64-Setup` artifact. Students should run the installer rather than the portable ZIP.
+
+## Automatic updates
+
+- The installed Windows app has **Cài đặt → Windows → Kiểm tra cập nhật**. It reads the latest public GitHub Release from `laandayo/gplx_app`.
+- Push a version tag matching `pubspec.yaml`, for example `git tag v1.0.2` then `git push origin v1.0.2`. The workflow attaches `GPLX-Windows-x64-Setup.exe` to that GitHub Release.
+- The updater downloads that exact installer, closes the app, runs the installer silently, then starts the installed app again.
+- Do not rename the installer asset or make the GitHub Release private; the updater requires a public asset named `GPLX-Windows-x64-Setup.exe`.
 
 ## Handoff reminder
 

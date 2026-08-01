@@ -58,6 +58,18 @@ jobs:
           storeFile=upload-keystore.jks
           "@ | Set-Content android/key.properties
 
+      - name: Create temporary Android signing for build artifacts
+        if: env.HAS_ANDROID_SIGNING != 'true'
+        shell: pwsh
+        run: |
+          keytool -genkeypair -v -keystore android/app/upload-keystore.jks -storepass android -alias gplx-temporary -keypass android -dname "CN=GPLX temporary build, O=GPLX, C=VN" -keyalg RSA -keysize 2048 -validity 10000 -noprompt
+          @"
+          storePassword=android
+          keyPassword=android
+          keyAlias=gplx-temporary
+          storeFile=upload-keystore.jks
+          "@ | Set-Content android/key.properties
+
       - name: Require Android signing for a public release
         if: startsWith(github.ref, 'refs/tags/v') && env.HAS_ANDROID_SIGNING != 'true'
         shell: pwsh
@@ -67,12 +79,18 @@ jobs:
         run: flutter build apk --release
 
       - name: Build Android App Bundle
+        if: env.HAS_ANDROID_SIGNING == 'true'
         run: flutter build appbundle --release
 
-      - name: Name Android release files
+      - name: Name Android APK
         shell: pwsh
         run: |
           Copy-Item build\app\outputs\flutter-apk\app-release.apk GPLX-Android.apk
+
+      - name: Name signed Android App Bundle
+        if: env.HAS_ANDROID_SIGNING == 'true'
+        shell: pwsh
+        run: |
           Copy-Item build\app\outputs\bundle\release\app-release.aab GPLX-Android.aab
 
       - name: Build Windows release
@@ -116,6 +134,7 @@ jobs:
           retention-days: 30
 
       - name: Upload Android App Bundle
+        if: env.HAS_ANDROID_SIGNING == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: GPLX-Android-AAB

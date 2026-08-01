@@ -1,4 +1,4 @@
-name: Build Windows release
+name: Build Windows and Android releases
 
 on:
   push:
@@ -17,6 +17,9 @@ jobs:
   build:
     name: Build Windows x64 release
     runs-on: windows-latest
+    env:
+      HAS_ANDROID_SIGNING: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      GPLX_RELEASE_REPOSITORY: ${{ vars.GPLX_RELEASE_REPOSITORY }}
 
     steps:
       - name: Check out source
@@ -38,8 +41,48 @@ jobs:
       - name: Run tests
         run: flutter test
 
+      - name: Configure Android release signing
+        if: env.HAS_ANDROID_SIGNING == 'true'
+        shell: pwsh
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: |
+          [IO.File]::WriteAllBytes('android/app/upload-keystore.jks', [Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64))
+          @"
+          storePassword=$env:ANDROID_STORE_PASSWORD
+          keyPassword=$env:ANDROID_KEY_PASSWORD
+          keyAlias=$env:ANDROID_KEY_ALIAS
+          storeFile=upload-keystore.jks
+          "@ | Set-Content android/key.properties
+
+      - name: Require Android signing for a public release
+        if: startsWith(github.ref, 'refs/tags/v') && env.HAS_ANDROID_SIGNING != 'true'
+        shell: pwsh
+        run: throw 'Configure Android signing secrets before publishing a tagged release.'
+
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      - name: Build Android App Bundle
+        run: flutter build appbundle --release
+
+      - name: Name Android release files
+        shell: pwsh
+        run: |
+          Copy-Item build\app\outputs\flutter-apk\app-release.apk GPLX-Android.apk
+          Copy-Item build\app\outputs\bundle\release\app-release.aab GPLX-Android.aab
+
       - name: Build Windows release
-        run: flutter build windows --release
+        shell: pwsh
+        run: |
+          if ($env:GPLX_RELEASE_REPOSITORY) {
+            flutter build windows --release "--dart-define=GPLX_UPDATE_REPOSITORY=$env:GPLX_RELEASE_REPOSITORY"
+          } else {
+            flutter build windows --release
+          }
 
       - name: Install Inno Setup
         shell: pwsh
@@ -64,6 +107,22 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: GPLX-Android-APK
+          path: GPLX-Android.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload Android App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: GPLX-Android-AAB
+          path: GPLX-Android.aab
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
@@ -79,7 +138,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = '${{ github.ref_name }}'
-          $files = @('build\windows-installer\GPLX-Windows-x64-Setup.exe', 'GPLX-Windows-x64.zip')
+          $files = @('build\windows-installer\GPLX-Windows-x64-Setup.exe', 'GPLX-Windows-x64.zip', 'GPLX-Android.apk', 'GPLX-Android.aab')
           gh release view $tag 2>$null
           if ($LASTEXITCODE -eq 0) {
             gh release upload $tag $files --clobber

@@ -22,10 +22,16 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
+            if (keystorePropertiesFile.exists()) {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            } else {
+                // Lets CI produce test artifacts until a release keystore is
+                // configured through GitHub Actions secrets.
+                initWith(getByName("debug"))
+            }
         }
     }
 
@@ -57,5 +63,4 @@ android {
 flutter {
     source = "../.."
 }
-
 

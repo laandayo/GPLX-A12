@@ -81,10 +81,10 @@ To download it, open GitHub **Actions** → **Build Windows release** → select
 
 ## Automatic updates
 
-- The installed Windows app has **Cài đặt → Windows → Kiểm tra cập nhật**. It reads the latest public GitHub Release from `laandayo/gplx_app`.
+- The installed Windows app has **Cài đặt → Windows → Kiểm tra cập nhật**. It reads the latest public GitHub Release from the repository configured in GitHub Actions variable `GPLX_RELEASE_REPOSITORY` (or `laandayo/GPLX-A12` when no variable is configured).
 - Push a version tag matching `pubspec.yaml`, for example `git tag v1.0.2` then `git push origin v1.0.2`. The workflow attaches `GPLX-Windows-x64-Setup.exe` to that GitHub Release.
 - The updater downloads that exact installer, closes the app, runs the installer silently, then starts the installed app again.
-- Do not rename the installer asset or make the GitHub Release private; the updater requires a public asset named `GPLX-Windows-x64-Setup.exe`.
+- Do not rename the installer asset or make the GitHub Release private; the updater requires a public asset named `GPLX-Windows-x64-Setup.exe`. Keep source code private if desired by publishing release files to a separate public release repository.
 
 ## Handoff reminder
 

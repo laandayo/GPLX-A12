@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../data/data.dart';
 import '../providers/providers.dart';
@@ -10,6 +11,8 @@ import '../services/windows_update_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
+
+  static final Future<PackageInfo> _packageInfo = PackageInfo.fromPlatform();
 
   @override
   Widget build(BuildContext context) {
@@ -524,9 +527,14 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(width: 16),
                 const Text('Phiên bản'),
                 const Spacer(),
-                Text(
-                  'v1.0.4',
-                  style: TextStyle(color: text.withValues(alpha: 0.7)),
+                FutureBuilder<PackageInfo>(
+                  future: _packageInfo,
+                  builder: (context, snapshot) => Text(
+                    snapshot.hasData
+                        ? 'v${snapshot.data!.version}'
+                        : 'Đang đọc...',
+                    style: TextStyle(color: text.withValues(alpha: 0.7)),
+                  ),
                 ),
               ],
             ),

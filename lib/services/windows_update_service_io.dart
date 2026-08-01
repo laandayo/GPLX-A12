@@ -25,7 +25,7 @@ class WindowsUpdateInfo {
 class WindowsUpdateService {
   static const _repository = String.fromEnvironment(
     'GPLX_UPDATE_REPOSITORY',
-    defaultValue: 'laandayo/gplx_app',
+    defaultValue: 'laandayo/GPLX-A12',
   );
   static const _installerAssetName = 'GPLX-Windows-x64-Setup.exe';
 

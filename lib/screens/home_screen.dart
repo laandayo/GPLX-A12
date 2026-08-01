@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/providers.dart';
 import '../widgets/widgets.dart';
 import '../data/data.dart';
+import '../utils/web_user_agent.dart';
 import 'chapter_list_screen.dart';
 import 'question_screen.dart';
 import 'statistics_screen.dart';
@@ -22,6 +24,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const _releaseRepository = String.fromEnvironment(
+    'GPLX_RELEASE_REPOSITORY',
+    defaultValue: 'laandayo/GPLX-A12',
+  );
   int _navIndex = 0;
 
   @override
@@ -72,23 +78,104 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(16),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 960),
-                  child: Column(
-                    children: [
-                      _buildStudyProgressCard(
-                        context,
-                        appProvider,
-                      ).animate().fadeIn(duration: 400.ms).slideY(),
-                      if (kIsWeb) ...[
-                        const SizedBox(height: 16),
-                        _buildPwaInstallHint(context, appProvider),
-                      ],
-                      const SizedBox(height: 20),
-                      _buildMenuGrid(context, appProvider),
-                    ],
+                  constraints: const BoxConstraints(maxWidth: 1440),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isDesktop = constraints.maxWidth >= 1100;
+                      return Column(
+                        children: [
+                          if (isDesktop)
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: _buildStudyProgressCard(
+                                    context,
+                                    appProvider,
+                                  ).animate().fadeIn(duration: 400.ms).slideY(),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  flex: 2,
+                                  child: _buildDesktopStudyTip(
+                                    context,
+                                    appProvider,
+                                  ).animate().fadeIn(duration: 500.ms),
+                                ),
+                              ],
+                            )
+                          else
+                            _buildStudyProgressCard(
+                              context,
+                              appProvider,
+                            ).animate().fadeIn(duration: 400.ms).slideY(),
+                          if (kIsWeb) ...[
+                            const SizedBox(height: 16),
+                            _buildWebPlatformHint(context, appProvider),
+                          ],
+                          const SizedBox(height: 20),
+                          _buildMenuGrid(context, appProvider),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopStudyTip(BuildContext context, AppProvider appProvider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final type = appProvider.selectedLicense;
+    final primary = AppColors.primary(type, isDark);
+    final text = AppColors.text(type, isDark);
+    final surface = AppColors.surface(type, isDark);
+    final unanswered = QuestionRepository().getUnansweredQuestions(type).length;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primary.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lightbulb_outline, color: primary),
+              const SizedBox(width: 8),
+              Text(
+                'Gợi ý hôm nay',
+                style: TextStyle(fontWeight: FontWeight.w800, color: text),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            unanswered > 0
+                ? 'Bạn còn $unanswered câu chưa trả lời. Ôn một chương hoặc làm thử một đề để tiếp tục.'
+                : 'Bạn đã trả lời toàn bộ câu hỏi. Hãy làm thử một đề để kiểm tra kiến thức.',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.35,
+              color: text.withValues(alpha: 0.72),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton.icon(
+              onPressed: () => _navigateToExamList(context),
+              icon: const Icon(Icons.play_arrow),
+              label: const Text('Làm đề ngay'),
             ),
           ),
         ],
@@ -308,6 +395,119 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildWebPlatformHint(BuildContext context, AppProvider appProvider) {
+    final userAgent = browserUserAgent;
+    final isAndroid =
+        userAgent.contains('android') ||
+        defaultTargetPlatform == TargetPlatform.android;
+    final isWindows =
+        userAgent.contains('windows nt') ||
+        defaultTargetPlatform == TargetPlatform.windows;
+
+    if (isAndroid) {
+      return _buildNativeDownloadHint(
+        context,
+        appProvider,
+        title: 'Tải ứng dụng Android',
+        description: 'Cài bản APK mới nhất để dùng như ứng dụng trên Android.',
+        buttonLabel: 'Tải APK mới nhất',
+        icon: Icons.android,
+        assetName: 'GPLX-Android.apk',
+      );
+    }
+    if (isWindows) {
+      return _buildNativeDownloadHint(
+        context,
+        appProvider,
+        title: 'Tải phần mềm Windows',
+        description: 'Tải installer mới nhất cho Windows 10 hoặc Windows 11.',
+        buttonLabel: 'Tải bản Windows mới nhất',
+        icon: Icons.desktop_windows_outlined,
+        assetName: 'GPLX-Windows-x64-Setup.exe',
+      );
+    }
+    return _buildPwaInstallHint(context, appProvider);
+  }
+
+  Widget _buildNativeDownloadHint(
+    BuildContext context,
+    AppProvider appProvider, {
+    required String title,
+    required String description,
+    required String buttonLabel,
+    required IconData icon,
+    required String assetName,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final type = appProvider.selectedLicense;
+    final primary = AppColors.primary(type, isDark);
+    final text = AppColors.text(type, isDark);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: primary.withValues(alpha: isDark ? 0.16 : 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: primary.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.w700, color: text),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.35,
+                    color: text.withValues(alpha: 0.75),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                FilledButton.icon(
+                  onPressed: () => _downloadLatestRelease(context, assetName),
+                  icon: const Icon(Icons.download),
+                  label: Text(buttonLabel),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _downloadLatestRelease(
+    BuildContext context,
+    String assetName,
+  ) async {
+    final uri = Uri.parse(
+      'https://github.com/$_releaseRepository/releases/latest/download/$assetName',
+    );
+    final didLaunch = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!didLaunch && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể mở đường dẫn tải xuống.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   Widget _buildMenuGrid(BuildContext context, AppProvider appProvider) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final type = appProvider.selectedLicense;
@@ -329,7 +529,9 @@ class _HomeScreenState extends State<HomeScreen> {
             .length;
 
         final width = MediaQuery.sizeOf(context).width;
-        final crossAxisCount = width >= 840
+        final crossAxisCount = width >= 1180
+            ? 5
+            : width >= 840
             ? 4
             : width >= 600
             ? 3
@@ -341,7 +543,11 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisCount: crossAxisCount,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: width >= 600 ? 1.0 : 0.9,
+          childAspectRatio: width >= 1180
+              ? 1.15
+              : width >= 600
+              ? 1.0
+              : 0.9,
           children: [
             MenuGridItem(
               icon: '📝',

@@ -75,7 +75,7 @@ For the initial school release, package this folder as a ZIP. It avoids installe
 
 ## Automated Windows builds
 
-The repository includes `.github/workflows/build-windows.yml`. GitHub runs it on a hosted Windows machine after each push to `main` (or when started manually from the Actions tab). It runs analysis and tests, builds the x64 release, a `GPLX-Windows-x64-Setup.exe` installer, and uploads both as workflow artifacts.
+The repository includes `.github/workflows/build-windows.yml`. GitHub runs it on a hosted Windows machine only after pushing a release tag such as `v1.0.3` (or when started manually from the Actions tab). It runs analysis and tests, builds the x64 release, a `GPLX-Windows-x64-Setup.exe` installer, and uploads both as workflow artifacts.
 
 To download it, open GitHub **Actions** → **Build Windows release** → select the successful run → download the `GPLX-Windows-x64-Setup` artifact. Students should run the installer rather than the portable ZIP.
 

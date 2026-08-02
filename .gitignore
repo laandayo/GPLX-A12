@@ -43,3 +43,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+#keys
+lib/key.properties
+extract_questions.ipynb
+IOS_PWA_PLAN.md
+technical-appendix.md
+WINDOWS_10_11_PLAN.md
+analysis_options.yaml
+devtools_options.yaml
+.codex

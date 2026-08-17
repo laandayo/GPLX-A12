@@ -24,6 +24,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const _androidPlayStoreUrl =
+      'https://play.google.com/store/apps/details?id=com.gplx.xemay';
   static const _releaseRepository = String.fromEnvironment(
     'GPLX_RELEASE_REPOSITORY',
     defaultValue: 'laandayo/GPLX-A12',
@@ -409,10 +411,12 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         appProvider,
         title: 'Tải ứng dụng Android',
-        description: 'Cài bản APK mới nhất để dùng như ứng dụng trên Android.',
+        description:
+            'Cài ứng dụng từ Google Play hoặc tải bản APK mới nhất cho Android.',
         buttonLabel: 'Tải APK mới nhất',
         icon: Icons.android,
         assetName: 'GPLX-Android.apk',
+        playStoreUrl: _androidPlayStoreUrl,
       );
     }
     if (isWindows) {
@@ -437,6 +441,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String buttonLabel,
     required IconData icon,
     required String assetName,
+    String? playStoreUrl,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final type = appProvider.selectedLicense;
@@ -474,10 +479,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                FilledButton.icon(
-                  onPressed: () => _downloadLatestRelease(context, assetName),
-                  icon: const Icon(Icons.download),
-                  label: Text(buttonLabel),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    if (playStoreUrl != null)
+                      FilledButton.icon(
+                        onPressed: () => _openExternalUrl(
+                          context,
+                          playStoreUrl,
+                          errorMessage: 'Không thể mở Google Play.',
+                        ),
+                        icon: const Icon(Icons.shop_outlined),
+                        label: const Text('Mở trong Play Store'),
+                      ),
+                    if (playStoreUrl != null)
+                      OutlinedButton.icon(
+                        onPressed: () =>
+                            _downloadLatestRelease(context, assetName),
+                        icon: const Icon(Icons.download),
+                        label: Text(buttonLabel),
+                      )
+                    else
+                      FilledButton.icon(
+                        onPressed: () =>
+                            _downloadLatestRelease(context, assetName),
+                        icon: const Icon(Icons.download),
+                        label: Text(buttonLabel),
+                      ),
+                  ],
                 ),
               ],
             ),
@@ -491,17 +521,29 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context,
     String assetName,
   ) async {
-    final uri = Uri.parse(
-      'https://github.com/$_releaseRepository/releases/latest/download/$assetName',
+    final url =
+        'https://github.com/$_releaseRepository/releases/latest/download/$assetName';
+    await _openExternalUrl(
+      context,
+      url,
+      errorMessage: 'Không thể mở đường dẫn tải xuống.',
     );
+  }
+
+  Future<void> _openExternalUrl(
+    BuildContext context,
+    String url, {
+    required String errorMessage,
+  }) async {
+    final uri = Uri.parse(url);
     final didLaunch = await launchUrl(
       uri,
       mode: LaunchMode.externalApplication,
     );
     if (!didLaunch && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không thể mở đường dẫn tải xuống.'),
+        SnackBar(
+          content: Text(errorMessage),
           behavior: SnackBarBehavior.floating,
         ),
       );

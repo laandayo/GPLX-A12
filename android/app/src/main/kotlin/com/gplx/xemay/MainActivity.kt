@@ -1,10 +1,19 @@
 package com.gplx.xemay
 
 import android.os.Build
+import android.os.Bundle
 import android.view.Display
+import androidx.core.view.WindowCompat
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity : FlutterActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Use the supported AndroidX API on every Android version. Flutter's
+        // SafeArea/MediaQuery then receives the system-bar and cutout insets.
+        WindowCompat.enableEdgeToEdge(window)
+    }
+
     override fun onResume() {
         super.onResume()
         requestHighestRefreshRate()

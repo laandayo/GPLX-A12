@@ -17,6 +17,10 @@ void main() async {
     ]);
   }
 
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
+
   runApp(const GplxApp());
 }
 

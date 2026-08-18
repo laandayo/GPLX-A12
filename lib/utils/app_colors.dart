@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 import '../models/license_type.dart';
 
-enum AppThemePalette { blue, green, teal, purple, amber, rose }
+enum AppThemePalette {
+  blue,
+  green,
+  teal,
+  purple,
+  amber,
+  rose,
+  indigo,
+  cyan,
+  coral,
+  ruby,
+  coffee,
+  graphite,
+}
 
 extension AppThemePaletteExtension on AppThemePalette {
   String get displayName {
@@ -18,6 +31,18 @@ extension AppThemePaletteExtension on AppThemePalette {
         return 'Vàng cam';
       case AppThemePalette.rose:
         return 'Hồng đỏ';
+      case AppThemePalette.indigo:
+        return 'Xanh chàm';
+      case AppThemePalette.cyan:
+        return 'Xanh cyan';
+      case AppThemePalette.coral:
+        return 'Cam san hô';
+      case AppThemePalette.ruby:
+        return 'Đỏ ruby';
+      case AppThemePalette.coffee:
+        return 'Nâu cà phê';
+      case AppThemePalette.graphite:
+        return 'Xám graphite';
     }
   }
 
@@ -35,6 +60,18 @@ extension AppThemePaletteExtension on AppThemePalette {
         return Icons.wb_sunny;
       case AppThemePalette.rose:
         return Icons.favorite;
+      case AppThemePalette.indigo:
+        return Icons.nights_stay_outlined;
+      case AppThemePalette.cyan:
+        return Icons.waves_rounded;
+      case AppThemePalette.coral:
+        return Icons.local_fire_department_outlined;
+      case AppThemePalette.ruby:
+        return Icons.diamond_outlined;
+      case AppThemePalette.coffee:
+        return Icons.coffee_outlined;
+      case AppThemePalette.graphite:
+        return Icons.contrast_rounded;
     }
   }
 }
@@ -92,6 +129,18 @@ class AppColors {
         return isDark ? const Color(0xFFFFB74D) : const Color(0xFFF57C00);
       case AppThemePalette.rose:
         return isDark ? const Color(0xFFF06292) : const Color(0xFFC2185B);
+      case AppThemePalette.indigo:
+        return isDark ? const Color(0xFF7986CB) : const Color(0xFF3949AB);
+      case AppThemePalette.cyan:
+        return isDark ? const Color(0xFF26C6DA) : const Color(0xFF00838F);
+      case AppThemePalette.coral:
+        return isDark ? const Color(0xFFFF8A65) : const Color(0xFFE64A19);
+      case AppThemePalette.ruby:
+        return isDark ? const Color(0xFFEF6C75) : const Color(0xFFB71C35);
+      case AppThemePalette.coffee:
+        return isDark ? const Color(0xFFBCAAA4) : const Color(0xFF795548);
+      case AppThemePalette.graphite:
+        return isDark ? const Color(0xFF90A4AE) : const Color(0xFF455A64);
     }
   }
 
@@ -109,6 +158,18 @@ class AppColors {
         return isDark ? const Color(0xFFFFCC80) : const Color(0xFFFFA726);
       case AppThemePalette.rose:
         return isDark ? const Color(0xFFF8BBD0) : const Color(0xFFEC407A);
+      case AppThemePalette.indigo:
+        return isDark ? const Color(0xFFC5CAE9) : const Color(0xFF5C6BC0);
+      case AppThemePalette.cyan:
+        return isDark ? const Color(0xFF80DEEA) : const Color(0xFF00ACC1);
+      case AppThemePalette.coral:
+        return isDark ? const Color(0xFFFFCCBC) : const Color(0xFFFF7043);
+      case AppThemePalette.ruby:
+        return isDark ? const Color(0xFFFFCDD2) : const Color(0xFFD32F4B);
+      case AppThemePalette.coffee:
+        return isDark ? const Color(0xFFD7CCC8) : const Color(0xFFA1887F);
+      case AppThemePalette.graphite:
+        return isDark ? const Color(0xFFCFD8DC) : const Color(0xFF607D8B);
     }
   }
 
@@ -126,6 +187,18 @@ class AppColors {
         return isDark ? const Color(0xFF18130A) : const Color(0xFFFFFAF0);
       case AppThemePalette.rose:
         return isDark ? const Color(0xFF190E14) : const Color(0xFFFFF5F8);
+      case AppThemePalette.indigo:
+        return isDark ? const Color(0xFF0D1020) : const Color(0xFFF5F6FF);
+      case AppThemePalette.cyan:
+        return isDark ? const Color(0xFF07171A) : const Color(0xFFF1FBFC);
+      case AppThemePalette.coral:
+        return isDark ? const Color(0xFF1A0E09) : const Color(0xFFFFF6F2);
+      case AppThemePalette.ruby:
+        return isDark ? const Color(0xFF190B10) : const Color(0xFFFFF5F6);
+      case AppThemePalette.coffee:
+        return isDark ? const Color(0xFF15100E) : const Color(0xFFFAF7F5);
+      case AppThemePalette.graphite:
+        return isDark ? const Color(0xFF0D1215) : const Color(0xFFF5F7F8);
     }
   }
 
@@ -146,6 +219,18 @@ class AppColors {
         return const Color(0xFF241B10);
       case AppThemePalette.rose:
         return const Color(0xFF281720);
+      case AppThemePalette.indigo:
+        return const Color(0xFF181C31);
+      case AppThemePalette.cyan:
+        return const Color(0xFF102429);
+      case AppThemePalette.coral:
+        return const Color(0xFF281812);
+      case AppThemePalette.ruby:
+        return const Color(0xFF29151A);
+      case AppThemePalette.coffee:
+        return const Color(0xFF241B18);
+      case AppThemePalette.graphite:
+        return const Color(0xFF182126);
     }
   }
 
@@ -166,6 +251,18 @@ class AppColors {
         return const Color(0xFFFFF3E0);
       case AppThemePalette.rose:
         return const Color(0xFFFFEEF4);
+      case AppThemePalette.indigo:
+        return const Color(0xFFF0F1FF);
+      case AppThemePalette.cyan:
+        return const Color(0xFFE4F9FC);
+      case AppThemePalette.coral:
+        return const Color(0xFFFFF0EB);
+      case AppThemePalette.ruby:
+        return const Color(0xFFFFEEF1);
+      case AppThemePalette.coffee:
+        return const Color(0xFFF5ECE8);
+      case AppThemePalette.graphite:
+        return const Color(0xFFECEFF1);
     }
   }
 

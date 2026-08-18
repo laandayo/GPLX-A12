@@ -40,9 +40,20 @@ class _HomeScreenState extends State<HomeScreen> {
         final type = appProvider.selectedLicense;
 
         final isWideLayout = MediaQuery.sizeOf(context).width >= 840;
-        final content = _navIndex == 0
-            ? _buildHomeContent(context, appProvider)
-            : const StatisticsScreen();
+        final content = AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          child: _navIndex == 0
+              ? KeyedSubtree(
+                  key: const ValueKey('home'),
+                  child: _buildHomeContent(context, appProvider),
+                )
+              : const KeyedSubtree(
+                  key: ValueKey('statistics'),
+                  child: StatisticsScreen(),
+                ),
+        );
 
         return Scaffold(
           backgroundColor: AppColors.background(type, isDark),
@@ -53,6 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       currentIndex: _navIndex,
                       onTap: (index) => setState(() => _navIndex = index),
                       activeColor: AppColors.primary(type, isDark),
+                      onSettings: () => _showSettings(context),
                     ),
                     Expanded(child: content),
                   ],
@@ -74,7 +86,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: Column(
         children: [
-          _buildHeader(context, appProvider),
+          _buildHeader(
+            context,
+            appProvider,
+            showSettingsAction: MediaQuery.sizeOf(context).width < 840,
+          ),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -185,7 +201,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, AppProvider appProvider) {
+  Widget _buildHeader(
+    BuildContext context,
+    AppProvider appProvider, {
+    required bool showSettingsAction,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final type = appProvider.selectedLicense;
     final text = AppColors.text(type, isDark);
@@ -213,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Ôn Luyện GPLX A1 & A',
+                    'Ôn Luyện GPLX Xe Máy',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -239,13 +259,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const Spacer(),
-          IconButton(
-            icon: Icon(
-              Icons.settings_outlined,
-              color: text.withValues(alpha: 0.7),
+          if (showSettingsAction)
+            IconButton(
+              icon: Icon(
+                Icons.settings_outlined,
+                color: text.withValues(alpha: 0.7),
+              ),
+              onPressed: () => _showSettings(context),
             ),
-            onPressed: () => _showSettings(context),
-          ),
         ],
       ),
     );
@@ -311,13 +332,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 10,
-              backgroundColor: primary.withValues(alpha: 0.12),
-              valueColor: AlwaysStoppedAnimation<Color>(primary),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: progress),
+            duration: const Duration(milliseconds: 650),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) => ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: value,
+                minHeight: 10,
+                backgroundColor: primary.withValues(alpha: 0.12),
+                valueColor: AlwaysStoppedAnimation<Color>(primary),
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -570,91 +596,100 @@ class _HomeScreenState extends State<HomeScreen> {
             .getImportantQuestions(type)
             .length;
 
-        final width = MediaQuery.sizeOf(context).width;
-        final crossAxisCount = width >= 1180
-            ? 5
-            : width >= 840
-            ? 4
-            : width >= 600
-            ? 3
-            : 2;
-
-        return GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: crossAxisCount,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: width >= 1180
-              ? 1.15
-              : width >= 600
-              ? 1.0
-              : 0.9,
-          children: [
-            MenuGridItem(
-              icon: '📝',
-              title: 'Thi thử',
-              subtitle: 'Thi theo đề',
-              color: primary,
-              onTap: () => _navigateToExamList(context),
-            ),
-            MenuGridItem(
-              icon: '📚',
-              title: 'Ôn tập theo chương',
-              subtitle: '$answeredCount/$totalQuestions câu',
-              color: primary,
-              onTap: () => _navigateToChapters(context, StudyMode.all),
-            ),
-            MenuGridItem(
-              icon: '🔖',
-              title: 'Đánh dấu',
-              subtitle: '$markedCount câu',
-              color: primary,
-              onTap: () => _navigateToQuestions(context, StudyMode.marked),
-            ),
-            MenuGridItem(
-              icon: '❌',
-              title: 'Câu hay sai',
-              subtitle: '$wrongCount câu',
-              color: primary,
-              onTap: () => _navigateToQuestions(context, StudyMode.wrong),
-            ),
-            MenuGridItem(
-              icon: '⚠️',
-              title: 'Câu điểm liệt',
-              subtitle: '$importantCount câu',
-              color: primary,
-              onTap: () => _navigateToQuestions(context, StudyMode.important),
-            ),
-            MenuGridItem(
-              icon: '✅',
-              title: 'Chưa trả lời',
-              subtitle: '$unansweredCount câu',
-              color: primary,
-              onTap: () => _navigateToQuestions(context, StudyMode.unanswered),
-            ),
-            MenuGridItem(
-              icon: '🔄',
-              title: 'Ôn lại câu sai',
-              subtitle: '',
-              color: primary,
-              onTap: () => _retryWrongQuestions(context),
-            ),
-            MenuGridItem(
-              icon: '📖',
-              title: 'Danh sách câu hỏi',
-              subtitle: 'Tra cứu nhanh',
-              color: primary,
-              onTap: () => _navigateToCatalog(context),
-            ),
-            MenuGridItem(
-              icon: '🕘',
-              title: 'Lịch sử làm bài',
-              subtitle: 'Các bài đã nộp',
-              color: primary,
-              onTap: () => _navigateToExamHistory(context),
-            ),
-          ],
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 840
+                ? 4
+                : constraints.maxWidth >= 600
+                ? 3
+                : 2;
+            const gap = 12.0;
+            final itemWidth =
+                (constraints.maxWidth - gap * (columns - 1)) / columns;
+            final ratio = constraints.maxWidth >= 1100
+                ? 1.65
+                : constraints.maxWidth >= 600
+                ? 1.3
+                : 0.95;
+            final items = [
+              MenuGridItem(
+                icon: Icons.quiz_outlined,
+                title: 'Thi thử',
+                subtitle: 'Thi theo đề',
+                color: primary,
+                onTap: () => _navigateToExamList(context),
+              ),
+              MenuGridItem(
+                icon: Icons.menu_book_outlined,
+                title: 'Ôn tập theo chương',
+                subtitle: '$answeredCount/$totalQuestions câu',
+                color: primary,
+                onTap: () => _navigateToChapters(context, StudyMode.all),
+              ),
+              MenuGridItem(
+                icon: Icons.bookmark_outline,
+                title: 'Đánh dấu',
+                subtitle: '$markedCount câu',
+                color: primary,
+                onTap: () => _navigateToQuestions(context, StudyMode.marked),
+              ),
+              MenuGridItem(
+                icon: Icons.error_outline,
+                title: 'Câu hay sai',
+                subtitle: '$wrongCount câu',
+                color: primary,
+                onTap: () => _navigateToQuestions(context, StudyMode.wrong),
+              ),
+              MenuGridItem(
+                icon: Icons.warning_amber_rounded,
+                title: 'Câu điểm liệt',
+                subtitle: '$importantCount câu',
+                color: primary,
+                onTap: () => _navigateToQuestions(context, StudyMode.important),
+              ),
+              MenuGridItem(
+                icon: Icons.check_circle_outline,
+                title: 'Chưa trả lời',
+                subtitle: '$unansweredCount câu',
+                color: primary,
+                onTap: () =>
+                    _navigateToQuestions(context, StudyMode.unanswered),
+              ),
+              MenuGridItem(
+                icon: Icons.replay_rounded,
+                title: 'Ôn lại câu sai',
+                subtitle: '',
+                color: primary,
+                onTap: () => _retryWrongQuestions(context),
+              ),
+              MenuGridItem(
+                icon: Icons.list_alt_rounded,
+                title: 'Danh sách câu hỏi',
+                subtitle: 'Tra cứu nhanh',
+                color: primary,
+                onTap: () => _navigateToCatalog(context),
+              ),
+              MenuGridItem(
+                icon: Icons.history_rounded,
+                title: 'Lịch sử làm bài',
+                subtitle: 'Các bài đã nộp',
+                color: primary,
+                onTap: () => _navigateToExamHistory(context),
+              ),
+            ];
+            return Wrap(
+              alignment: WrapAlignment.center,
+              spacing: gap,
+              runSpacing: gap,
+              children: [
+                for (final item in items)
+                  SizedBox(
+                    width: itemWidth,
+                    child: AspectRatio(aspectRatio: ratio, child: item),
+                  ),
+              ],
+            );
+          },
         );
       },
     );

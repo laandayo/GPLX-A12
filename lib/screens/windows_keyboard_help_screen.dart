@@ -21,7 +21,7 @@ class WindowsKeyboardHelpScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'Làm đề nhanh hơn trên máy tính Windows.',
+            'Làm đề nhanh hơn trên ứng dụng Windows hoặc trình duyệt máy tính.',
             style: TextStyle(color: text.withValues(alpha: 0.7)),
           ),
           const SizedBox(height: 16),

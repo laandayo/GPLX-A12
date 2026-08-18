@@ -33,59 +33,73 @@ class SettingsScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              final sidePadding = ((constraints.maxWidth - 840) / 2)
-                  .clamp(0, double.infinity)
-                  .toDouble();
-              return ListView(
-                padding: EdgeInsets.symmetric(horizontal: sidePadding),
-                children: [
-                  _buildSectionHeader(context, 'Giao diện', primary, text),
-                  _buildThemeOptions(
-                    context,
-                    appProvider,
-                    isDark,
-                    primary,
-                    text,
-                    surface,
+          body: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            children: [
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildSectionHeader(context, 'Giao diện', primary, text),
+                      _buildThemeOptions(
+                        context,
+                        appProvider,
+                        isDark,
+                        primary,
+                        text,
+                        surface,
+                      ),
+                      const SizedBox(height: 8),
+                      _buildPaletteOptions(
+                        appProvider,
+                        isDark,
+                        primary,
+                        text,
+                        surface,
+                      ),
+                      const SizedBox(height: 8),
+                      _buildTextSizeOptions(
+                        appProvider,
+                        primary,
+                        text,
+                        surface,
+                      ),
+                      const Divider(height: 32),
+                      _buildSectionHeader(
+                        context,
+                        'Cài đặt ôn tập',
+                        primary,
+                        text,
+                      ),
+                      _buildStudySettings(
+                        context,
+                        appProvider,
+                        isDark,
+                        primary,
+                        text,
+                      ),
+                      const Divider(height: 32),
+                      _buildSectionHeader(context, 'Dữ liệu', primary, text),
+                      _buildDataActions(context, appProvider, surface, text),
+                      if (kIsWeb) _buildWebStorageNotice(surface, text),
+                      if (kIsWeb ||
+                          defaultTargetPlatform == TargetPlatform.windows) ...[
+                        const Divider(height: 32),
+                        _buildSectionHeader(context, 'Máy tính', primary, text),
+                        if (!kIsWeb)
+                          _buildWindowsUpdate(context, surface, text),
+                        _buildWindowsKeyboardHelp(context, surface, text),
+                      ],
+                      const Divider(height: 32),
+                      _buildSectionHeader(context, 'Thông tin', primary, text),
+                      _buildAbout(context, isDark, primary, text, surface),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  _buildPaletteOptions(
-                    appProvider,
-                    isDark,
-                    primary,
-                    text,
-                    surface,
-                  ),
-                  const SizedBox(height: 8),
-                  _buildTextSizeOptions(appProvider, primary, text, surface),
-                  const Divider(height: 32),
-                  _buildSectionHeader(context, 'Cài đặt ôn tập', primary, text),
-                  _buildStudySettings(
-                    context,
-                    appProvider,
-                    isDark,
-                    primary,
-                    text,
-                  ),
-                  const Divider(height: 32),
-                  _buildSectionHeader(context, 'Dữ liệu', primary, text),
-                  _buildDataActions(context, appProvider, surface, text),
-                  if (kIsWeb) _buildWebStorageNotice(surface, text),
-                  if (!kIsWeb &&
-                      defaultTargetPlatform == TargetPlatform.windows) ...[
-                    const Divider(height: 32),
-                    _buildSectionHeader(context, 'Windows', primary, text),
-                    _buildWindowsUpdate(context, surface, text),
-                    _buildWindowsKeyboardHelp(context, surface, text),
-                  ],
-                  const Divider(height: 32),
-                  _buildSectionHeader(context, 'Thông tin', primary, text),
-                  _buildAbout(context, isDark, primary, text, surface),
-                ],
-              );
-            },
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -618,8 +632,8 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               _buildInfoBullet(
-                'Hoạt động ôn tập (30 ngày)',
-                'Hoạt động ôn tập (30 ngày) hiển thị mức độ hoạt động theo 30 ngày vừa qua dựa trên số lần học/ngày, được quy về 4 mức cường độ.',
+                'Hoạt động 30 ngày qua',
+                'Hiển thị số câu đã ôn mỗi ngày. Màu được chia theo các mức cố định: 1–10, 11–20, 21–40 và trên 40 câu; chạm hoặc rê chuột lên ô để xem ngày và số câu cụ thể.',
               ),
             ],
           ),

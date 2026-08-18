@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../data/data.dart';
 
+class StudyActivityDay {
+  final DateTime date;
+  final int questionCount;
+
+  const StudyActivityDay({required this.date, required this.questionCount});
+}
+
 class StatisticsProvider with ChangeNotifier {
   final QuestionRepository _repository = QuestionRepository();
   final List<TestAttempt> _testAttempts = [];
@@ -54,21 +61,32 @@ class StatisticsProvider with ChangeNotifier {
   }
 
   List<int> getStudyHeatmap(Map<String, int> activity, {int days = 30}) {
+    return getStudyActivity(activity, days: days)
+        .map((day) => activityLevel(day.questionCount))
+        .toList(growable: false);
+  }
+
+  List<StudyActivityDay> getStudyActivity(
+    Map<String, int> activity, {
+    int days = 30,
+  }) {
     final now = DateTime.now();
     final end = DateTime(now.year, now.month, now.day);
-    final counts = List<int>.generate(days, (index) {
+    return List<StudyActivityDay>.generate(days, (index) {
       final day = end.subtract(Duration(days: days - index - 1));
-      final key = _dateKey(day);
-      return activity[key] ?? 0;
-    });
-    final maxCount = counts.fold<int>(0, (max, count) => count > max ? count : max);
+      return StudyActivityDay(
+        date: day,
+        questionCount: activity[_dateKey(day)] ?? 0,
+      );
+    }, growable: false);
+  }
 
-    return counts.map((count) {
-      if (count == 0) return 0;
-      if (maxCount <= 4) return count.clamp(1, 4);
-      final normalized = ((count / maxCount) * 4).ceil();
-      return normalized.clamp(1, 4);
-    }).toList(growable: false);
+  static int activityLevel(int questionCount) {
+    if (questionCount == 0) return 0;
+    if (questionCount <= 10) return 1;
+    if (questionCount <= 20) return 2;
+    if (questionCount <= 40) return 3;
+    return 4;
   }
 
   void clearHistory() {

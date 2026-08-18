@@ -109,10 +109,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
           ),
         );
 
-        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
+        if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
           return Focus(
             autofocus: true,
-            onKeyEvent: (node, event) => _handleWindowsKeyEvent(
+            onKeyEvent: (node, event) => _handleDesktopKeyEvent(
               event,
               context,
               appProvider,
@@ -1176,7 +1176,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
     unawaited(SystemSound.play(SystemSoundType.alert));
   }
 
-  KeyEventResult _handleWindowsKeyEvent(
+  KeyEventResult _handleDesktopKeyEvent(
     KeyEvent event,
     BuildContext context,
     AppProvider appProvider,

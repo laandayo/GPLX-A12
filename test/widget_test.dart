@@ -31,6 +31,36 @@ void main() {
     expect(a2Chapters.length, 5);
   });
 
+  test('Study activity uses stable, understandable question ranges', () {
+    expect(StatisticsProvider.activityLevel(0), 0);
+    expect(StatisticsProvider.activityLevel(1), 1);
+    expect(StatisticsProvider.activityLevel(10), 1);
+    expect(StatisticsProvider.activityLevel(11), 2);
+    expect(StatisticsProvider.activityLevel(20), 2);
+    expect(StatisticsProvider.activityLevel(21), 3);
+    expect(StatisticsProvider.activityLevel(40), 3);
+    expect(StatisticsProvider.activityLevel(41), 4);
+  });
+
+  test('Every color palette provides distinct light and dark theme colors', () {
+    for (final palette in AppThemePalette.values) {
+      AppColors.activePalette = palette;
+      expect(
+        AppColors.primary(LicenseType.a1, false),
+        isNot(AppColors.primary(LicenseType.a1, true)),
+      );
+      expect(
+        AppColors.background(LicenseType.a1, false),
+        isNot(AppColors.background(LicenseType.a1, true)),
+      );
+      expect(
+        AppColors.surface(LicenseType.a1, false),
+        isNot(AppColors.surface(LicenseType.a1, true)),
+      );
+    }
+    AppColors.activePalette = AppThemePalette.blue;
+  });
+
   test('Shuffled exam follows question distribution', () async {
     await QuestionRepository().initializeAsync();
 
